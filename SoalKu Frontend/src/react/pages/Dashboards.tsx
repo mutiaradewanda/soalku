@@ -1214,11 +1214,45 @@ export const GuruDashboard: React.FC = () => {
                 </Link>
               </div>
 
-              {pendingQuestions.length === 0 ? (
-                <div className="p-6 text-center rounded-2xl bg-slate-850 border border-slate-800 space-y-2">
+              {/* Subject Category Pills */}
+              {availablePendingMapel.length > 1 && (
+                <div className="flex flex-wrap items-center gap-1.5 pb-1">
+                  <button
+                    onClick={() => setDashboardFilterMapel("SEMUA")}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition border ${
+                      dashboardFilterMapel === "SEMUA"
+                        ? "bg-[#84A282] text-white border-[#739071] shadow-sm"
+                        : "bg-[#FEFAF3] text-slate-600 border-[#B8CFB3] hover:text-slate-900"
+                    }`}
+                  >
+                    Semua ({pendingQuestions.length})
+                  </button>
+                  {availablePendingMapel.map((mapel) => {
+                    const count = pendingQuestions.filter((s) => s.mataPelajaran === mapel).length;
+                    return (
+                      <button
+                        key={mapel}
+                        onClick={() => setDashboardFilterMapel(mapel)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition border ${
+                          dashboardFilterMapel === mapel
+                            ? "bg-[#84A282] text-white border-[#739071] shadow-sm"
+                            : "bg-[#FEFAF3] text-slate-600 border-[#B8CFB3] hover:text-slate-900"
+                        }`}
+                      >
+                        {mapel} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {filteredPendingQuestions.length === 0 ? (
+                <div className="p-6 text-center rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-2">
                   <CheckCircle2 className="w-8 h-8 text-[#60795e] mx-auto" />
                   <p className="text-xs text-slate-700 font-semibold">
-                    Semua butir soal AI telah ditinjau!
+                    {dashboardFilterMapel === "SEMUA"
+                      ? "Semua butir soal AI telah ditinjau!"
+                      : `Semua soal untuk mapel ${dashboardFilterMapel} telah ditinjau!`}
                   </p>
                   <p className="text-[11px] text-slate-500">
                     Bank soal aktif untuk siswa telah termutakhirkan secara lengkap.
@@ -1226,7 +1260,7 @@ export const GuruDashboard: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {pendingQuestions.slice(0, 3).map((soal) => (
+                  {filteredPendingQuestions.slice(0, 3).map((soal) => (
                     <div
                       key={soal.id}
                       className="p-3.5 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-2.5 text-xs shadow-md"
@@ -1267,12 +1301,12 @@ export const GuruDashboard: React.FC = () => {
                     </div>
                   ))}
 
-                  {pendingQuestions.length > 3 && (
+                  {filteredPendingQuestions.length > 3 && (
                     <Link
                       to="/mentor/review"
                       className="block text-center text-xs font-bold text-[#84A282] hover:text-[#60795e] pt-1"
                     >
-                      +{pendingQuestions.length - 3} soal lainnya menunggu kurasi di Bank Soal →
+                      +{filteredPendingQuestions.length - 3} soal lainnya menunggu kurasi di Bank Soal →
                     </Link>
                   )}
                 </div>

@@ -40,7 +40,6 @@ export const MentorReviewPage: React.FC = () => {
   } = useMentor();
 
   const [activeTab, setActiveTab] = useState<StatusReview>("MENUNGGU");
-  const [filterTingkat, setFilterTingkat] = useState<"SEMUA" | "SD" | "SMP">("SEMUA");
   const [filterMapel, setFilterMapel] = useState<string>("SEMUA");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -80,7 +79,6 @@ export const MentorReviewPage: React.FC = () => {
   // Filtered list
   const filteredList = soalList.filter((s) => {
     if (s.statusReview !== activeTab) return false;
-    if (filterTingkat !== "SEMUA" && s.tingkat !== filterTingkat) return false;
     if (filterMapel !== "SEMUA" && s.mataPelajaran !== filterMapel) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -231,35 +229,16 @@ export const MentorReviewPage: React.FC = () => {
           )}
         </div>
 
-        {/* 3. Search & Filter Bar */}
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari topik, pertanyaan, atau mata pelajaran..."
-              className="w-full bg-white border border-[#B8CFB3] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#84A282] transition shadow-sm"
-            />
-          </div>
-
-          <div className="flex items-center gap-1.5 w-full sm:w-auto">
-            <span className="text-xs text-slate-600 font-semibold px-1">Tingkat:</span>
-            {(["SEMUA", "SMP", "SD"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setFilterTingkat(t)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
-                  filterTingkat === t
-                    ? "bg-[#84A282] text-white border-[#739071] shadow-sm"
-                    : "bg-white text-slate-600 border-[#B8CFB3] hover:text-slate-900"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
+        {/* 3. Search Bar */}
+        <div className="relative w-full">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari topik, pertanyaan, atau mata pelajaran..."
+            className="w-full bg-white border border-[#B8CFB3] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#84A282] transition shadow-sm"
+          />
         </div>
 
         {/* 4. Kategori Mata Pelajaran Bar (Pemisah Mata Pelajaran) */}
