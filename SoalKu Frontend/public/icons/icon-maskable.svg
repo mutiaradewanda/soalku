@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGradM" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B132B"/>
+      <stop offset="50%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <linearGradient id="cyanGradM" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="goldGradM" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Solid Full Background for Maskable Icon -->
+  <rect width="512" height="512" fill="url(#bgGradM)"/>
+
+  <!-- Scaled Artwork within 80% Safe Zone (center = 256, 256) -->
+  <g transform="translate(51.2, 51.2) scale(0.8)">
+    <!-- Open Book Base -->
+    <g transform="translate(0, 40)">
+      <path d="M256 340 C210 320 150 320 100 336 L100 210 C150 196 210 196 256 216 Z" 
+            fill="#1E293B" stroke="#38BDF8" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M256 340 C302 320 362 320 412 336 L412 210 C362 196 302 196 256 216 Z" 
+            fill="#0F172A" stroke="#38BDF8" stroke-width="10" stroke-linejoin="round"/>
+      <line x1="256" y1="216" x2="256" y2="340" stroke="#06B6D4" stroke-width="10" stroke-linecap="round"/>
+    </g>
+
+    <!-- Graduation Cap -->
+    <g transform="translate(0, -20)">
+      <polygon points="256,110 396,170 256,230 116,170" fill="url(#cyanGradM)" stroke="#FFFFFF" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M166 195 L166 245 C166 280 346 280 346 245 L346 195" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="256" cy="170" r="12" fill="#FDE047"/>
+      <path d="M256 170 Q370 190 376 245" fill="none" stroke="url(#goldGradM)" stroke-width="8" stroke-linecap="round"/>
+      <polygon points="376,245 372,270 382,270" fill="#F59E0B"/>
+    </g>
+
+    <!-- AI Sparkle Star -->
+    <g transform="translate(370, 90)">
+      <path d="M30 0 Q30 30 60 30 Q30 30 30 60 Q30 30 0 30 Q30 30 30 0 Z" fill="url(#goldGradM)"/>
+    </g>
+  </g>
+</svg>

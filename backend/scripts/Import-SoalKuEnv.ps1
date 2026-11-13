@@ -5,7 +5,7 @@ $allowed = @('DB_URL','DB_USERNAME','DB_PASSWORD','JWT_SECRET','JWT_ISSUER','JWT
     'MATERIAL_STORAGE_ROOT','GEMINI_API_KEY','GEMINI_MODEL','GEMINI_TIMEOUT','GEMINI_QUESTIONS_PER_SECTION','LATIHAN_SECONDS_PER_QUESTION')
 foreach ($line in (Get-Content -LiteralPath $Path)) {
     if ([string]::IsNullOrWhiteSpace($line) -or $line.TrimStart().StartsWith('#')) { continue }
-    $pair = $line.Split(@('='), 2)
+    $pair = $line -split '=', 2
     if ($pair.Length -ne 2 -or $pair[0] -notin $allowed) {
         throw 'Invalid configuration entry; use only keys from .env.example.'
     }

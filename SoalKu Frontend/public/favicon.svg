@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEFAF3"/>
+      <stop offset="100%" stop-color="#F6E2E9"/>
+    </linearGradient>
+    <linearGradient id="dragonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9BB699"/>
+      <stop offset="100%" stop-color="#84A282"/>
+    </linearGradient>
+    <linearGradient id="hornGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="100%" stop-color="#EAB308"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded rectangle -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" stroke="#B8CFB3" stroke-width="12"/>
+
+  <!-- Dragon Head Group -->
+  <g transform="translate(256, 290)">
+    <!-- Dragon Ears / Horns Behind -->
+    <!-- Left Horn -->
+    <path d="M-80 -70 Q-100 -140 -120 -190 Q-110 -185 -95 -160 Q-80 -210 -70 -240 Q-50 -180 -55 -130 Q-65 -80 -75 -65" fill="url(#hornGrad)" stroke="#CA8A04" stroke-width="6" stroke-linejoin="round"/>
+    <!-- Right Horn -->
+    <path d="M80 -70 Q100 -140 120 -190 Q110 -185 95 -160 Q80 -210 70 -240 Q50 -180 55 -130 Q65 -80 75 -65" fill="url(#hornGrad)" stroke="#CA8A04" stroke-width="6" stroke-linejoin="round"/>
+
+    <!-- Left Ear Flap -->
+    <path d="M-130 -30 Q-190 -10 -170 30 Q-140 30 -120 0" fill="#84A282" stroke="#60795e" stroke-width="6"/>
+    <!-- Right Ear Flap -->
+    <path d="M130 -30 Q190 -10 170 30 Q140 30 120 0" fill="#84A282" stroke="#60795e" stroke-width="6"/>
+
+    <!-- Dragon Head Base -->
+    <ellipse cx="0" cy="10" rx="145" ry="125" fill="url(#dragonGrad)" stroke="#60795e" stroke-width="8"/>
+
+    <!-- Eyebrow Dots (Gold) -->
+    <circle cx="-50" cy="-35" r="12" fill="#EAB308"/>
+    <circle cx="50" cy="-35" r="12" fill="#EAB308"/>
+
+    <!-- Big Cute Dragon Eyes -->
+    <ellipse cx="-60" cy="15" rx="18" ry="24" fill="#1E293B"/>
+    <circle cx="-66" cy="8" r="8" fill="#FFFFFF"/>
+    <circle cx="-54" cy="24" r="4" fill="#FFFFFF"/>
+
+    <ellipse cx="60" cy="15" rx="18" ry="24" fill="#1E293B"/>
+    <circle cx="54" cy="8" r="8" fill="#FFFFFF"/>
+    <circle cx="66" cy="24" r="4" fill="#FFFFFF"/>
+
+    <!-- Cute Snout & Nostrils -->
+    <circle cx="-10" cy="50" r="3.5" fill="#4E634D"/>
+    <circle cx="10" cy="50" r="3.5" fill="#4E634D"/>
+
+    <!-- Happy Smile with Tongue -->
+    <path d="M-28 65 Q0 90 28 65" fill="none" stroke="#1E293B" stroke-width="7" stroke-linecap="round"/>
+    <path d="M-15 72 Q0 100 15 72 Z" fill="#F43F5E"/>
+
+    <!-- Soft Cheek Whiskers -->
+    <path d="M-115 50 Q-150 55 -165 40" stroke="#EAB308" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M115 50 Q150 55 165 40" stroke="#EAB308" stroke-width="8" stroke-linecap="round" fill="none"/>
+
+    <!-- Pink Blush Cheeks -->
+    <ellipse cx="-95" cy="45" rx="18" ry="10" fill="#F6E2E9" opacity="0.8"/>
+    <ellipse cx="95" cy="45" rx="18" ry="10" fill="#F6E2E9" opacity="0.8"/>
+
+    <!-- Graduation Toga Cap (Mortarboard) -->
+    <g transform="translate(0, -115)">
+      <polygon points="0,-45 130,-5 0,35 -130,-5" fill="#1E293B" stroke="#0F172A" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M-65 15 L-65 50 C-65 75 65 75 65 50 L65 15" fill="#1E293B" stroke="#0F172A" stroke-width="6"/>
+      <!-- Cap Button -->
+      <circle cx="0" cy="-5" r="9" fill="#EAB308"/>
+      <!-- Tassel -->
+      <path d="M0 -5 Q85 10 90 55" fill="none" stroke="#EAB308" stroke-width="5" stroke-linecap="round"/>
+      <polygon points="90,55 85,75 95,75" fill="#EAB308"/>
+    </g>
+
+    <!-- Cute Round Glasses -->
+    <g transform="translate(0, 15)">
+      <!-- Left Rim -->
+      <circle cx="-58" cy="0" r="32" fill="none" stroke="#1E293B" stroke-width="6"/>
+      <!-- Right Rim -->
+      <circle cx="58" cy="0" r="32" fill="none" stroke="#1E293B" stroke-width="6"/>
+      <!-- Bridge -->
+      <path d="M-26 0 Q0 -10 26 0" fill="none" stroke="#1E293B" stroke-width="6"/>
+    </g>
+  </g>
+</svg>
