@@ -279,7 +279,8 @@ export const MateriProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       fileName,
       contentToProcess || fileName,
       tingkat,
-      fileSizeKb
+      fileSizeKb,
+      file
     );
 
     setMateriList((prev) => [newMateri, ...prev]);

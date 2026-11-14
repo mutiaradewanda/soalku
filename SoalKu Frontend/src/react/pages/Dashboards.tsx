@@ -163,13 +163,7 @@ export const SdDashboard: React.FC = () => {
             >
               <Home className="w-4 h-4" />
             </Link>
-            <div className="p-1.5 bg-[#F6E2E9] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] flex items-center justify-center shadow-sm">
-              <DragonMascot variant="logo" className="w-7 h-7" />
-            </div>
             <div>
-              <span className="text-[10px] font-bold text-[#60795e] uppercase bg-[#B8CFB3]/30 px-2 py-0.5 rounded-full border border-[#B8CFB3]/50 shadow-sm inline-block">
-                Portal Siswa SD
-              </span>
               <h2 className="text-base font-bold text-slate-800">{user?.name || "Adit Pratama"}</h2>
             </div>
           </div>
@@ -219,12 +213,7 @@ export const SdDashboard: React.FC = () => {
             </p>
           </div>
           <div className="hidden sm:block shrink-0 relative z-10 mr-2 my-0">
-            <div className="relative">
-              <span className="absolute -top-2 -left-2 text-[#FEFAF3] text-lg select-none pointer-events-none animate-pulse">✦</span>
-              <span className="absolute top-3 -right-2 text-[#F6E2E9] text-sm select-none pointer-events-none opacity-80">✦</span>
-              <span className="absolute bottom-2 -left-3 text-[#FEFAF3] text-xs select-none pointer-events-none opacity-70">✦</span>
-              <DragonMascot variant="sitting" className="w-28 sm:w-32 drop-shadow-md hover:scale-105 transition-transform" />
-            </div>
+            <DragonMascot variant="sitting" className="w-28 sm:w-32 drop-shadow-md hover:scale-105 transition-transform" />
           </div>
         </div>
 
@@ -232,9 +221,8 @@ export const SdDashboard: React.FC = () => {
         <div className="bg-white rounded-3xl p-6 border border-[#B8CFB3] shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#B8CFB3]/40 pb-3">
             <div>
-              <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
-                <UploadCloud className="w-5 h-5 text-[#84A282]" />
-                <span>Pusat Unggah Modul Belajar Siswa (PDF / DOCX)</span>
+              <h3 className="text-base font-bold text-slate-800">
+                Pusat Unggah Modul Belajar Siswa (PDF / DOCX)
               </h3>
               <p className="text-xs text-slate-500">
                 Pilih atau seret berkas materi pelajaran (Maks 10 MB) untuk langsung diringkas otomatis oleh AI ramah anak.
@@ -307,17 +295,11 @@ export const SdDashboard: React.FC = () => {
                 <div className="w-12 h-12 rounded-2xl bg-[#B8CFB3]/30 text-[#60795e] border border-[#B8CFB3] flex items-center justify-center">
                   <FileUp className="w-6 h-6" />
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-800">
-                    {isDragging ? "Lepaskan Berkas di Sini Untuk Langsung Mengunggah" : "Tarik & Jatuhkan Dokumen PDF / DOCX di Sini"}
+                {isDragging && (
+                  <p className="text-xs font-bold text-[#60795e]">
+                    Lepaskan Berkas di Sini Untuk Langsung Mengunggah
                   </p>
-                  <p className="text-xs text-slate-500">
-                    Atau klik di mana saja untuk memilih berkas langsung dari komputer (Maksimal 10 MB)
-                  </p>
-                </div>
-                <span className="text-[11px] font-bold text-[#60795e] bg-white border border-[#B8CFB3] px-3 py-1 rounded-full shadow-sm mt-1">
-                  Langsung Diproses Otomatis (3 Pilihan Jawaban SD)
-                </span>
+                )}
               </>
             )}
           </div>
@@ -359,10 +341,7 @@ export const SdDashboard: React.FC = () => {
                       {materi.deskripsi}
                     </p>
 
-                    <div className="pt-1 flex items-center gap-2 text-[11px] text-slate-500">
-                      <Layers className="w-3.5 h-3.5 text-[#84A282]" />
-                      <span>{materi.bagianMateri.length} Unit Topik Pelajaran</span>
-                    </div>
+
                   </div>
 
                   <div className="pt-4 mt-3 border-t border-[#B8CFB3]/40 flex items-center justify-between gap-2">
@@ -520,9 +499,6 @@ export const SmpDashboard: React.FC = () => {
               <BookCheck className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-bold text-[#60795e] uppercase bg-[#F6E2E9] border border-[#B8CFB3] px-2 py-0.5 rounded-full shadow-sm inline-block">
-                Portal Siswa SMP
-              </span>
               <h2 className="text-base font-bold text-slate-900">{user?.name}</h2>
             </div>
           </div>

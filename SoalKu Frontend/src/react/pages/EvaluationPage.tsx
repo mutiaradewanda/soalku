@@ -98,11 +98,6 @@ export const EvaluationPage: React.FC = () => {
         {/* 1. Header Hero Banner */}
         <div className="rounded-3xl bg-gradient-to-r from-[#84A282] via-[#739071] to-[#60795e] p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
           <div className="space-y-3 relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-[#FEFAF3] border border-white/30 text-xs font-bold">
-              <Target className="w-3.5 h-3.5 text-[#FEFAF3]" />
-              <span>EVALUASI ADAPTIF & ANALISIS KELEMAHAN</span>
-            </div>
-
             <h1 className="text-2xl sm:text-3xl font-black">
               Analisis Titik Kelemahan & Rapor Belajar Siswa
             </h1>
@@ -182,17 +177,13 @@ export const EvaluationPage: React.FC = () => {
         <div className="bg-white border border-[#B8CFB3] rounded-3xl p-6 shadow-sm space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#B8CFB3]/60 pb-4">
             <div>
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-[#84A282]" />
-                <span>Tingkat Penguasaan Per Bagian Materi (Diurutkan dari Terlemah)</span>
+              <h3 className="text-base font-bold text-slate-900">
+                Tingkat Penguasaan Per Bagian Materi (Diurutkan dari Terlemah)
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 Topik dengan persentase di bawah 60% ditandai merah dan direkomendasikan untuk remedial kilat
               </p>
             </div>
-            <span className="text-xs font-semibold text-[#84A282] bg-[#F6E2E9] border border-[#B8CFB3] px-3 py-1 rounded-full self-start sm:self-auto">
-              {filteredTopik.length} Topik Terpantau
-            </span>
           </div>
 
           <div className="space-y-4">
@@ -307,10 +298,7 @@ export const EvaluationPage: React.FC = () => {
         {filteredTopik.length > 0 && (
           <div className="rounded-3xl bg-gradient-to-r from-[#84A282] via-[#739071] to-[#60795e] p-6 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1 text-center sm:text-left">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-white/20 text-[#FEFAF3]">
-                Langkah Belajar Selanjutnya
-              </span>
-              <h3 className="text-lg font-black mt-1">
+              <h3 className="text-lg font-black">
                 Remedial Topik Terlemah: "{filteredTopik[0].namaTopik}"
               </h3>
               <p className="text-xs text-[#FEFAF3]/90 max-w-xl">

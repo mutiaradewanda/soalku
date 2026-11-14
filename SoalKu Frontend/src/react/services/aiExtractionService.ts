@@ -1,31 +1,233 @@
 import { Materi, BagianMateri, SoalMateri, TingkatMateri } from "../types/materi";
 
-export interface HasilEkstraksiAI {
-  judul: string;
-  mataPelajaran: string;
-  bab: string;
-  deskripsi: string;
-  poinKunci: string[];
-  bagianMateri: BagianMateri[];
+const GEMINI_API_KEY =
+  (import.meta as any).env?.VITE_GEMINI_API_KEY ||
+  "AQ.Ab8RN6IXtPlxxCk4HjzPSa8eGOhn_R0y1FvAmGstx5Ymf59wNg";
+
+const GEMINI_MODEL =
+  (import.meta as any).env?.VITE_GEMINI_MODEL || "gemini-3.5-flash-lite";
+
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.includes(",") ? result.split(",")[1] : result;
+      resolve(base64);
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+};
+
+interface GeminiExtractedResponse {
+  judul?: string;
+  mataPelajaran?: string;
+  bab?: string;
+  deskripsi?: string;
+  poinKunci?: string[];
+  bagianMateri?: {
+    judulBagian?: string;
+    teksRingkasan?: string;
+    generatedSoal?: {
+      pertanyaan?: string;
+      opsi?: { label: "A" | "B" | "C" | "D"; teks: string; isBenar: boolean }[];
+      kunciJawaban?: string;
+      pembahasan?: string;
+      tingkatKesulitan?: "MUDAH" | "SEDANG" | "SULIT";
+    }[];
+  }[];
 }
 
 export const extractAndProcessDocument = async (
   fileName: string,
   rawText: string,
   tingkat: TingkatMateri,
-  fileSizeKb: number = 250
+  fileSizeKb: number = 250,
+  file?: File | null
 ): Promise<Materi> => {
-  // Simulasi progress AI latency
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
   const cleanTitle = fileName
     .replace(/\.[^/.]+$/, "")
     .replace(/[-_]/g, " ")
     .trim();
-
-  const textLower = (cleanTitle + " " + rawText).toLowerCase();
   const materiId = Date.now();
 
+  // 1. Coba Generate Nyata menggunakan Google Gemini API
+  if (GEMINI_API_KEY) {
+    try {
+      const parts: any[] = [];
+
+      const systemPrompt = `Anda adalah asisten AI kurikulum edukasi adaptif SoalKu untuk jenjang ${tingkat}.
+Tugas Anda adalah membaca dan menganalisis dokumen/materi pelajaran "${cleanTitle}", lalu menghasilkan ringkasan dan butir soal latihan pilihan ganda yang BENAR-BENAR BERDASARKAN DOKUMEN INI.
+
+Format respon HARUS berupa JSON murni (valid JSON) sesuai skema berikut:
+{
+  "judul": "${cleanTitle}",
+  "mataPelajaran": "Nama Mata Pelajaran (misal: Bahasa Inggris / IPA / Matematika / dll)",
+  "bab": "Bab 1 atau Unit 1",
+  "deskripsi": "Ringkasan konsep esensial materi 2-3 kalimat yang mudah dipahami siswa ${tingkat}",
+  "poinKunci": [
+    "Poin intisari 1",
+    "Poin intisari 2",
+    "Poin intisari 3"
+  ],
+  "bagianMateri": [
+    {
+      "judulBagian": "Nama Bagian/Subtopik",
+      "teksRingkasan": "Ringkasan penjelasan bagian materi ini",
+      "generatedSoal": [
+        {
+          "pertanyaan": "Kalimat pertanyaan berbasis isi materi",
+          "opsi": [
+            { "label": "A", "teks": "Teks opsi A", "isBenar": true },
+            { "label": "B", "teks": "Teks opsi B", "isBenar": false },
+            { "label": "C", "teks": "Teks opsi C", "isBenar": false }
+            ${tingkat === "SMP" ? ', { "label": "D", "teks": "Teks opsi D", "isBenar": false }' : ""}
+          ],
+          "kunciJawaban": "A",
+          "pembahasan": "Penjelasan mengapa jawaban tersebut benar",
+          "tingkatKesulitan": "MUDAH"
+        }
+      ]
+    }
+  ]
+}
+
+Aturan Khusus:
+1. Siswa SD: gunakan 3 opsi jawaban (A, B, C).
+2. Siswa SMP: gunakan 4 opsi jawaban (A, B, C, D).
+3. Buatkan minimal 2-3 soal latihan per bagian yang relevan langsung dengan teks/isi dokumen.
+4. HANYA berikan JSON murni, jangan sertakan backtick markdown seperti \`\`\`json.`;
+
+      if (file && (file.type === "application/pdf" || file.name.endsWith(".pdf"))) {
+        const base64Data = await fileToBase64(file);
+        parts.push({
+          inline_data: {
+            mime_type: "application/pdf",
+            data: base64Data,
+          },
+        });
+        parts.push({ text: systemPrompt });
+      } else if (rawText && rawText.length > 30) {
+        parts.push({
+          text: `Isi Materi Dokumen:\n"""\n${rawText.slice(0, 20000)}\n"""\n\n${systemPrompt}`,
+        });
+      } else {
+        parts.push({
+          text: `Materi Pelajaran: "${cleanTitle}".\n${systemPrompt}`,
+        });
+      }
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [{ parts }],
+          }),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const candidateText =
+          data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+        if (candidateText) {
+          // Bersihkan markdown ```json jika ada
+          const jsonText = candidateText
+            .replace(/^```json/im, "")
+            .replace(/^```/im, "")
+            .replace(/```$/im, "")
+            .trim();
+
+          const parsed: GeminiExtractedResponse = JSON.parse(jsonText);
+
+          if (parsed && parsed.bagianMateri && parsed.bagianMateri.length > 0) {
+            let sectionCounter = 1;
+            const mappedBagian: BagianMateri[] = parsed.bagianMateri.map(
+              (bm, idx) => {
+                const bmId = materiId + idx + 1;
+                const soalList: SoalMateri[] = (bm.generatedSoal || []).map(
+                  (s, sIdx) => {
+                    const validOpsi = (s.opsi || []).map((o, oIdx) => ({
+                      label: (["A", "B", "C", "D"][oIdx] || "A") as "A" | "B" | "C" | "D",
+                      teks: o.teks || "",
+                      isBenar: !!o.isBenar,
+                    }));
+
+                    // Pastikan ada setidaknya satu opsi benar
+                    if (!validOpsi.some((o) => o.isBenar) && validOpsi.length > 0) {
+                      validOpsi[0].isBenar = true;
+                    }
+
+                    const correctLabel =
+                      validOpsi.find((o) => o.isBenar)?.label || "A";
+
+                    return {
+                      id: bmId * 10 + sIdx + 1,
+                      bagianMateriId: bmId,
+                      pertanyaan: s.pertanyaan || `Pertanyaan terkait ${bm.judulBagian || cleanTitle}`,
+                      opsi: validOpsi,
+                      kunciJawaban: correctLabel,
+                      pembahasan: s.pembahasan || `Pembahasan materi ${cleanTitle}.`,
+                      tingkatKesulitan: s.tingkatKesulitan || "SEDANG",
+                    };
+                  }
+                );
+
+                return {
+                  id: bmId,
+                  materiId,
+                  judulBagian: bm.judulBagian || `Unit #${sectionCounter} ${cleanTitle}`,
+                  teksRingkasan:
+                    bm.teksRingkasan || `Ringkasan analisis AI untuk ${cleanTitle}.`,
+                  urutan: sectionCounter++,
+                  status: "DIGENERATE",
+                  generatedSoal: soalList,
+                };
+              }
+            );
+
+            return {
+              id: materiId,
+              judul: parsed.judul || cleanTitle,
+              tingkat,
+              bab: parsed.bab || "Bab 1",
+              mataPelajaran: parsed.mataPelajaran || (cleanTitle.toLowerCase().includes("inggris") ? "Bahasa Inggris" : "Tematik"),
+              deskripsi: parsed.deskripsi || `Hasil ekstraksi cerdas Gemini AI untuk materi ${cleanTitle}.`,
+              akurasi: 0,
+              status: "DIGENERATE",
+              namaFileAsli: fileName,
+              ukuranFileKb: fileSizeKb,
+              tanggalUpload: new Date().toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              }),
+              poinKunci: parsed.poinKunci && parsed.poinKunci.length > 0
+                ? parsed.poinKunci
+                : [
+                    `Konsep utama dari ${cleanTitle} telah dipetakan oleh AI.`,
+                    `Disesuaikan untuk kompetensi belajar ${tingkat}.`,
+                  ],
+              bagianMateri: mappedBagian,
+            };
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Gemini Live Generation gagal, beralih ke engine lokal fallback:", err);
+    }
+  }
+
+  // 2. Fallback Engine Lokal jika Gemini offline / error
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
+  const textLower = (cleanTitle + " " + rawText).toLowerCase();
   let mataPelajaran = "Ilmu Pengetahuan Alam (IPA)";
   let bab = "Bab 1.1";
   let ringkasanUtama = "";
@@ -99,232 +301,116 @@ export const extractAndProcessDocument = async (
             "Fungsi utama katup aorta pada saluran sirkulasi darah manusia adalah...",
             tingkat === "SD"
               ? [
-                  { label: "A", teks: "Menjaga agar darah tidak kembali ke bilik kiri", isBenar: true },
-                  { label: "B", teks: "Menyaring kotoran dan kuman", isBenar: false },
-                  { label: "C", teks: "Membuat darah menjadi berwarna merah", isBenar: false },
+                  { label: "A", teks: "Mencegah darah yang sudah keluar kembali lagi ke bilik kiri", isBenar: true },
+                  { label: "B", teks: "Mencampur darah kotor dan darah bersih", isBenar: false },
+                  { label: "C", teks: "Mempercepat detak jantung saat berolahraga", isBenar: false },
                 ]
               : [
-                  { label: "A", teks: "Mencegah aliran balik darah dari aorta ke bilik kiri saat ventrikel relaksasi", isBenar: true },
-                  { label: "B", teks: "Menerima darah kaya karbondioksida dari seluruh tubuh", isBenar: false },
-                  { label: "C", teks: "Mengatur pertukaran gas di alveolus", isBenar: false },
-                  { label: "D", teks: "Memicu kontraksi otomatis nodus sinoatrial (SA node)", isBenar: false },
+                  { label: "A", teks: "Mencegah aliran balik darah dari aorta kembali ke bilik kiri saat fase diastolik", isBenar: true },
+                  { label: "B", teks: "Mengalirkan darah kaya CO2 ke pembuluh vena kava", isBenar: false },
+                  { label: "C", teks: "Mengatur volume sekresi plasma getah bening", isBenar: false },
+                  { label: "D", teks: "Menyaring hemoglobin yang telah rusak", isBenar: false },
                 ],
             "A",
-            "Katup aorta memastikan aliran darah selalu searah menuju sistemik tubuh dan tidak membalik ke ventrikel kiri.",
+            "Katup aorta menjaga aliran darah tetap satu arah keluar dari jantung menuju seluruh sistem sirkulasi.",
             "SEDANG"
           ),
         ],
       },
     ];
-  } else if (textLower.includes("cerna") || textLower.includes("lambung") || textLower.includes("enzim")) {
-    mataPelajaran = "IPA Biologi";
-    bab = "Bab 4.1";
+  } else if (textLower.includes("inggris") || textLower.includes("english")) {
+    mataPelajaran = "Bahasa Inggris";
+    bab = "Unit 1";
     ringkasanUtama =
       tingkat === "SD"
-        ? "Makanan yang kita makan masuk melalui mulut, dikunyah dengan gigi dan enzim ludah, lalu dicerna di lambung dan diserap gizinya di usus halus."
-        : "Proses pencernaan manusia melibatkan pencernaan mekanik dan kimiawi. Di lambung diproduksi enzim pepsin, renin, dan asam klorida (HCl). Penyerapan nutrisi makanan berlangsung di vili usus halus.";
+        ? "Belajar kosakata dasar Bahasa Inggris, ungkapan sapaan, dan pemahaman teks sederhana."
+        : "Grammar, reading comprehension, vocabulary in context, and daily conversational English.";
 
     poinKunci = [
-      "Pencernaan mekanik dilakukan dengan gerakan mengunyah dan peristaltik otot saluran cerna.",
-      "Enzim ptialin (amilase) di mulut menguraikan zat tepung (amilum) menjadi maltosa.",
-      "Lambung menghasilkan getah lambung dengan rumus hafalan AI: [R-P-L] -> Renin, Pepsin, Lambung (asam HCl).",
-      "Vili pada dinding usus halus memperluas bidang penyerapan sari-sari makanan.",
+      "Perhatikan subjek kalimat (I, You, He, She, It, We, They).",
+      "Gunakan to be yang tepat: am, is, are sesuai subjek.",
+      "Kosa kata kontekstual mempermudah pemahaman paragraf.",
     ];
 
     const bmId1 = materiId + 1;
-    const bmId2 = materiId + 2;
-
     bagianList = [
       {
         id: bmId1,
         materiId,
-        judulBagian: "Pencernaan Lambung & Enzim Getah Lambung",
-        teksRingkasan:
-          "Di dalam ventrikulus (lambung), makanan dihancurkan secara kimiawi oleh enzim pepsin (pengurai protein menjadi pepton), renin (pengendap kasein susu), dan asam HCl (disinfektan kuman patogen).",
+        judulBagian: "Vocabulary & Daily Expressions",
+        teksRingkasan: "Memahami penggunaan kosakata esensial dan ungkapan percakapan sehari-hari.",
         urutan: 1,
         status: "DIGENERATE",
         generatedSoal: [
           createSoal(
             bmId1 * 10 + 1,
             bmId1,
-            "Peran utama asam lambung (HCl) dalam sistem pencernaan kimiawi lambung adalah...",
+            "What is the appropriate greeting when meeting your teacher in the morning?",
             tingkat === "SD"
               ? [
-                  { label: "A", teks: "Membunuh kuman penyakit dan mengaktifkan enzim", isBenar: true },
-                  { label: "B", teks: "Mengubah karbohidrat menjadi gula manis", isBenar: false },
-                  { label: "C", teks: "Membantu menelan makanan padat", isBenar: false },
+                  { label: "A", teks: "Good morning", isBenar: true },
+                  { label: "B", teks: "Good night", isBenar: false },
+                  { label: "C", teks: "Good evening", isBenar: false },
                 ]
               : [
-                  { label: "A", teks: "Membunuh kuman patogen serta mengaktifkan pepsinogen menjadi pepsin", isBenar: true },
-                  { label: "B", teks: "Mengemulsikan lemak menjadi asam lemak dan gliserol", isBenar: false },
-                  { label: "C", teks: "Mengubah maltosa menjadi glukosa sederhana", isBenar: false },
-                  { label: "D", teks: "Menyerap sisa cairan air di kolon desenden", isBenar: false },
+                  { label: "A", teks: "Good morning, Sir / Ma'am", isBenar: true },
+                  { label: "B", teks: "Good night, have a sweet dream", isBenar: false },
+                  { label: "C", teks: "See you yesterday", isBenar: false },
+                  { label: "D", teks: "Good bye forever", isBenar: false },
                 ],
             "A",
-            "Asam klorida (HCl) menciptakan suasana asam (pH 1-2) untuk membunuh bakteri makanan dan mengaktifkan pepsin.",
+            "Good morning adalah sapaan santun di pagi hari.",
             "MUDAH"
-          ),
-        ],
-      },
-      {
-        id: bmId2,
-        materiId,
-        judulBagian: "Penyerapan Nutrisi di Intestinum (Usus Halus)",
-        teksRingkasan:
-          "Usus halus terdiri dari duodenum, jejenum, dan ileum. Dinding ileum dipenuhi jonjot usus (vili) yang menyerap asam amino, glukosa, vitamin, dan mineral ke aliran darah kapiler.",
-        urutan: 2,
-        status: "DIGENERATE",
-        generatedSoal: [
-          createSoal(
-            bmId2 * 10 + 1,
-            bmId2,
-            "Mengapa permukaan dalam usus halus berlipat-lipat dan memiliki banyak vili (jonjot usus)?",
-            tingkat === "SD"
-              ? [
-                  { label: "A", teks: "Agar penyerapan sari makanan menjadi lebih luas dan cepat", isBenar: true },
-                  { label: "B", teks: "Agar makanan tidak cepat membusuk", isBenar: false },
-                  { label: "C", teks: "Untuk menyimpan cadangan air", isBenar: false },
-                ]
-              : [
-                  { label: "A", teks: "Memperluas bidang permukaan untuk memaksimalkan absorpsi sari makanan", isBenar: true },
-                  { label: "B", teks: "Memperlambat laju makanan agar enzim bekerja berulang", isBenar: false },
-                  { label: "C", teks: "Mencegah asam lambung masuk ke peredaran darah", isBenar: false },
-                  { label: "D", teks: "Menghasilkan sel darah merah baru bagi tubuh", isBenar: false },
-                ],
-            "A",
-            "Vili dan mikrovili meningkatkan luas permukaan usus halus hingga puluhan kali lipat sehingga nutrisi terserap efektif.",
-            "SEDANG"
-          ),
-        ],
-      },
-    ];
-  } else if (textLower.includes("aljabar") || textLower.includes("matematika") || textLower.includes("kuadrat")) {
-    mataPelajaran = "Matematika";
-    bab = "Bab 3.2";
-    ringkasanUtama =
-      "Aljabar mempelajari hubungan variabel, koefisien, dan konstanta. Konsep faktorisasi aljabar kuadrat sangat penting untuk menyederhanakan perhitungan pecahan aljabar.";
-
-    poinKunci = [
-      "Variabel adalah lambang pengganti bilangan (misal x, y, z).",
-      "Koefisien adalah angka pengali di depan variabel (pada 5x, angka 5 adalah koefisien).",
-      "Rumus Selisih Kuadrat AI: a² - b² = (a + b)(a - b).",
-    ];
-
-    const bmId1 = materiId + 1;
-    bagianList = [
-      {
-        id: bmId1,
-        materiId,
-        judulBagian: "Faktorisasi Bentuk Selisih Dua Kuadrat",
-        teksRingkasan:
-          "Bentuk selisih dua kuadrat a² - b² selalu dapat difaktorkan menjadi perkalian suku sekawan: (a + b)(a - b).",
-        urutan: 1,
-        status: "DIGENERATE",
-        generatedSoal: [
-          createSoal(
-            bmId1 * 10 + 1,
-            bmId1,
-            "Hasil faktorisasi dari bentuk aljabar x² - 25 adalah...",
-            [
-              { label: "A", teks: "(x + 5)(x - 5)", isBenar: true },
-              { label: "B", teks: "(x - 5)(x - 5)", isBenar: false },
-              { label: "C", teks: "(x + 5)(x + 5)", isBenar: false },
-              { label: "D", teks: "(x - 25)(x + 1)", isBenar: false },
-            ],
-            "A",
-            "Sesuai rumus a² - b² = (a + b)(a - b), di mana a = x dan b = 5.",
-            "SEDANG"
           ),
         ],
       },
     ];
   } else {
-    // Topik Umum / Dokumen Kustom yang diunggah siswa
-    mataPelajaran = tingkat === "SD" ? "Tematik Terpadu" : "Materi Terpadu";
-    bab = "Bab Ekstraksi Mandiri";
-    ringkasanUtama =
-      tingkat === "SD"
-        ? `Dokumen "${cleanTitle}" telah berhasil disederhanakan oleh AI ke bahasa yang mudah dipelajari. Pelajari poin penting di bawah ini untuk meningkatkan prestasimu!`
-        : `Hasil ekstraksi komprehensif dokumen "${cleanTitle}". Materi dianalisis berdasarkan struktur topik esensial, menghasilkan rangkuman fokus dan butir latihan adaptif siap uji.`;
-
+    mataPelajaran = "Tematik Terpadu";
+    bab = "Bab 1";
+    ringkasanUtama = `Ringkasan komprehensif materi ${cleanTitle} untuk pembelajaran mandiri ${tingkat}.`;
     poinKunci = [
       `Konsep esensial dari berkas ${cleanTitle} telah dipetakan ke dalam unit topik berjenjang.`,
-      "Pemahaman konsep dasar diperkuat dengan latihan adaptif berkala.",
-      "Gunakan fitur Generate Ulang jika ingin memperluas variasi butir soal latihan.",
+      `Pemahaman konsep dasar diperkuat dengan latihan adaptif berkala.`,
+      `Gunakan fitur Generate Ulang jika ingin memperluas variasi butir soal latihan.`,
     ];
 
     const bmId1 = materiId + 1;
-    const bmId2 = materiId + 2;
-
     bagianList = [
       {
         id: bmId1,
         materiId,
         judulBagian: `Konsep Utama: ${cleanTitle}`,
-        teksRingkasan:
-          rawText.trim().length > 30
-            ? rawText.trim().slice(0, 280) + "..."
-            : `Ringkasan materi "${cleanTitle}" yang diekstraksi secara otomatis melalui mesin kecerdasan buatan SoalKu.`,
+        teksRingkasan: `Ringkasan materi "${cleanTitle}" yang diekstraksi secara otomatis melalui mesin kecerdasan buatan SoalKu.`,
         urutan: 1,
         status: "DIGENERATE",
         generatedSoal: [
           createSoal(
             bmId1 * 10 + 1,
             bmId1,
-            `Berdasarkan ringkasan materi ${cleanTitle}, apakah simpulan utama yang tepat?`,
+            `Berdasarkan materi ${cleanTitle}, apakah pemahaman utama yang paling mendasar?`,
             tingkat === "SD"
               ? [
-                  { label: "A", teks: "Konsep materi dapat dipahami melalui pengamatan teratur", isBenar: true },
-                  { label: "B", teks: "Materi ini hanya berlaku untuk hafalan sesaat", isBenar: false },
-                  { label: "C", teks: "Tidak ada hubungan antara teori dan praktik", isBenar: false },
+                  { label: "A", teks: `Memahami konsep pokok materi ${cleanTitle} dengan saksama`, isBenar: true },
+                  { label: "B", teks: "Mengabaikan penjelasan penting dalam modul", isBenar: false },
+                  { label: "C", teks: "Hanya menghafal tanpa memahami isi", isBenar: false },
                 ]
               : [
-                  { label: "A", teks: "Pemahaman konsep mendalam diperoleh melalui penguasaan teori dan latihan berulang", isBenar: true },
-                  { label: "B", teks: "Penilaian hasil belajar tidak memerlukan evaluasi berbasis data", isBenar: false },
-                  { label: "C", teks: "Struktur materi bersifat acak tanpa keterkaitan topik", isBenar: false },
-                  { label: "D", teks: "Seluruh variabel bernilai konstan dan tidak berubah", isBenar: false },
+                  { label: "A", teks: `Menganalisis prinsip inti konsep materi ${cleanTitle}`, isBenar: true },
+                  { label: "B", teks: "Menyimpulkan data tanpa dasar teori yang valid", isBenar: false },
+                  { label: "C", teks: "Mengabaikan struktur hubungan sebab-akibat", isBenar: false },
+                  { label: "D", teks: "Hanya mengandalkan intuisi spekulatif", isBenar: false },
                 ],
             "A",
-            "Simpulan ditarik berdasarkan gagasan pokok teks materi yang diunggah.",
+            "Pemahaman mendasar berfokus pada penguasaan konsep pokok materi.",
             "SEDANG"
-          ),
-        ],
-      },
-      {
-        id: bmId2,
-        materiId,
-        judulBagian: `Penerapan & Evaluasi: ${cleanTitle}`,
-        teksRingkasan:
-          `Bagian penguatan aplikasi konsep dan evaluasi adaptif untuk menguji ketuntasan belajar siswa pada topik ${cleanTitle}.`,
-        urutan: 2,
-        status: "DIGENERATE",
-        generatedSoal: [
-          createSoal(
-            bmId2 * 10 + 1,
-            bmId2,
-            `Langkah penerapan konsep ${cleanTitle} dalam kehidupan sehari-hari adalah...`,
-            tingkat === "SD"
-              ? [
-                  { label: "A", teks: "Mempraktikkan kebiasaan baik dan mencatat hasilnya", isBenar: true },
-                  { label: "B", teks: "Mengabaikan petunjuk dan aturan keselamatan", isBenar: false },
-                  { label: "C", teks: "Menunggu jawaban dari orang lain", isBenar: false },
-                ]
-              : [
-                  { label: "A", teks: "Mengidentifikasi masalah, menganalisis data, dan menarik solusi berbasis bukti", isBenar: true },
-                  { label: "B", teks: "Mengambil keputusan secara spekulatif tanpa pembuktian", isBenar: false },
-                  { label: "C", teks: "Menolak inovasi teknologi dalam metode pembelajaran", isBenar: false },
-                  { label: "D", teks: "Mengabaikan kaidah ilmiah dalam observasi", isBenar: false },
-                ],
-            "A",
-            "Penerapan didasarkan pada metode pemecahan masalah yang sistematis.",
-            "MUDAH"
           ),
         ],
       },
     ];
   }
 
-  const newMateri: Materi = {
+  return {
     id: materiId,
     judul: cleanTitle || "Materi Pembelajaran AI",
     tingkat,
@@ -343,8 +429,6 @@ export const extractAndProcessDocument = async (
     poinKunci,
     bagianMateri: bagianList,
   };
-
-  return newMateri;
 };
 
 const createSoal = (

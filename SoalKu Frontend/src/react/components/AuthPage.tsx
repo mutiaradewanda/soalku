@@ -231,9 +231,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
               <div className="p-2 rounded-xl bg-white/20 backdrop-blur-md border border-white/20 shadow-inner">
                 {themeConfig.icon}
               </div>
-              <span className="text-xs font-semibold px-2.5 py-0.5 bg-white/20 rounded-full border border-white/25">
-                {themeConfig.badge}
-              </span>
             </div>
 
             <button
