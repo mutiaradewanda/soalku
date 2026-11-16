@@ -7,11 +7,9 @@ import {
   HelpCircle,
   ArrowRight,
   RotateCcw,
-  Home,
   BookOpen,
   Sparkles,
   Flame,
-  Target,
   BarChart3,
   Layers,
   ChevronDown,
@@ -96,13 +94,8 @@ export const SessionResultPage: React.FC = () => {
             onClick={handleBackToDashboard}
             className="inline-flex items-center gap-1.5 text-xs text-slate-700 hover:text-[#84A282] transition px-3 py-1.5 rounded-xl bg-white border border-[#B8CFB3] shadow-sm font-medium"
           >
-            <Home className="w-4 h-4" />
             <span>Ke Dasbor Siswa</span>
           </button>
-
-          <span className="text-xs font-semibold text-[#84A282] bg-[#F6E2E9] border border-[#B8CFB3] px-3 py-1 rounded-full">
-            {currentSession.idSesi} • Selesai
-          </span>
         </div>
 
         {/* Anti-Cheat Violation Banner (jika terdeteksi auto-submit atau pelanggaran) */}
@@ -112,11 +105,8 @@ export const SessionResultPage: React.FC = () => {
               <AlertOctagon className="w-6 h-6" />
             </div>
             <div className="space-y-1">
-              <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <span>Sesi Dihentikan Otomatis oleh Sistem CBT</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-200 text-rose-800">
-                  3 Pelanggaran Terdeteksi
-                </span>
+              <h3 className="font-bold text-slate-900 text-sm">
+                Sesi Dihentikan Otomatis oleh Sistem CBT
               </h3>
               <p className="text-xs text-rose-700 leading-relaxed">
                 Ujian Anda telah di-submit secara otomatis karena terdeteksi meninggalkan halaman pengerjaan (berpindah tab browser atau jendela aplikasi lain) sebanyak 3 kali. Hasil jawaban yang sudah diisi tetap dinilai.
@@ -141,14 +131,6 @@ export const SessionResultPage: React.FC = () => {
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-800 border border-emerald-300">
-                  ✓ LULUS / TUNTAS (NILAI &gt;= 70)
-                </span>
-                <span className="text-xs font-bold text-emerald-900">
-                  Laporan Otomatis Terkirim ke Guru
-                </span>
-              </div>
               <h3 className="font-bold text-emerald-950 text-sm">
                 Selamat! Anda Dinyatakan Lulus Remedial dengan Nilai {skor}
               </h3>
@@ -163,11 +145,6 @@ export const SessionResultPage: React.FC = () => {
               <RotateCcw className="w-6 h-6" />
             </div>
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-800 border border-amber-300">
-                  BELUM MENCAPAI KKM 70 (NILAI: {skor})
-                </span>
-              </div>
               <h3 className="font-bold text-amber-950 text-sm">
                 Nilai Remedial Belum Memenuhi Syarat Kelulusan Minimal 70
               </h3>
@@ -182,10 +159,6 @@ export const SessionResultPage: React.FC = () => {
         <div className="rounded-3xl bg-gradient-to-r from-[#84A282] via-[#739071] to-[#60795e] p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold">
-                <span>HASIL SESI UJIAN • {currentSession.mode.replace("_", " ")}</span>
-              </div>
-
               <div>
                 <h1 className="text-2xl sm:text-3xl font-black">
                   {isLulus ? "Kerja Bagus! Penguasaan Materi Tuntas" : "Perlu Remedial Pada Materi Tertentu"}
@@ -198,9 +171,6 @@ export const SessionResultPage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-3 pt-1">
-                <span className="px-3 py-1 rounded-full bg-[#F6E2E9] text-[#739071] text-xs font-bold border border-[#B8CFB3] flex items-center gap-1.5">
-                  <span>+{xpDidapat} XP Diperoleh</span>
-                </span>
                 <span className="text-xs text-[#FEFAF3]">
                   {currentSession.subjek} • {currentSession.mapel}
                 </span>
@@ -258,13 +228,9 @@ export const SessionResultPage: React.FC = () => {
         <div className="bg-white border border-[#B8CFB3] rounded-3xl p-6 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#B8CFB3]/60 pb-4">
             <div>
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Target className="w-5 h-5 text-[#84A282]" />
-                <span>Analisis Butir Soal & Kunci Jawaban</span>
+              <h3 className="text-base font-bold text-slate-900">
+                Analisis Butir Soal & Kunci Jawaban
               </h3>
-              <p className="text-xs text-slate-500">
-                Tinjau kunci jawaban benar dan pembahasan komprehensif dari AI
-              </p>
             </div>
 
             {/* Filter Buttons */}
@@ -329,15 +295,6 @@ export const SessionResultPage: React.FC = () => {
                       </span>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span
-                            className={`text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
-                              isBenar
-                                ? "bg-[#B8CFB3] text-[#243822] border-[#84A282]"
-                                : "bg-[#F6E2E9] text-rose-900 border-rose-300"
-                            }`}
-                          >
-                            {isBenar ? "Jawaban Benar" : "Perlu Evaluasi"}
-                          </span>
                           <span className="text-[11px] text-slate-600 font-semibold">{soal.topik}</span>
                         </div>
                         <p className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
@@ -411,7 +368,6 @@ export const SessionResultPage: React.FC = () => {
             onClick={handleBackToDashboard}
             className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white hover:bg-[#FEFAF3] text-slate-700 font-bold text-xs flex items-center justify-center gap-2 border border-[#B8CFB3] shadow-sm transition"
           >
-            <Home className="w-4 h-4" />
             <span>Kembali ke Dasbor Siswa</span>
           </button>
 
@@ -419,8 +375,7 @@ export const SessionResultPage: React.FC = () => {
             onClick={handleRestart}
             className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[#84A282]/20 transition"
           >
-            <RotateCcw className="w-4 h-4" />
-            <span>Ulangi Latihan (Sesi Baru)</span>
+            <span>Ulangi Latihan</span>
           </button>
         </div>
       </div>

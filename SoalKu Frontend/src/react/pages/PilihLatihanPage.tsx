@@ -65,9 +65,6 @@ export const PilihLatihanPage: React.FC = () => {
         {/* Banner Header */}
         <div className="rounded-3xl bg-gradient-to-r from-[#84A282] via-[#739071] to-[#60795e] p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
           <div className="relative z-10 space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold">
-              <span>Simulasi Ujian Sesuai PRD Section 10 & 11</span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-black">Konfigurasi Mode Sesi Belajar</h1>
             <p className="text-[#FEFAF3]/90 text-xs sm:text-sm max-w-xl">
               Pilih metode simulasi yang paling sesuai dengan target belajarmu hari ini, kemudian tentukan jumlah butir soal latihan.

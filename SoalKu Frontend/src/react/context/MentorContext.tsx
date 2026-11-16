@@ -33,6 +33,10 @@ interface MentorContextType {
   // Kode Undangan Actions
   createKodeUndangan: (targetTingkat: "SD" | "SMP" | "SEMUA", customPrefix?: string) => KodeUndangan;
   salinKodeUndangan: (kode: string) => void;
+  redeemKodeUndangan: (
+    kode: string,
+    studentTingkat?: "SD" | "SMP"
+  ) => { success: boolean; message: string; kodeObj?: KodeUndangan };
 
   // Helper getters
   getPendingCount: () => number;
@@ -712,6 +716,49 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     navigator.clipboard?.writeText(kode);
   };
 
+  const redeemKodeUndangan = (
+    kodeInput: string,
+    studentTingkat?: "SD" | "SMP"
+  ): { success: boolean; message: string; kodeObj?: KodeUndangan } => {
+    const clean = kodeInput.trim().toUpperCase();
+    if (!clean) {
+      return { success: false, message: "Silakan masukkan kode undangan." };
+    }
+
+    const found = kodeUndanganList.find((k) => k.kode.toUpperCase() === clean);
+    if (!found) {
+      return {
+        success: false,
+        message: "Kode undangan tidak ditemukan atau belum didaftarkan guru.",
+      };
+    }
+
+    if (found.status !== "AKTIF") {
+      return {
+        success: false,
+        message: "Kode undangan ini sudah tidak aktif.",
+      };
+    }
+
+    if (studentTingkat && found.targetTingkat !== "SEMUA" && found.targetTingkat !== studentTingkat) {
+      return {
+        success: false,
+        message: `Kode ini khusus untuk jenjang ${found.targetTingkat}. Akun Anda terdaftar di jenjang ${studentTingkat}.`,
+      };
+    }
+
+    // Increment usage
+    setKodeUndanganList((prev) =>
+      prev.map((k) => (k.id === found.id ? { ...k, totalDipakai: (k.totalDipakai || 0) + 1 } : k))
+    );
+
+    return {
+      success: true,
+      message: `Selamat! Kamu berhasil terhubung ke kelas bimbingan ${found.dibuatOleh}!`,
+      kodeObj: found,
+    };
+  };
+
   const getPendingCount = () => soalList.filter((s) => s.statusReview === "MENUNGGU").length;
   const getApprovedCount = () => soalList.filter((s) => s.statusReview === "DISETUJUI").length;
   const getRejectedCount = () => soalList.filter((s) => s.statusReview === "DITOLAK").length;
@@ -734,6 +781,7 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         catatHasilRemedial,
         createKodeUndangan,
         salinKodeUndangan,
+        redeemKodeUndangan,
         getPendingCount,
         getApprovedCount,
         getRejectedCount,

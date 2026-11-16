@@ -145,10 +145,6 @@ export const MentorReviewPage: React.FC = () => {
         {/* 1. Hero Banner */}
         <div className="rounded-3xl bg-gradient-to-r from-[#84A282] via-[#739071] to-[#60795e] p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
           <div className="space-y-3 relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold text-[#FEFAF3]">
-              <span>PORTAL GURU & MENTOR • KURASI BANK SOAL AI</span>
-            </div>
-
             <h1 className="text-2xl sm:text-3xl font-black">
               Review Soal AI & Manajemen Bank Soal
             </h1>

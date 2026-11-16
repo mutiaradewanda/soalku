@@ -294,8 +294,8 @@ export const EvaluationPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 5. Rekomendasi Remedial Box */}
-        {filteredTopik.length > 0 && (
+        {/* 5. Rekomendasi Remedial Box (Khusus Siswa, tidak ditampilkan untuk Guru) */}
+        {user?.role !== "guru" && filteredTopik.length > 0 && (
           <div className="rounded-3xl bg-gradient-to-r from-[#84A282] via-[#739071] to-[#60795e] p-6 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1 text-center sm:text-left">
               <h3 className="text-lg font-black">

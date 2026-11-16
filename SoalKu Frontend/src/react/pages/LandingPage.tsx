@@ -230,10 +230,7 @@ export const LandingPage: React.FC = () => {
             {/* Card SD */}
             <div className="rounded-3xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] p-8 flex flex-col justify-between transition-colors shadow-sm">
               <div>
-                <span className="text-xs font-bold text-[#60795e] uppercase tracking-wider bg-[#F6E2E9] px-2.5 py-1 rounded-full border border-[#B8CFB3]">
-                  Kelas 1 – 6
-                </span>
-                <h3 className="text-xl font-bold text-slate-900 mt-4 mb-3">
+                <h3 className="text-xl font-bold text-slate-900 mb-3">
                   Portal Siswa SD
                 </h3>
                 <p className="text-sm text-slate-600 leading-relaxed mb-6">
@@ -269,10 +266,7 @@ export const LandingPage: React.FC = () => {
                 Populer
               </div>
               <div>
-                <span className="text-xs font-bold text-[#60795e] uppercase tracking-wider bg-[#B8CFB3]/40 px-2.5 py-1 rounded-full border border-[#B8CFB3]">
-                  Kelas 7 – 9
-                </span>
-                <h3 className="text-xl font-bold text-slate-900 mt-4 mb-3">
+                <h3 className="text-xl font-bold text-slate-900 mb-3">
                   Portal Siswa SMP
                 </h3>
                 <p className="text-sm text-slate-600 leading-relaxed mb-6">
@@ -305,10 +299,7 @@ export const LandingPage: React.FC = () => {
             {/* Card Guru */}
             <div className="rounded-3xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] p-8 flex flex-col justify-between transition-colors shadow-sm">
               <div>
-                <span className="text-xs font-bold text-[#60795e] uppercase tracking-wider bg-[#F6E2E9] px-2.5 py-1 rounded-full border border-[#B8CFB3]">
-                  Pendidik &amp; Mentor
-                </span>
-                <h3 className="text-xl font-bold text-slate-900 mt-4 mb-3">
+                <h3 className="text-xl font-bold text-slate-900 mb-3">
                   Portal Guru
                 </h3>
                 <p className="text-sm text-slate-600 leading-relaxed mb-6">
@@ -440,13 +431,7 @@ export const LandingPage: React.FC = () => {
 
       {/* Footer */}
       <footer className="border-t border-[#B8CFB3]/40 py-10 text-sm text-slate-600 relative z-10 bg-[#FEFAF3]">
-        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <DragonMascot variant="logo" className="w-6 h-6" />
-            <span className="font-bold text-slate-900">SoalKu</span>
-            <span>© 2026</span>
-          </div>
-
+        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <div className="flex items-center gap-6">
             <Link to="/login?role=sd" className="hover:text-[#84A282] transition-colors">
               Portal SD

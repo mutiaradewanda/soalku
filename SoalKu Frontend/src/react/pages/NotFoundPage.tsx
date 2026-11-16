@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { AlertTriangle, Home, LayoutDashboard, ArrowLeft } from "lucide-react";
+import { AlertTriangle, LayoutDashboard, ArrowLeft } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export const NotFoundPage: React.FC = () => {
@@ -33,7 +33,6 @@ export const NotFoundPage: React.FC = () => {
             to="/"
             className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white hover:bg-[#FEFAF3] text-slate-700 font-semibold text-xs flex items-center justify-center gap-2 border border-[#B8CFB3] shadow-sm transition"
           >
-            <Home className="w-4 h-4" />
             <span>Kembali ke Beranda</span>
           </Link>
 

@@ -25,10 +25,8 @@ import {
   Clock,
   Shuffle,
   ShieldAlert,
-  Home,
   CheckCircle,
   FileText,
-  KeyRound,
   BarChart2,
   ChevronRight,
   Star,
@@ -36,7 +34,6 @@ import {
   FileUp,
   Layers,
   Trash2,
-  Eye,
   Plus,
   BookOpen,
   CheckCircle2,
@@ -156,30 +153,32 @@ export const SdDashboard: React.FC = () => {
         {/* Top Navbar */}
         <div className="flex items-center justify-between bg-white rounded-2xl p-4 border border-[#B8CFB3] border-b-4 border-b-[#84A282]/50 shadow-lg shadow-black/8">
           <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="p-2 rounded-xl bg-[#FEFAF3] hover:bg-[#F6E2E9]/50 text-slate-700 transition border border-[#B8CFB3]/50 border-b-2 border-b-[#B8CFB3] shadow-sm active:translate-y-0.5"
-              title="Ke Halaman Depan"
-            >
-              <Home className="w-4 h-4" />
-            </Link>
+            <div className="p-2.5 bg-[#B8CFB3]/40 rounded-xl text-[#60795e] border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] shadow-sm">
+              <BookCheck className="w-5 h-5" />
+            </div>
             <div>
-              <h2 className="text-base font-bold text-slate-800">{user?.name || "Adit Pratama"}</h2>
+              <h2 className="text-base font-bold text-slate-900">{user?.name}</h2>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               to="/evaluasi"
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#F6E2E9] hover:bg-[#F6E2E9]/80 text-[#60795e] rounded-xl text-xs font-bold transition border border-[#B8CFB3]/50 border-b-2 border-b-[#B8CFB3] shadow-sm active:translate-y-0.5"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-[#FEFAF3] hover:bg-[#F6E2E9]/50 text-[#739071] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-xs font-bold transition shadow-sm active:translate-y-0.5"
             >
-              <BarChart2 className="w-4 h-4" />
-              <span>Rapor Belajar</span>
+              <Target className="w-4 h-4 text-[#84A282]" />
+              <span>Rapor Evaluasi</span>
             </Link>
+            <button
+              onClick={() => navigate("/latihan")}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#84A282] hover:bg-[#739071] text-white rounded-xl text-xs font-bold border-b-2 border-b-[#60795e] shadow-md shadow-[#84A282]/30 active:translate-y-0.5 transition"
+            >
+              <span>Mulai CBT Adaptif</span>
+            </button>
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#84A282] hover:bg-[#739071] disabled:opacity-60 text-white rounded-xl text-xs font-bold border-b-2 border-b-[#60795e] shadow-md shadow-[#84A282]/30 active:translate-y-0.5 transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#60795e] hover:bg-[#4e634d] disabled:opacity-60 text-white rounded-xl text-xs font-bold border-b-2 border-b-[#40523e] shadow-sm active:translate-y-0.5 transition"
             >
               {isUploading ? (
                 <>
@@ -189,7 +188,7 @@ export const SdDashboard: React.FC = () => {
               ) : (
                 <>
                   <UploadCloud className="w-4 h-4" />
-                  <span>Unggah Materi PDF</span>
+                  <span>Unggah Modul PDF</span>
                 </>
               )}
             </button>
@@ -219,23 +218,13 @@ export const SdDashboard: React.FC = () => {
 
         {/* Direct Upload Dropzone Card for SD */}
         <div className="bg-white rounded-3xl p-6 border border-[#B8CFB3] shadow-sm space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#B8CFB3]/40 pb-3">
-            <div>
-              <h3 className="text-base font-bold text-slate-800">
-                Pusat Unggah Modul Belajar Siswa (PDF / DOCX)
-              </h3>
-              <p className="text-xs text-slate-500">
-                Pilih atau seret berkas materi pelajaran (Maks 10 MB) untuk langsung diringkas otomatis oleh AI ramah anak.
-              </p>
-            </div>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="px-4 py-2 bg-[#FEFAF3] hover:bg-[#F6E2E9] disabled:opacity-50 text-[#60795e] font-bold rounded-xl text-xs border border-[#B8CFB3] flex items-center gap-1.5 transition self-start sm:self-auto shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Pilih Berkas Dari Komputer</span>
-            </button>
+          <div className="border-b border-[#B8CFB3]/40 pb-3">
+            <h3 className="text-base font-bold text-slate-800">
+              Pusat Unggah Modul Belajar Siswa (PDF / DOCX)
+            </h3>
+            <p className="text-xs text-slate-500">
+              Pilih atau seret berkas materi pelajaran (Maks 10 MB) untuk langsung diringkas otomatis oleh AI ramah anak.
+            </p>
           </div>
 
           {/* Upload Status Alerts */}
@@ -269,11 +258,10 @@ export const SdDashboard: React.FC = () => {
                 handleDirectUpload(e.dataTransfer.files[0]);
               }
             }}
-            className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition flex flex-col items-center gap-2 ${
-              isDragging
+            className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition flex flex-col items-center gap-2 ${isDragging
                 ? "border-[#84A282] bg-[#F6E2E9]/60 scale-[1.01]"
                 : "border-[#B8CFB3] hover:border-[#84A282] bg-[#FEFAF3]/60 hover:bg-[#F6E2E9]/40"
-            }`}
+              }`}
           >
             {isUploading ? (
               <div className="flex flex-col items-center gap-3 py-2">
@@ -308,8 +296,7 @@ export const SdDashboard: React.FC = () => {
         {/* Modul Belajar Siswa SD */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-800">Modul Belajar Mandiri SD ({sdMateriList.length} Modul)</h3>
-            <span className="text-xs text-slate-500">Klik modul untuk melihat ringkasan & butir soal AI</span>
+            <h3 className="text-base font-bold text-slate-800">Modul Belajar Mandiri SD</h3>
           </div>
 
           {sdMateriList.length === 0 ? (
@@ -328,9 +315,6 @@ export const SdDashboard: React.FC = () => {
                       <span className="px-2 py-0.5 rounded-full bg-[#F6E2E9] text-[#60795e] border border-[#B8CFB3]/60">
                         {materi.bab} • {materi.mataPelajaran}
                       </span>
-                      <span className="text-[#60795e] bg-[#B8CFB3]/40 border border-[#B8CFB3]/60 px-2 py-0.5 rounded-full">
-                        {materi.status}
-                      </span>
                     </div>
 
                     <h4 className="font-bold text-slate-800 text-sm group-hover:text-[#60795e] transition-colors">
@@ -340,8 +324,6 @@ export const SdDashboard: React.FC = () => {
                     <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
                       {materi.deskripsi}
                     </p>
-
-
                   </div>
 
                   <div className="pt-4 mt-3 border-t border-[#B8CFB3]/40 flex items-center justify-between gap-2">
@@ -349,7 +331,6 @@ export const SdDashboard: React.FC = () => {
                       onClick={() => setDetailMateri(materi)}
                       className="flex-1 py-2 bg-[#FEFAF3] hover:bg-[#84A282] text-[#60795e] hover:text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 border border-[#B8CFB3] transition shadow-sm"
                     >
-                      <Eye className="w-3.5 h-3.5" />
                       <span>Buka Modul</span>
                     </button>
                     <button
@@ -488,13 +469,6 @@ export const SmpDashboard: React.FC = () => {
         {/* Top Navbar */}
         <div className="flex items-center justify-between bg-white rounded-2xl p-4 border border-[#B8CFB3] border-b-4 border-b-[#84A282]/50 shadow-lg shadow-black/8">
           <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="p-2 rounded-xl bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 text-slate-700 transition border border-[#B8CFB3]/50 border-b-2 border-b-[#B8CFB3] shadow-sm active:translate-y-0.5"
-              title="Ke Halaman Depan"
-            >
-              <Home className="w-4 h-4" />
-            </Link>
             <div className="p-2.5 bg-[#B8CFB3]/40 rounded-xl text-[#60795e] border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] shadow-sm">
               <BookCheck className="w-5 h-5" />
             </div>
@@ -504,12 +478,6 @@ export const SmpDashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#FEFAF3] text-amber-700 rounded-xl border border-amber-200 border-b-2 border-b-amber-300 text-xs font-bold shadow-sm">
-              <span>5 Hari Streak</span>
-            </div>
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#FEFAF3] text-[#60795e] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-xs font-bold shadow-sm">
-              <span>1.450 XP</span>
-            </div>
             <Link
               to="/evaluasi"
               className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-[#FEFAF3] hover:bg-[#F6E2E9]/50 text-[#739071] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-xs font-bold transition shadow-sm active:translate-y-0.5"
@@ -580,9 +548,6 @@ export const SmpDashboard: React.FC = () => {
         {topikKelemahanAktif ? (
           <div className="p-5 rounded-2xl bg-[#F6E2E9]/60 border border-[#B8CFB3] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-xl bg-[#84A282]/20 text-[#60795e] shrink-0 border border-[#B8CFB3]">
-                <Target className="w-6 h-6" />
-              </div>
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-[#60795e] uppercase tracking-wider">
@@ -647,24 +612,13 @@ export const SmpDashboard: React.FC = () => {
 
         {/* Direct Upload Dropzone Card for SMP */}
         <div className="p-6 rounded-3xl bg-white border border-[#B8CFB3] shadow-sm space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#B8CFB3]/60 pb-3">
-            <div>
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <UploadCloud className="w-5 h-5 text-[#84A282]" />
-                <span>Modul Instan AI (Dropzone Dokumen)</span>
-              </h3>
-              <p className="text-xs text-slate-500">
-                Unggah berkas PDF atau DOCX (Maks 10 MB) untuk diekstraksi langsung menjadi butir soal CBT dan ringkasan mandiri.
-              </p>
-            </div>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="px-4 py-2 bg-[#F6E2E9] hover:bg-[#F6E2E9]/80 disabled:opacity-50 border border-[#B8CFB3] text-[#739071] font-bold rounded-xl text-xs flex items-center gap-1.5 transition self-start sm:self-auto shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Pilih Berkas Dari Komputer</span>
-            </button>
+          <div className="border-b border-[#B8CFB3]/60 pb-3">
+            <h3 className="text-base font-bold text-slate-900">
+              Modul Instan AI (Dropzone Dokumen)
+            </h3>
+            <p className="text-xs text-slate-500">
+              Unggah berkas PDF atau DOCX (Maks 10 MB) untuk diekstraksi langsung menjadi butir soal CBT dan ringkasan mandiri.
+            </p>
           </div>
 
           {/* Upload Status Alerts */}
@@ -698,11 +652,10 @@ export const SmpDashboard: React.FC = () => {
                 handleDirectUpload(e.dataTransfer.files[0]);
               }
             }}
-            className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition flex flex-col items-center gap-2 ${
-              isDragging
+            className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition flex flex-col items-center gap-2 ${isDragging
                 ? "border-[#84A282] bg-[#F6E2E9]/60 scale-[1.01]"
                 : "border-[#B8CFB3] hover:border-[#84A282] bg-[#FEFAF3] hover:bg-[#F6E2E9]/20"
-            }`}
+              }`}
           >
             {isUploading ? (
               <div className="flex flex-col items-center gap-3 py-2">
@@ -724,20 +677,11 @@ export const SmpDashboard: React.FC = () => {
                 <div className="w-12 h-12 rounded-2xl bg-[#B8CFB3]/40 text-[#60795e] border border-[#B8CFB3] flex items-center justify-center">
                   <FileUp className="w-6 h-6" />
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-800">
-                    {isDragging ? "Lepaskan Berkas di Sini Untuk Langsung Mengunggah" : "Tarik & Jatuhkan Berkas PDF / DOCX ke Sini"}
+                {isDragging && (
+                  <p className="text-xs font-bold text-[#60795e]">
+                    Lepaskan Berkas di Sini Untuk Langsung Mengunggah
                   </p>
-                  <p className="text-xs text-slate-500">Atau klik untuk memilih berkas dokumen dari komputer Anda</p>
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[11px] font-semibold text-slate-600 bg-white px-3 py-1 rounded-full border border-[#B8CFB3]">
-                    Maks. 10 MB • Validasi Otomatis
-                  </span>
-                  <span className="text-[11px] font-bold text-[#60795e] bg-[#F6E2E9] border border-[#B8CFB3] px-3 py-1 rounded-full">
-                    Ekstraksi Unit & 4 Opsi CBT
-                  </span>
-                </div>
+                )}
               </>
             )}
           </div>
@@ -747,16 +691,9 @@ export const SmpDashboard: React.FC = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Modul Sedang Dipelajari ({smpMateriList.length} Modul)</h3>
+              <h3 className="text-lg font-bold text-slate-900">Modul Sedang Dipelajari</h3>
               <p className="text-xs text-slate-500">Hasil ekstraksi berkas materi dan kurikulum adaptif</p>
             </div>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="text-xs font-bold text-[#60795e] hover:text-[#4e634d] disabled:opacity-50 flex items-center gap-1 transition"
-            >
-              + Tambah Modul PDF
-            </button>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -769,9 +706,6 @@ export const SmpDashboard: React.FC = () => {
                   <div className="flex items-center justify-between text-[10px] font-bold">
                     <span className="px-2 py-0.5 rounded-full bg-[#F6E2E9] text-[#739071] border border-[#B8CFB3]">
                       {materi.bab} • {materi.mataPelajaran}
-                    </span>
-                    <span className="text-[#60795e] bg-[#B8CFB3]/40 border border-[#B8CFB3] px-2 py-0.5 rounded-full">
-                      {materi.status}
                     </span>
                   </div>
 
@@ -794,19 +728,13 @@ export const SmpDashboard: React.FC = () => {
                       </div>
                       <div className="w-full bg-[#e8e2d8] rounded-full h-1.5 overflow-hidden">
                         <div
-                          className={`h-1.5 rounded-full ${
-                            materi.akurasi < 50 ? "bg-amber-400" : "bg-emerald-400"
-                          }`}
+                          className={`h-1.5 rounded-full ${materi.akurasi < 50 ? "bg-amber-400" : "bg-emerald-400"
+                            }`}
                           style={{ width: `${materi.akurasi}%` }}
                         ></div>
                       </div>
                     </div>
                   )}
-
-                  <div className="flex items-center gap-2 text-[11px] text-slate-500 pt-1">
-                    <Layers className="w-3.5 h-3.5 text-[#84A282]" />
-                    <span>{materi.bagianMateri.length} Unit Topik • {materi.tanggalUpload}</span>
-                  </div>
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-[#B8CFB3]/50 flex items-center justify-between gap-2">
@@ -814,7 +742,6 @@ export const SmpDashboard: React.FC = () => {
                     onClick={() => setDetailMateri(materi)}
                     className="flex-1 py-2 bg-[#F6E2E9] hover:bg-[#F6E2E9]/80 border border-[#B8CFB3] text-[#739071] font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition"
                   >
-                    <Eye className="w-3.5 h-3.5" />
                     <span>Ringkasan & Soal AI</span>
                   </button>
                   <button
@@ -960,20 +887,10 @@ export const GuruDashboard: React.FC = () => {
         {/* Top Navbar */}
         <div className="flex items-center justify-between bg-white border border-[#B8CFB3] border-b-4 border-b-[#84A282]/50 rounded-2xl p-4 shadow-lg shadow-black/8">
           <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="p-2 rounded-xl bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 text-slate-600 hover:text-slate-900 transition border border-[#B8CFB3]/50 border-b-2 border-b-[#B8CFB3] shadow-sm active:translate-y-0.5"
-              title="Ke Halaman Depan"
-            >
-              <Home className="w-4 h-4" />
-            </Link>
             <div className="p-2.5 bg-[#B8CFB3]/40 text-[#60795e] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] shadow-sm">
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-bold text-[#60795e] uppercase bg-[#F6E2E9] px-2.5 py-0.5 rounded-full border border-[#B8CFB3] shadow-sm inline-block">
-                Portal Guru & Mentor Binaan
-              </span>
               <h2 className="text-base font-bold text-slate-900">{user?.name}</h2>
             </div>
           </div>
@@ -984,11 +901,6 @@ export const GuruDashboard: React.FC = () => {
               className="relative px-3.5 py-2 rounded-xl bg-[#F6E2E9] border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-[#739071] hover:bg-[#F6E2E9]/80 text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:translate-y-0.5"
             >
               <span>Review Bank Soal</span>
-              {pendingCount > 0 && (
-                <span className="w-5 h-5 rounded-full bg-[#84A282] text-white text-[10px] font-black flex items-center justify-center shadow-sm">
-                  {pendingCount}
-                </span>
-              )}
             </Link>
 
             <Link
@@ -1012,15 +924,6 @@ export const GuruDashboard: React.FC = () => {
         {/* Hero Banner (Sesuai MentorDashboardView.java) */}
         <div className="rounded-3xl bg-gradient-to-r from-[#84A282] via-[#739071] to-[#60795e] p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
           <div className="relative z-10 space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-white/20 backdrop-blur-md">
-                PORTAL GURU & MENTOR
-              </span>
-              <span className="text-xs font-semibold text-emerald-200">
-                ● Bimbingan Kelas 8-A SMP (Tahun Ajaran 2025/2026)
-              </span>
-            </div>
-
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-black">
@@ -1053,128 +956,119 @@ export const GuruDashboard: React.FC = () => {
         <div className="grid lg:grid-cols-12 gap-6 items-start">
           {/* LEFT COLUMN: Ringkasan Progres Seluruh Siswa Binaan (Use Case 7) */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="bg-white border border-[#B8CFB3] rounded-3xl p-6 shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-[#B8CFB3]/60 pb-3.5">
-                <div>
-                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <Users className="w-5 h-5 text-[#60795e]" />
-                    <span>Ringkasan Progres Seluruh Siswa Binaan</span>
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Hasil latihan dicatat per bagian materi untuk memetakan titik kelemahan tiap anak
-                  </p>
+            <div className="bg-white border border-[#B8CFB3] rounded-3xl p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-[#B8CFB3]/60 pb-3.5">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                      <Users className="w-5 h-5 text-[#60795e]" />
+                      <span>Ringkasan Progres Seluruh Siswa Binaan</span>
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Hasil latihan dicatat per bagian materi untuk memetakan titik kelemahan tiap anak
+                    </p>
+                  </div>
                 </div>
-                <span className="text-[11px] font-bold text-[#60795e] bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
-                  {siswaList.length} Siswa Terpantau
-                </span>
-              </div>
 
-              {/* Students List */}
-              <div className="space-y-3">
-                {siswaList.map((siswa) => {
-                  const isRemedial = siswa.statusRemedial === "Perlu Remedial";
-                  const isBimbingan = siswa.statusRemedial === "Bimbingan";
-                  const isTuntas = siswa.statusRemedial === "Tuntas";
+                {/* Students List */}
+                <div className="space-y-3">
+                  {siswaList.map((siswa) => {
+                    const isRemedial = siswa.statusRemedial === "Perlu Remedial";
+                    const isBimbingan = siswa.statusRemedial === "Bimbingan";
+                    const isTuntas = siswa.statusRemedial === "Tuntas";
 
-                  return (
-                    <div
-                      key={siswa.id}
-                      className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] transition space-y-3 shadow-md"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shadow-md ${
-                              isRemedial ? "bg-rose-600" : isBimbingan ? "bg-amber-600" : "bg-emerald-600"
-                            }`}
-                          >
-                            {siswa.nama.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-sm font-bold text-slate-900">{siswa.nama}</h4>
-                              {isTuntas && (
-                                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                  Sudah Lulus Remedial
-                                </span>
-                              )}
+                    return (
+                      <div
+                        key={siswa.id}
+                        className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] transition space-y-3 shadow-sm"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shadow-sm ${
+                                isRemedial ? "bg-rose-600" : isBimbingan ? "bg-amber-600" : "bg-emerald-600"
+                              }`}
+                            >
+                              {siswa.nama.slice(0, 2).toUpperCase()}
                             </div>
-                            <p className="text-[11px] text-slate-500">
-                              {siswa.kelas} • {siswa.totalLatihan} Bab Tuntas Dikerjakan
-                            </p>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-sm font-bold text-slate-900">{siswa.nama}</h4>
+                              </div>
+                              <p className="text-[11px] text-slate-500">
+                                {siswa.kelas} • {siswa.totalLatihan} Bab Tuntas Dikerjakan
+                              </p>
+                            </div>
+                          </div>
+
+                          <span
+                            className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
+                              isRemedial
+                                ? "bg-rose-50 text-rose-700 border-rose-200"
+                                : isBimbingan
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            }`}
+                          >
+                            {isTuntas ? "✓ Tuntas / Lulus" : siswa.statusRemedial}
+                          </span>
+                        </div>
+
+                        {/* Accuracy bar */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-slate-500">
+                              Fokus Kelemahan: <b className="text-slate-800">{siswa.topikKelemahan}</b>
+                            </span>
+                            <span
+                              className={`font-black ${
+                                isRemedial
+                                  ? "text-rose-500"
+                                  : isBimbingan
+                                  ? "text-amber-500"
+                                  : "text-[#60795e]"
+                              }`}
+                            >
+                              Akurasi: {siswa.akurasiRataRata}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-[#e8e2d8] rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className={`h-1.5 rounded-full ${
+                                isRemedial
+                                  ? "bg-rose-500"
+                                  : isBimbingan
+                                  ? "bg-amber-500"
+                                  : "bg-emerald-500"
+                              }`}
+                              style={{ width: `${siswa.akurasiRataRata}%` }}
+                            ></div>
                           </div>
                         </div>
 
-                        <span
-                          className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
-                            isRemedial
-                              ? "bg-rose-100 text-rose-800 border-rose-300"
-                              : isBimbingan
-                              ? "bg-amber-100 text-amber-800 border-amber-300"
-                              : "bg-emerald-100 text-emerald-800 border-emerald-300"
-                          }`}
-                        >
-                          {isTuntas ? "✓ Tuntas / Lulus" : siswa.statusRemedial}
-                        </span>
-                      </div>
-
-                      {/* Accuracy bar */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-500">
-                            Fokus Kelemahan: <b className="text-slate-800">{siswa.topikKelemahan}</b>
-                          </span>
-                          <span
-                            className={`font-black ${
-                              isRemedial
-                                ? "text-rose-400"
-                                : isBimbingan
-                                ? "text-amber-400"
-                                : "text-[#60795e]"
-                            }`}
+                        {/* Catatan Guru Row */}
+                        <div className="p-2.5 rounded-xl bg-white border border-[#B8CFB3] flex items-center justify-between gap-3 text-xs">
+                          <p className="text-slate-700 italic text-[11px] line-clamp-1 flex-1">
+                            “{siswa.catatanGuru}”
+                          </p>
+                          <button
+                            onClick={() => setSelectedSiswaForNote(siswa)}
+                            className="px-3 py-1.5 rounded-xl bg-[#FEFAF3] hover:bg-[#F6E2E9]/60 text-[#60795e] text-xs font-bold border border-[#B8CFB3] transition flex items-center gap-1.5 shrink-0 shadow-sm"
                           >
-                            Akurasi: {siswa.akurasiRataRata}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-[#e8e2d8] rounded-full h-1.5 overflow-hidden">
-                          <div
-                            className={`h-1.5 rounded-full ${
-                              isRemedial
-                                ? "bg-rose-500"
-                                : isBimbingan
-                                ? "bg-amber-500"
-                                : "bg-emerald-500"
-                            }`}
-                            style={{ width: `${siswa.akurasiRataRata}%` }}
-                          ></div>
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>Beri Catatan</span>
+                          </button>
                         </div>
                       </div>
-
-                      {/* Catatan Guru Row */}
-                      <div className="p-2.5 rounded-xl bg-white border border-[#B8CFB3] flex items-center justify-between gap-3 text-xs">
-                        <p className="text-slate-700 italic text-[11px] line-clamp-1 flex-1">
-                          “{siswa.catatanGuru}”
-                        </p>
-                        <button
-                          onClick={() => setSelectedSiswaForNote(siswa)}
-                          className="px-3 py-1 rounded-lg bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 text-[#60795e] hover:text-cyan-200 text-xs font-bold border border-slate-700 transition flex items-center gap-1 shrink-0"
-                        >
-                          <MessageSquare className="w-3 h-3" />
-                          <span>Beri Catatan</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* RIGHT COLUMN: Antrean Review Soal Cepat & Kode Undangan */}
+            {/* RIGHT COLUMN: Antrean Review Soal Cepat & Kode Undangan */}
           <div className="lg:col-span-5 space-y-6">
             {/* 1. Antrean Review Cepat (Use Case 5) */}
-            <div className="bg-white border border-[#B8CFB3] rounded-3xl p-6 shadow-xl space-y-4">
+            <div className="bg-white border border-[#B8CFB3] rounded-3xl p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-[#B8CFB3]/60 pb-3">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold text-slate-900">
@@ -1183,7 +1077,7 @@ export const GuruDashboard: React.FC = () => {
                 </div>
                 <Link
                   to="/mentor/review"
-                  className="text-xs font-bold text-[#60795e] hover:text-emerald-300 flex items-center gap-1 transition"
+                  className="text-xs font-bold text-[#60795e] hover:text-[#4e634d] flex items-center gap-1 transition"
                 >
                   <span>Buka Bank Soal</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1239,13 +1133,13 @@ export const GuruDashboard: React.FC = () => {
                   {filteredPendingQuestions.slice(0, 3).map((soal) => (
                     <div
                       key={soal.id}
-                      className="p-3.5 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-2.5 text-xs shadow-md"
+                      className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] space-y-3 text-xs shadow-sm transition"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-[#60795e] bg-[#F6E2E9] px-2 py-0.5 rounded-full border border-[#B8CFB3]">
+                        <span className="text-[10px] font-bold text-[#60795e] bg-[#F6E2E9] px-2.5 py-0.5 rounded-full border border-[#B8CFB3]">
                           {soal.tingkat} • {soal.mataPelajaran}
                         </span>
-                        <span className="text-[10px] text-[#739071] font-bold">
+                        <span className="text-[10px] text-[#739071] font-bold bg-white px-2 py-0.5 rounded-full border border-[#B8CFB3]">
                           AI: {soal.aiConfidence}%
                         </span>
                       </div>
@@ -1254,22 +1148,22 @@ export const GuruDashboard: React.FC = () => {
                         {soal.pertanyaan}
                       </p>
 
-                      <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-800">
+                      <div className="flex items-center justify-end gap-2 pt-2.5 border-t border-[#B8CFB3]/60">
                         <button
                           onClick={() => setEditingSoal(soal)}
-                          className="px-2.5 py-1 rounded-lg bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 text-slate-700 text-[11px] font-semibold border border-slate-700 transition"
+                          className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#FEFAF3] text-slate-700 text-xs font-semibold border border-[#B8CFB3] transition shadow-sm"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => setRejectingSoal(soal)}
-                          className="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-[11px] font-bold border border-rose-500/30 transition"
+                          className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold border border-rose-200 transition shadow-sm"
                         >
                           Tolak
                         </button>
                         <button
                           onClick={() => handleQuickApprove(soal.id)}
-                          className="px-3 py-1 rounded-lg bg-[#84A282] hover:bg-[#739071] text-white text-[11px] font-bold shadow-sm transition"
+                          className="px-3.5 py-1.5 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold shadow-sm transition"
                         >
                           Setujui
                         </button>
@@ -1290,10 +1184,9 @@ export const GuruDashboard: React.FC = () => {
             </div>
 
             {/* 2. Manajemen Kode Undangan (Use Case 6) */}
-            <div className="bg-white border border-[#B8CFB3] rounded-3xl p-6 shadow-xl space-y-4">
+            <div className="bg-white border border-[#B8CFB3] rounded-3xl p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-[#B8CFB3]/60 pb-3">
-                <div className="flex items-center gap-2">
-                  <KeyRound className="w-4 h-4 text-[#84A282]" />
+                <div>
                   <h3 className="text-sm font-bold text-slate-900">Manajemen Kode Undangan</h3>
                 </div>
                 <button
@@ -1309,41 +1202,41 @@ export const GuruDashboard: React.FC = () => {
                 Sesuai PRD Asumsi A3: Kode sekali pakai berlaku 7 hari untuk mengundang siswa ke bimbingan atau rekan pengawas baru.
               </p>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {kodeUndanganList.map((k) => (
                   <div
                     key={k.id}
-                    className="p-3 rounded-2xl bg-slate-850 border border-slate-800 flex items-center justify-between gap-3 text-xs"
+                    className="p-3.5 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] flex items-center justify-between gap-3 text-xs transition shadow-sm"
                   >
                     <div>
-                      <span className="font-mono font-bold text-[#60795e] tracking-wider text-sm block">
+                      <span className="font-mono font-bold text-slate-800 tracking-wider text-sm block">
                         {k.kode}
                       </span>
-                      <span className="text-[10px] text-slate-500">
+                      <span className="text-[11px] text-slate-500">
                         {k.targetTingkat} • Berlaku: {k.expiredAt}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-[#60795e] bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold text-[#60795e] bg-white border border-[#B8CFB3] px-2.5 py-0.5 rounded-full">
                         {k.status}
                       </span>
                       <button
                         onClick={() => handleCopyKode(k.kode)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1 border ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border shadow-sm ${
                           copiedCode === k.kode
                             ? "bg-emerald-600 text-white border-emerald-500"
-                            : "bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 text-slate-700 border-slate-700"
+                            : "bg-white hover:bg-[#FEFAF3] text-slate-700 border-[#B8CFB3]"
                         }`}
                       >
                         {copiedCode === k.kode ? (
                           <>
-                            <Check className="w-3 h-3" />
+                            <Check className="w-3.5 h-3.5" />
                             <span>Tersalin</span>
                           </>
                         ) : (
                           <>
-                            <Copy className="w-3 h-3" />
+                            <Copy className="w-3.5 h-3.5" />
                             <span>Salin</span>
                           </>
                         )}

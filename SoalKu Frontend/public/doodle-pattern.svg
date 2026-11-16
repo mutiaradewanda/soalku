@@ -10,8 +10,7 @@
         opacity: 0.18;
       }
       .sparkle {
-        fill: #84A282;
-        opacity: 0.22;
+        display: none;
       }
     </style>
   </defs>

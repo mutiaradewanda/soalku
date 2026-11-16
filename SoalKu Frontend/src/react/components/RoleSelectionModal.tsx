@@ -65,7 +65,6 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
                   <span className="font-bold text-slate-800 text-sm md:text-base group-hover:text-[#84A282] transition-colors">
                     Siswa SD
                   </span>
-                  <p className="text-[11px] text-slate-500">Portal belajar ceria Kelas 1 - 6</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-[#84A282] group-hover:translate-x-1 transition-all" />
@@ -85,7 +84,6 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
                   <span className="font-bold text-slate-800 text-sm md:text-base group-hover:text-[#84A282] transition-colors">
                     Siswa SMP
                   </span>
-                  <p className="text-[11px] text-slate-500">Latihan CBT adaptif Kelas 7 - 9</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-[#84A282] group-hover:translate-x-1 transition-all" />
@@ -105,7 +103,6 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
                   <span className="font-bold text-slate-800 text-sm md:text-base group-hover:text-[#84A282] transition-colors">
                     Guru
                   </span>
-                  <p className="text-[11px] text-slate-500">Manajemen bank soal & analisis kelas</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-[#84A282] group-hover:translate-x-1 transition-all" />

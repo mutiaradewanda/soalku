@@ -250,14 +250,6 @@ export const QuizPage: React.FC = () => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Sesi info */}
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#F6E2E9] text-[#739071] border border-[#B8CFB3] flex items-center gap-1 shadow-sm">
-              <span>Adaptif AI</span>
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#B8CFB3]/40 text-[#60795e] border border-[#B8CFB3] shadow-sm">
-              {currentSession.mode.replace("_", " ")}
-            </span>
-            <span className="font-mono text-xs text-slate-500 font-bold">{currentSession.idSesi}</span>
-
             {/* Anti-Cheat Violation Badge */}
             <div
               className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border transition shadow-sm ${
@@ -290,11 +282,6 @@ export const QuizPage: React.FC = () => {
                 {isFullscreen ? "Fullscreen" : "Layar Penuh"}
               </span>
             </button>
-
-            {/* Streak */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FEFAF3] rounded-xl border border-[#B8CFB3] text-xs font-bold text-amber-600">
-              <span>{currentSession.streakBenar} Benar Berturut</span>
-            </div>
 
             {/* Timer Countdown */}
             <div
@@ -337,18 +324,6 @@ export const QuizPage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <span
-                  className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
-                    currentSoal?.kesulitan === "MUDAH"
-                      ? "bg-[#B8CFB3]/40 border-[#84A282] text-[#60795e]"
-                      : currentSoal?.kesulitan === "SEDANG"
-                      ? "bg-[#F6E2E9] border-[#B8CFB3] text-[#739071]"
-                      : "bg-rose-50 border-rose-300 text-rose-600"
-                  }`}
-                >
-                  Kesulitan: {currentSoal?.kesulitan}
-                </span>
-
                 <button
                   onClick={() => toggleRaguRagu(currentSoal.id)}
                   className={`px-3 py-1 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 ${
@@ -447,37 +422,6 @@ export const QuizPage: React.FC = () => {
               )}
             </div>
           </div>
-
-          {/* Panel Tips Adaptif AI & Jembatan Keledai (Sesuai Mockup) */}
-          {(currentSoal?.tipsAdaptif || currentSoal?.jembatanKeledai) && (
-            <div className="p-5 rounded-2xl bg-[#F6E2E9]/50 border border-[#B8CFB3] space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#60795e] uppercase tracking-wider flex items-center gap-1.5">
-                  <Lightbulb className="w-4 h-4 text-[#84A282]" />
-                  <span>Tips Adaptif AI & Jembatan Keledai</span>
-                </span>
-                <span className="text-[10px] text-[#739071] font-mono font-semibold">Rumus Cepat</span>
-              </div>
-
-              {currentSoal.jembatanKeledai && (
-                <p className="text-xs font-bold text-[#60795e]">
-                  {currentSoal.jembatanKeledai}
-                </p>
-              )}
-
-              {currentSoal.tipsAdaptif && (
-                <p className="text-xs text-slate-700 whitespace-pre-line leading-relaxed">
-                  {currentSoal.tipsAdaptif}
-                </p>
-              )}
-
-              {currentSoal.insightKelemahan && (
-                <p className="text-[11px] text-[#739071] italic pt-1 border-t border-[#B8CFB3]/60">
-                  Insight AI: {currentSoal.insightKelemahan}
-                </p>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Kolom Kanan: Grid Navigasi Nomor Soal & Status */}
@@ -537,25 +481,6 @@ export const QuizPage: React.FC = () => {
                 );
               })}
             </div>
-
-            {/* Pintasan Keyboard & Keamanan Info */}
-            <div className="pt-3 border-t border-[#B8CFB3]/60 text-xs text-slate-600 space-y-2">
-              <div>
-                <span className="font-bold text-slate-800 text-[11px] block">Pintasan Keyboard:</span>
-                <p className="text-[11px] mt-0.5">
-                  <kbd className="px-1.5 py-0.5 rounded bg-[#FEFAF3] border border-[#B8CFB3] text-[#739071] font-mono text-[10px]">A</kbd>{" "}
-                  <kbd className="px-1.5 py-0.5 rounded bg-[#FEFAF3] border border-[#B8CFB3] text-[#739071] font-mono text-[10px]">B</kbd>{" "}
-                  <kbd className="px-1.5 py-0.5 rounded bg-[#FEFAF3] border border-[#B8CFB3] text-[#739071] font-mono text-[10px]">C</kbd>{" "}
-                  <kbd className="px-1.5 py-0.5 rounded bg-[#FEFAF3] border border-[#B8CFB3] text-[#739071] font-mono text-[10px]">D</kbd> : Opsi •{" "}
-                  <kbd className="px-1.5 py-0.5 rounded bg-[#FEFAF3] border border-[#B8CFB3] text-[#739071] font-mono text-[10px]">Enter</kbd> : Lanjut
-                </p>
-              </div>
-
-              <div className="pt-2 border-t border-[#B8CFB3]/40 flex items-center gap-2 text-[10px] text-slate-500">
-                <Shield className="w-3.5 h-3.5 text-[#84A282] shrink-0" />
-                <span>Pengawas CBT Aktif • Proteksi Copy, Tab Switch & Fullscreen</span>
-              </div>
-            </div>
           </div>
         </div>
       </main>
@@ -569,9 +494,6 @@ export const QuizPage: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#60795e] bg-[#F6E2E9] border border-[#B8CFB3] px-3 py-1 rounded-full">
-                Penguncian Layar CBT
-              </span>
               <h3 className="text-xl font-black text-slate-900">Mode Layar Penuh Dinonaktifkan</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Demi menjaga integritas ujian, Anda wajib berada dalam mode layar penuh. Seluruh kontrol ujian dijeda sementara hingga mode layar penuh diaktifkan kembali.

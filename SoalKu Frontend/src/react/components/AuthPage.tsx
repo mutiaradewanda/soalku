@@ -19,7 +19,6 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { AuthMode, UserRole } from "../types/auth";
 import { RoleSelectionModal } from "./RoleSelectionModal";
-import { DragonMascot } from "./DragonMascot";
 
 interface AuthPageProps {
   initialMode?: AuthMode;
@@ -90,7 +89,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
       focusRing: "focus:ring-[#84A282]",
       badge: "Siswa SD (Kelas 1 - 6)",
       icon: <School className="w-5 h-5 text-[#FEFAF3]" />,
-      subtext: "Portal Belajar Ceria & Latihan Adaptif SoalKu Kids",
+      subtext: "Portal Belajar Ceria & Latihan Adaptif",
     },
     smp: {
       headerBg: "bg-gradient-to-r from-[#739071] via-[#84A282] to-[#60795e]",
@@ -198,7 +197,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#FEFAF3] relative py-10">
       {/* Back to Home Link */}
-      <div className="w-full max-w-lg mb-4 flex items-center justify-between text-xs">
+      <div className="w-full max-w-lg mb-4 flex items-center justify-start text-xs">
         <Link
           to="/"
           className="inline-flex items-center gap-1.5 text-slate-700 hover:text-[#84A282] transition font-medium px-3 py-1.5 rounded-lg bg-white border border-[#B8CFB3]/60 shadow-sm"
@@ -206,10 +205,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
           <ArrowLeft className="w-4 h-4" />
           <span>Kembali ke Beranda</span>
         </Link>
-        <div className="flex items-center gap-1.5">
-          <DragonMascot variant="logo" className="w-5 h-5" />
-          <span className="font-bold text-slate-700">SoalKu • Portal Masuk</span>
-        </div>
       </div>
 
       {/* Modal Awal Pemilihan Role */}
@@ -247,56 +242,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
         </div>
 
         <div className="p-6 md:p-8 space-y-5">
-          {/* 1. Pemilihan Role (3 Pilihan: Siswa SD, Siswa SMP, Guru) */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-              Pilih Role Akun
-            </label>
-            <div className="grid grid-cols-3 gap-2 p-1.5 bg-slate-100 rounded-2xl">
-              <button
-                type="button"
-                onClick={() => {
-                  setRole("sd");
-                  setErrorMessage(null);
-                }}
-                className={`py-2 px-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                  role === "sd" ? themeConfig.activeTab : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <School className="w-3.5 h-3.5" />
-                Siswa SD
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setRole("smp");
-                  setErrorMessage(null);
-                }}
-                className={`py-2 px-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                  role === "smp" ? themeConfig.activeTab : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                Siswa SMP
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setRole("guru");
-                  setErrorMessage(null);
-                }}
-                className={`py-2 px-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                  role === "guru" ? themeConfig.activeTab : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <GraduationCap className="w-3.5 h-3.5" />
-                Guru
-              </button>
-            </div>
-          </div>
-
           {/* Notifikasi Error */}
           {errorMessage && (
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2.5 text-xs text-rose-700">
