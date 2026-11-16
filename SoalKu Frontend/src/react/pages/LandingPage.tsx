@@ -95,7 +95,7 @@ export const LandingPage: React.FC = () => {
                   to="/login"
                   className="px-6 py-3.5 rounded-xl border border-[#B8CFB3] bg-white hover:bg-[#FEFAF3] text-slate-700 hover:text-slate-900 text-sm font-bold text-center transition-colors shadow-sm"
                 >
-                  Masuk Akun Demo
+                  Masuk ke Akun
                 </Link>
               </div>
 
@@ -407,7 +407,7 @@ export const LandingPage: React.FC = () => {
                 </h3>
                 <p className="text-sm text-slate-600 leading-relaxed font-medium">
                   Ayo bergabung sekarang bersama maskot naga cerdas SoalKu. Cukup
-                  daftar akun baru atau masuk akun demo dalam hitungan detik!
+                  daftar akun baru atau masuk ke akun Anda dalam hitungan detik!
                 </p>
                 <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
                   <Link

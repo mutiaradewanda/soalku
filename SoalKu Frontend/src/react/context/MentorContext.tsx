@@ -686,7 +686,7 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return siswa;
       });
 
-      // Jika tidak ada nama spesifik yang match (misal akun demo), perbarui siswa pertama
+      // Jika tidak ada nama spesifik yang cocok, perbarui profil siswa aktif pertama
       if (!found && updated.length > 0 && isLulus) {
         updated[0] = {
           ...updated[0],

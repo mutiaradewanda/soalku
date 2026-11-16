@@ -15,6 +15,7 @@ import { SessionResultPage } from "./pages/SessionResultPage";
 import { MentorReviewPage } from "./pages/MentorReviewPage";
 import { EvaluationPage } from "./pages/EvaluationPage";
 import { PwaInstallPrompt } from "./components/PwaInstallPrompt";
+import { PageTransition } from "./components/PageTransition";
 
 // Auth redirect wrapper: jika sudah login dan akses /login atau /register, bisa langsung diarahkan ke dashboard
 const AuthRouteGuard: React.FC<{ mode?: "login" | "register" }> = ({ mode }) => {
@@ -33,44 +34,48 @@ export const AppRoutes: React.FC = () => {
           <MentorProvider>
             <BrowserRouter>
               <PwaInstallPrompt />
-              <Routes>
-                {/* Landing Page */}
-                <Route path="/" element={<LandingPage />} />
+              <PageTransition>
+                {(displayLocation) => (
+                  <Routes location={displayLocation}>
+                    {/* Landing Page */}
+                    <Route path="/" element={<LandingPage />} />
 
-                {/* Dedicated Auth Routes */}
-                <Route path="/login" element={<AuthRouteGuard mode="login" />} />
-                <Route path="/register" element={<AuthRouteGuard mode="register" />} />
-                <Route path="/auth" element={<AuthRouteGuard />} />
+                    {/* Dedicated Auth Routes */}
+                    <Route path="/login" element={<AuthRouteGuard mode="login" />} />
+                    <Route path="/register" element={<AuthRouteGuard mode="register" />} />
+                    <Route path="/auth" element={<AuthRouteGuard />} />
 
-                {/* Protected Dashboard Route Siswa SD */}
-                <Route element={<ProtectedRoute allowedRoles={["sd"]} />}>
-                  <Route path="/dashboard/sd" element={<SdDashboard />} />
-                </Route>
+                    {/* Protected Dashboard Route Siswa SD */}
+                    <Route element={<ProtectedRoute allowedRoles={["sd"]} />}>
+                      <Route path="/dashboard/sd" element={<SdDashboard />} />
+                    </Route>
 
-                {/* Protected Dashboard Route Siswa SMP */}
-                <Route element={<ProtectedRoute allowedRoles={["smp"]} />}>
-                  <Route path="/dashboard/smp" element={<SmpDashboard />} />
-                </Route>
+                    {/* Protected Dashboard Route Siswa SMP */}
+                    <Route element={<ProtectedRoute allowedRoles={["smp"]} />}>
+                      <Route path="/dashboard/smp" element={<SmpDashboard />} />
+                    </Route>
 
-                {/* Protected Dashboard & Review Route Guru / Mentor */}
-                <Route element={<ProtectedRoute allowedRoles={["guru"]} />}>
-                  <Route path="/dashboard/guru" element={<GuruDashboard />} />
-                  <Route path="/mentor/review" element={<MentorReviewPage />} />
-                </Route>
+                    {/* Protected Dashboard & Review Route Guru / Mentor */}
+                    <Route element={<ProtectedRoute allowedRoles={["guru"]} />}>
+                      <Route path="/dashboard/guru" element={<GuruDashboard />} />
+                      <Route path="/mentor/review" element={<MentorReviewPage />} />
+                    </Route>
 
-                {/* Protected Latihan & CBT Routes */}
-                <Route element={<ProtectedRoute allowedRoles={["sd", "smp", "guru"]} />}>
-                  <Route path="/latihan" element={<PilihLatihanPage />} />
-                  <Route path="/latihan/pilih" element={<PilihLatihanPage />} />
-                  <Route path="/latihan/quiz" element={<QuizPage />} />
-                  <Route path="/latihan/hasil" element={<SessionResultPage />} />
-                  <Route path="/evaluasi" element={<EvaluationPage />} />
-                </Route>
+                    {/* Protected Latihan & CBT Routes */}
+                    <Route element={<ProtectedRoute allowedRoles={["sd", "smp", "guru"]} />}>
+                      <Route path="/latihan" element={<PilihLatihanPage />} />
+                      <Route path="/latihan/pilih" element={<PilihLatihanPage />} />
+                      <Route path="/latihan/quiz" element={<QuizPage />} />
+                      <Route path="/latihan/hasil" element={<SessionResultPage />} />
+                      <Route path="/evaluasi" element={<EvaluationPage />} />
+                    </Route>
 
-                {/* 404 Not Found Page */}
-                <Route path="/404" element={<NotFoundPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
+                    {/* 404 Not Found Page */}
+                    <Route path="/404" element={<NotFoundPage />} />
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Routes>
+                )}
+              </PageTransition>
             </BrowserRouter>
           </MentorProvider>
         </QuizProvider>

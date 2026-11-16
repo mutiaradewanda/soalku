@@ -111,17 +111,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
     },
   }[role];
 
-  const handleQuickDemo = () => {
-    if (role === "sd") {
-      setForm((prev) => ({ ...prev, identifier: "0012345678", password: "demoSD2026" }));
-    } else if (role === "smp") {
-      setForm((prev) => ({ ...prev, identifier: "0098765432", password: "demoSMP2026" }));
-    } else {
-      setForm((prev) => ({ ...prev, identifier: "198507202010011005", password: "demoGuru2026" }));
-    }
-    setErrorMessage(null);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -511,17 +500,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
-          {/* Tombol Masuk Instan Akun Demo */}
-          {mode === "login" && (
-            <button
-              type="button"
-              onClick={handleQuickDemo}
-              className="w-full py-2.5 px-3 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-amber-800 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition"
-            >
-              <span>Masuk Instan Akun Demo ({role.toUpperCase()})</span>
-            </button>
-          )}
 
           {/* Toggle Switch Mode */}
           <div className="pt-2 border-t border-slate-100 text-center">

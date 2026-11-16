@@ -6,9 +6,10 @@ $allowed = @('DB_URL','DB_USERNAME','DB_PASSWORD','JWT_SECRET','JWT_ISSUER','JWT
 foreach ($line in (Get-Content -LiteralPath $Path)) {
     if ([string]::IsNullOrWhiteSpace($line) -or $line.TrimStart().StartsWith('#')) { continue }
     $pair = $line -split '=', 2
-    if ($pair.Length -ne 2 -or $pair[0] -notin $allowed) {
+    $key = $pair[0].Trim()
+    if ($pair.Length -ne 2 -or $key -notin $allowed) {
         throw 'Invalid configuration entry; use only keys from .env.example.'
     }
-    [Environment]::SetEnvironmentVariable($pair[0], $pair[1], 'Process')
+    [Environment]::SetEnvironmentVariable($key, $pair[1].Trim(), 'Process')
 }
 Write-Host 'SoalKu local configuration loaded into this shell; values hidden.'
