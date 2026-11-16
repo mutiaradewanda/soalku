@@ -31,6 +31,7 @@ import {
   FileText,
   BarChart2,
   ChevronRight,
+  ChevronDown,
   Star,
   UploadCloud,
   FileUp,
@@ -1120,35 +1121,29 @@ export const GuruDashboard: React.FC = () => {
                 </Link>
               </div>
 
-              {/* Subject Category Pills */}
+              {/* Subject Category Dropdown Filter */}
               {availablePendingMapel.length > 1 && (
-                <div className="flex flex-wrap items-center gap-1.5 pb-1">
-                  <button
-                    onClick={() => setDashboardFilterMapel("SEMUA")}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition border ${
-                      dashboardFilterMapel === "SEMUA"
-                        ? "bg-[#84A282] text-white border-[#739071] shadow-sm"
-                        : "bg-[#FEFAF3] text-slate-600 border-[#B8CFB3] hover:text-slate-900"
-                    }`}
-                  >
-                    Semua ({pendingQuestions.length})
-                  </button>
-                  {availablePendingMapel.map((mapel) => {
-                    const count = pendingQuestions.filter((s) => s.mataPelajaran === mapel).length;
-                    return (
-                      <button
-                        key={mapel}
-                        onClick={() => setDashboardFilterMapel(mapel)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition border ${
-                          dashboardFilterMapel === mapel
-                            ? "bg-[#84A282] text-white border-[#739071] shadow-sm"
-                            : "bg-[#FEFAF3] text-slate-600 border-[#B8CFB3] hover:text-slate-900"
-                        }`}
-                      >
-                        {mapel} ({count})
-                      </button>
-                    );
-                  })}
+                <div className="flex items-center gap-2 pb-1">
+                  <div className="relative flex-1">
+                    <select
+                      value={dashboardFilterMapel}
+                      onChange={(e) => setDashboardFilterMapel(e.target.value)}
+                      className="w-full bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 border border-[#B8CFB3] text-slate-800 text-xs font-semibold rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-[#84A282]/30 focus:border-[#84A282] transition appearance-none cursor-pointer shadow-sm"
+                    >
+                      <option value="SEMUA">
+                        Semua Mata Pelajaran ({pendingQuestions.length})
+                      </option>
+                      {availablePendingMapel.map((mapel) => {
+                        const count = pendingQuestions.filter((s) => s.mataPelajaran === mapel).length;
+                        return (
+                          <option key={mapel} value={mapel}>
+                            {mapel} ({count})
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-[#739071] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
                 </div>
               )}
 

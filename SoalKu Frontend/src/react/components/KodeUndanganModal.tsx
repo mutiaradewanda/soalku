@@ -15,7 +15,7 @@ export const KodeUndanganModal: React.FC<KodeUndanganModalProps> = ({
   studentTingkat,
   onSuccess,
 }) => {
-  const { kodeUndanganList, redeemKodeUndangan } = useMentor();
+  const { redeemKodeUndangan } = useMentor();
   const [kodeInput, setKodeInput] = useState("");
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -24,16 +24,12 @@ export const KodeUndanganModal: React.FC<KodeUndanganModalProps> = ({
 
   if (!isOpen) return null;
 
-  const relevantCodes = kodeUndanganList.filter(
-    (k) => k.status === "AKTIF" && (k.targetTingkat === studentTingkat || k.targetTingkat === "SEMUA")
-  );
-
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!kodeInput.trim()) {
       setFeedback({
         type: "error",
-        message: "Silakan ketik atau pilih kode undangan dari guru.",
+        message: "Silakan ketik kode undangan resmi dari guru Anda.",
       });
       return;
     }
@@ -52,11 +48,6 @@ export const KodeUndanganModal: React.FC<KodeUndanganModalProps> = ({
     } else {
       setFeedback({ type: "error", message: result.message });
     }
-  };
-
-  const handleSelectChip = (kode: string) => {
-    setKodeInput(kode);
-    setFeedback(null);
   };
 
   return (
@@ -128,31 +119,6 @@ export const KodeUndanganModal: React.FC<KodeUndanganModalProps> = ({
               Dapatkan kode bimbingan resmi dari wali kelas atau guru mata pelajaran Anda.
             </p>
           </div>
-
-          {/* Quick Active Code Suggestions */}
-          {relevantCodes.length > 0 && (
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-semibold text-slate-600 block">
-                Pilihan Kode Aktif Tersedia:
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {relevantCodes.map((k) => (
-                  <button
-                    key={k.id}
-                    type="button"
-                    onClick={() => handleSelectChip(k.kode)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition border ${
-                      kodeInput === k.kode
-                        ? "bg-[#84A282] text-white border-[#739071] shadow-sm"
-                        : "bg-[#FEFAF3] hover:bg-[#F6E2E9]/60 text-[#60795e] border-[#B8CFB3]"
-                    }`}
-                  >
-                    {k.kode}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Action Buttons */}
           <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#B8CFB3]/60">

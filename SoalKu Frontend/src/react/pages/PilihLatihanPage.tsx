@@ -56,10 +56,6 @@ export const PilihLatihanPage: React.FC = () => {
             <ArrowLeft className="w-4 h-4" />
             <span>Kembali ke Dasbor</span>
           </Link>
-
-          <span className="text-xs font-semibold text-[#84A282] bg-[#F6E2E9] border border-[#B8CFB3] px-3 py-1 rounded-full">
-            Konfigurasi CBT Adaptif
-          </span>
         </div>
 
         {/* Banner Header */}

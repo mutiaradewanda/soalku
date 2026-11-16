@@ -366,10 +366,6 @@ export const MentorReviewPage: React.FC = () => {
                               #{soal.id}
                             </span>
 
-                            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#F6E2E9] text-[#60795e] border border-[#B8CFB3]">
-                              {soal.tingkat} ({soal.opsi.length} Opsi)
-                            </span>
-
                             <span className="text-xs font-semibold text-slate-700">
                               {soal.mataPelajaran} • {soal.topik}
                             </span>

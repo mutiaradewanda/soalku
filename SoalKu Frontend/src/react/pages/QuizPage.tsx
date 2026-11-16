@@ -429,7 +429,6 @@ export const QuizPage: React.FC = () => {
           <div className="bg-white border border-[#B8CFB3] rounded-3xl p-6 shadow-sm space-y-5">
             <div>
               <h4 className="text-sm font-bold text-slate-900">Navigasi Butir Soal</h4>
-              <p className="text-xs text-slate-500">Klik nomor untuk berpindah langsung</p>
             </div>
 
             {/* Status Counter */}
