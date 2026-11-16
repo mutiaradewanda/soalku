@@ -12,10 +12,12 @@ import { BeriCatatanModal } from "../components/BeriCatatanModal";
 import { EditQuestionModal } from "../components/EditQuestionModal";
 import { RejectReasonModal } from "../components/RejectReasonModal";
 import { DragonMascot } from "../components/DragonMascot";
+import { KodeUndanganModal } from "../components/KodeUndanganModal";
 import {
   LogOut,
   School,
   BookCheck,
+  KeyRound,
   Users,
   Flame,
   Trophy,
@@ -61,6 +63,7 @@ export const SdDashboard: React.FC = () => {
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [detailMateri, setDetailMateri] = useState<Materi | null>(null);
+  const [isKodeModalOpen, setIsKodeModalOpen] = useState(false);
 
   const sdMateriList = materiList.filter((m) => m.tingkat === "SD");
 
@@ -162,6 +165,14 @@ export const SdDashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsKodeModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#FEFAF3] hover:bg-[#F6E2E9]/50 text-[#739071] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-xs font-bold transition shadow-sm active:translate-y-0.5"
+              title="Masukkan Kode Undangan Guru"
+            >
+              <KeyRound className="w-4 h-4 text-[#84A282]" />
+              <span className="hidden sm:inline">Kode Undangan</span>
+            </button>
             <Link
               to="/evaluasi"
               className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-[#FEFAF3] hover:bg-[#F6E2E9]/50 text-[#739071] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-xs font-bold transition shadow-sm active:translate-y-0.5"
@@ -355,6 +366,14 @@ export const SdDashboard: React.FC = () => {
         onClose={() => setDetailMateri(null)}
         onStartPractice={handleStartPracticeFromMateri}
       />
+
+      {/* Modal Kode Undangan Guru */}
+      <KodeUndanganModal
+        isOpen={isKodeModalOpen}
+        onClose={() => setIsKodeModalOpen(false)}
+        studentTingkat="SD"
+        onSuccess={(msg) => setUploadSuccess(msg)}
+      />
     </div>
   );
 };
@@ -374,6 +393,7 @@ export const SmpDashboard: React.FC = () => {
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [detailMateri, setDetailMateri] = useState<Materi | null>(null);
+  const [isKodeModalOpen, setIsKodeModalOpen] = useState(false);
 
   const smpMateriList = materiList.filter((m) => m.tingkat === "SMP");
   const topikKelemahanAktif = topikEvaluasiList.find(
@@ -478,6 +498,14 @@ export const SmpDashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsKodeModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#FEFAF3] hover:bg-[#F6E2E9]/50 text-[#739071] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-xs font-bold transition shadow-sm active:translate-y-0.5"
+              title="Masukkan Kode Undangan Guru"
+            >
+              <KeyRound className="w-4 h-4 text-[#84A282]" />
+              <span className="hidden sm:inline">Kode Undangan</span>
+            </button>
             <Link
               to="/evaluasi"
               className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-[#FEFAF3] hover:bg-[#F6E2E9]/50 text-[#739071] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-xs font-bold transition shadow-sm active:translate-y-0.5"
@@ -812,6 +840,14 @@ export const SmpDashboard: React.FC = () => {
         isOpen={!!detailMateri}
         onClose={() => setDetailMateri(null)}
         onStartPractice={handleStartPracticeFromMateri}
+      />
+
+      {/* Modal Kode Undangan Guru */}
+      <KodeUndanganModal
+        isOpen={isKodeModalOpen}
+        onClose={() => setIsKodeModalOpen(false)}
+        studentTingkat="SMP"
+        onSuccess={(msg) => setUploadSuccess(msg)}
       />
     </div>
   );
