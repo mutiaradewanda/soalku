@@ -13,11 +13,13 @@ import { EditQuestionModal } from "../components/EditQuestionModal";
 import { RejectReasonModal } from "../components/RejectReasonModal";
 import { DragonMascot } from "../components/DragonMascot";
 import { KodeUndanganModal } from "../components/KodeUndanganModal";
+import { RiwayatSiswaModal } from "../components/RiwayatSiswaModal";
 import {
   LogOut,
   School,
   BookCheck,
   KeyRound,
+  Activity,
   Users,
   Flame,
   Trophy,
@@ -55,6 +57,10 @@ export const SdDashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const { materiList, deleteMateri, uploadMateri } = useMateri();
   const { startSession } = useQuiz();
+  const { getSiswaByNama } = useMentor();
+
+  const currentSiswa = user?.name ? getSiswaByNama(user.name) : undefined;
+  const connectedCode = currentSiswa?.kodeUndanganTerhubung;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -134,11 +140,7 @@ export const SdDashboard: React.FC = () => {
       });
     });
 
-    if (questions.length > 0) {
-      startSession("ACAK", questions.length, materi.tingkat, questions);
-    } else {
-      startSession("ACAK", 5, materi.tingkat);
-    }
+    startSession("ACAK", 10, "SD", questions);
     navigate("/latihan/quiz");
   };
 
@@ -169,10 +171,19 @@ export const SdDashboard: React.FC = () => {
             <button
               onClick={() => setIsKodeModalOpen(true)}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#FEFAF3] hover:bg-[#F6E2E9]/50 text-[#739071] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-xs font-bold transition shadow-sm active:translate-y-0.5"
-              title="Masukkan Kode Undangan Guru"
+              title={
+                connectedCode
+                  ? `Terhubung ke Guru via ${connectedCode}`
+                  : "Masukkan Kode Undangan Guru"
+              }
             >
               <KeyRound className="w-4 h-4 text-[#84A282]" />
-              <span className="hidden sm:inline">Kode Undangan</span>
+              <span className="hidden sm:inline">
+                {connectedCode ? `Kode: ${connectedCode}` : "Kode Undangan"}
+              </span>
+              {connectedCode && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              )}
             </button>
             <Link
               to="/evaluasi"
@@ -227,6 +238,23 @@ export const SdDashboard: React.FC = () => {
             <DragonMascot variant="sitting" className="w-28 sm:w-32 drop-shadow-md hover:scale-105 transition-transform" />
           </div>
         </div>
+
+        {/* Catatan Pembimbing Guru */}
+        {currentSiswa?.catatanGuru && (
+          <div className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] flex items-start gap-3 shadow-sm">
+            <div className="p-2 rounded-xl bg-[#84A282]/20 text-[#60795e] shrink-0">
+              <MessageSquare className="w-4 h-4" />
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-bold text-[#60795e] uppercase tracking-wider block">
+                Pesan Bimbingan Guru ({currentSiswa.guruPembimbing || "Wali Kelas"}):
+              </span>
+              <p className="text-xs text-slate-800 font-medium italic">
+                “{currentSiswa.catatanGuru}”
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Direct Upload Dropzone Card for SD */}
         <div className="bg-white rounded-3xl p-6 border border-[#B8CFB3] shadow-sm space-y-4">
@@ -384,7 +412,10 @@ export const SmpDashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const { materiList, deleteMateri, uploadMateri } = useMateri();
   const { startSession } = useQuiz();
-  const { topikEvaluasiList } = useMentor();
+  const { topikEvaluasiList, getSiswaByNama } = useMentor();
+
+  const currentSiswa = user?.name ? getSiswaByNama(user.name) : undefined;
+  const connectedCode = currentSiswa?.kodeUndanganTerhubung;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -467,11 +498,7 @@ export const SmpDashboard: React.FC = () => {
       });
     });
 
-    if (questions.length > 0) {
-      startSession("ACAK", questions.length, materi.tingkat, questions);
-    } else {
-      startSession("ACAK", 10, materi.tingkat);
-    }
+    startSession("ACAK", 20, "SMP", questions);
     navigate("/latihan/quiz");
   };
 
@@ -502,10 +529,19 @@ export const SmpDashboard: React.FC = () => {
             <button
               onClick={() => setIsKodeModalOpen(true)}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#FEFAF3] hover:bg-[#F6E2E9]/50 text-[#739071] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-xs font-bold transition shadow-sm active:translate-y-0.5"
-              title="Masukkan Kode Undangan Guru"
+              title={
+                connectedCode
+                  ? `Terhubung ke Guru via ${connectedCode}`
+                  : "Masukkan Kode Undangan Guru"
+              }
             >
               <KeyRound className="w-4 h-4 text-[#84A282]" />
-              <span className="hidden sm:inline">Kode Undangan</span>
+              <span className="hidden sm:inline">
+                {connectedCode ? `Kode: ${connectedCode}` : "Kode Undangan"}
+              </span>
+              {connectedCode && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              )}
             </button>
             <Link
               to="/evaluasi"
@@ -636,6 +672,23 @@ export const SmpDashboard: React.FC = () => {
               <span>Latihan Pengayaan</span>
               <ArrowRight className="w-4 h-4" />
             </button>
+          </div>
+        )}
+
+        {/* Catatan Pembimbing Guru */}
+        {currentSiswa?.catatanGuru && (
+          <div className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] flex items-start gap-3 shadow-sm">
+            <div className="p-2 rounded-xl bg-[#84A282]/20 text-[#60795e] shrink-0">
+              <MessageSquare className="w-4 h-4" />
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-bold text-[#60795e] uppercase tracking-wider block">
+                Pesan Bimbingan Guru ({currentSiswa.guruPembimbing || "Wali Kelas"}):
+              </span>
+              <p className="text-xs text-slate-800 font-medium italic">
+                “{currentSiswa.catatanGuru}”
+              </p>
+            </div>
           </div>
         )}
 
@@ -871,6 +924,7 @@ export const GuruDashboard: React.FC = () => {
   } = useMentor();
 
   const [selectedSiswaForNote, setSelectedSiswaForNote] = useState<SiswaBinaan | null>(null);
+  const [selectedSiswaForHistory, setSelectedSiswaForHistory] = useState<SiswaBinaan | null>(null);
   const [editingSoal, setEditingSoal] = useState<SoalReview | null>(null);
   const [rejectingSoal, setRejectingSoal] = useState<SoalReview | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -1030,6 +1084,11 @@ export const GuruDashboard: React.FC = () => {
                             <div>
                               <div className="flex items-center gap-2">
                                 <h4 className="text-sm font-bold text-slate-900">{siswa.nama}</h4>
+                                {siswa.kodeUndanganTerhubung && (
+                                  <span className="px-1.5 py-0.5 rounded-md bg-[#B8CFB3]/40 text-[#60795e] font-mono text-[9px] font-bold">
+                                    {siswa.kodeUndanganTerhubung}
+                                  </span>
+                                )}
                               </div>
                               <p className="text-[11px] text-slate-500">
                                 {siswa.kelas} • {siswa.totalLatihan} Bab Tuntas Dikerjakan
@@ -1082,18 +1141,28 @@ export const GuruDashboard: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Catatan Guru Row */}
-                        <div className="p-2.5 rounded-xl bg-white border border-[#B8CFB3] flex items-center justify-between gap-3 text-xs">
+                        {/* Catatan Guru & Action Buttons */}
+                        <div className="p-2.5 rounded-xl bg-white border border-[#B8CFB3] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
                           <p className="text-slate-700 italic text-[11px] line-clamp-1 flex-1">
                             “{siswa.catatanGuru}”
                           </p>
-                          <button
-                            onClick={() => setSelectedSiswaForNote(siswa)}
-                            className="px-3 py-1.5 rounded-xl bg-[#FEFAF3] hover:bg-[#F6E2E9]/60 text-[#60795e] text-xs font-bold border border-[#B8CFB3] transition flex items-center gap-1.5 shrink-0 shadow-sm"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                            <span>Beri Catatan</span>
-                          </button>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              onClick={() => setSelectedSiswaForHistory(siswa)}
+                              className="px-3 py-1.5 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:translate-y-0.5"
+                              title="Pantau riwayat modul siswa"
+                            >
+                              <Activity className="w-3.5 h-3.5" />
+                              <span>Pantau ({siswa.riwayatPengerjaan?.length || 0})</span>
+                            </button>
+                            <button
+                              onClick={() => setSelectedSiswaForNote(siswa)}
+                              className="px-3 py-1.5 rounded-xl bg-[#FEFAF3] hover:bg-[#F6E2E9]/60 text-[#60795e] text-xs font-bold border border-[#B8CFB3] transition flex items-center gap-1.5 shadow-sm active:translate-y-0.5"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              <span>Catatan</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1280,6 +1349,17 @@ export const GuruDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Student History & Monitoring Modal */}
+      <RiwayatSiswaModal
+        isOpen={!!selectedSiswaForHistory}
+        onClose={() => setSelectedSiswaForHistory(null)}
+        siswa={selectedSiswaForHistory}
+        onSaveCatatan={(siswaId, catatan) => {
+          updateCatatanSiswa(siswaId, catatan);
+          showToast("Catatan bimbingan berhasil diperbarui!");
+        }}
+      />
 
       {/* Note Modal */}
       <BeriCatatanModal

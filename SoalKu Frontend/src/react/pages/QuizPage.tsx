@@ -21,12 +21,16 @@ import {
   AlertOctagon,
 } from "lucide-react";
 import { useQuiz } from "../context/QuizContext";
+import { useAuth } from "../context/AuthContext";
+import { useMentor } from "../context/MentorContext";
 import { DigestiveDiagram } from "../components/DigestiveDiagram";
 
 const MAX_VIOLATIONS = 3;
 
 export const QuizPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { catatAktivitasSiswa } = useMentor();
   const { currentSession, answerQuestion, toggleRaguRagu, decrementTimer, finishSession } = useQuiz();
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -106,7 +110,20 @@ export const QuizPage: React.FC = () => {
         if (next >= MAX_VIOLATIONS) {
           setIsAutoSubmitting(true);
           setTimeout(() => {
-            finishSession(true, next);
+            const finished = finishSession(true, next);
+            const studentName =
+              user?.name || (finished.tingkat === "SD" ? "Adit Pratama" : "Arya Pratama");
+            catatAktivitasSiswa(studentName, {
+              idSesi: finished.idSesi,
+              tingkat: finished.tingkat,
+              mapel: finished.mapel,
+              mode: finished.mode,
+              skor: finished.skor,
+              totalBenar: finished.totalBenar,
+              totalSalah: finished.totalSalah,
+              totalSoal: finished.daftarSoal.length,
+              topik: finished.daftarSoal[0]?.topik || finished.mapel,
+            });
             navigate("/latihan/hasil");
           }, 2000);
         } else {
@@ -239,7 +256,20 @@ export const QuizPage: React.FC = () => {
   const belumCount = totalSoal - (dijawabCount + raguCount);
 
   const handleFinish = () => {
-    finishSession(false, violationsCount);
+    const finished = finishSession(false, violationsCount);
+    const studentName =
+      user?.name || (finished.tingkat === "SD" ? "Adit Pratama" : "Arya Pratama");
+    catatAktivitasSiswa(studentName, {
+      idSesi: finished.idSesi,
+      tingkat: finished.tingkat,
+      mapel: finished.mapel,
+      mode: finished.mode,
+      skor: finished.skor,
+      totalBenar: finished.totalBenar,
+      totalSalah: finished.totalSalah,
+      totalSoal: finished.daftarSoal.length,
+      topik: finished.daftarSoal[0]?.topik || finished.mapel,
+    });
     navigate("/latihan/hasil");
   };
 
@@ -318,7 +348,17 @@ export const QuizPage: React.FC = () => {
                   {currentIndex + 1}
                 </span>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Soal No. {currentIndex + 1} dari {totalSoal}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Soal No. {currentIndex + 1} dari {totalSoal}
+                    </h3>
+                    {currentSession.mode === "FOKUS_KELEMAHAN" && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 text-rose-500" />
+                        <span>Fokus Penguatan</span>
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[11px] text-slate-500">{currentSoal?.topik}</p>
                 </div>
               </div>

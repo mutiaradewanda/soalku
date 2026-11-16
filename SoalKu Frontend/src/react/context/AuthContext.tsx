@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { AuthUser, LoginPayload, RegisterPayload, UserRole } from "../types/auth";
+import { authApi } from "../services/authApi";
+import { ApiError, clearToken, getToken, setToken } from "../services/apiClient";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -30,6 +32,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
+  // Sync session with backend /api/auth/me if token exists
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      authApi.me().catch(() => {
+        clearToken();
+      });
+    }
+  }, []);
+
   const getDashboardRoute = (role: UserRole): string => {
     switch (role) {
       case "sd":
@@ -42,12 +54,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (payload: LoginPayload): Promise<AuthUser> => {
-    // Simulasi delay network
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    let email = payload.identifier.trim();
+    if (!email.includes("@")) {
+      email = `${email}@${payload.role === "guru" ? "guru" : "siswa"}.soalku.id`;
+    }
+
+    let token = "";
+    try {
+      const tokenRes = await authApi.login(email, payload.password);
+      token = tokenRes.accessToken;
+    } catch (err: any) {
+      if (err instanceof ApiError && err.status === 401) {
+        throw new Error("Kredensial atau kata sandi tidak sesuai.");
+      }
+      console.warn("Backend auth notice, proceeding with local fallback session:", err);
+    }
 
     const base = {
       id: "usr_" + Date.now(),
-      token: "jwt_token_" + Math.random().toString(36).substring(2),
+      token: token || "jwt_token_" + Math.random().toString(36).substring(2),
     };
 
     let loggedInUser: AuthUser;
@@ -85,11 +110,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (payload: RegisterPayload): Promise<AuthUser> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    let email = "";
+    let name = "";
+    let backendRole: "SISWA" | "MENTOR" = "SISWA";
+
+    if (payload.role === "sd") {
+      name = payload.fullName;
+      email = `${payload.nisn}@siswa.soalku.id`;
+      backendRole = "SISWA";
+    } else if (payload.role === "smp") {
+      name = payload.fullName;
+      email = payload.contact.includes("@") ? payload.contact : `${payload.nisn}@siswa.soalku.id`;
+      backendRole = "SISWA";
+    } else {
+      name = payload.fullNameWithTitle;
+      email = payload.email;
+      backendRole = "MENTOR";
+    }
+
+    let token = "";
+    try {
+      await authApi.register({
+        nama: name,
+        email,
+        password: payload.password,
+        role: backendRole,
+      });
+      const tokenRes = await authApi.login(email, payload.password);
+      token = tokenRes.accessToken;
+      setToken(token);
+    } catch (err: any) {
+      if (err instanceof ApiError && err.status === 409) {
+        throw new Error("Akun dengan email / NISN ini sudah terdaftar.");
+      }
+      console.warn("Backend register notice, proceeding with local fallback session:", err);
+    }
 
     const base = {
       id: "usr_" + Date.now(),
-      token: "jwt_token_" + Math.random().toString(36).substring(2),
+      token: token || "jwt_token_" + Math.random().toString(36).substring(2),
     };
 
     let newUser: AuthUser;
@@ -127,6 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    authApi.logout();
     setUser(null);
     localStorage.removeItem("soalku_auth_user");
   };

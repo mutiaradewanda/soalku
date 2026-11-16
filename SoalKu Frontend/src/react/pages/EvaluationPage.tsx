@@ -34,7 +34,10 @@ export const EvaluationPage: React.FC = () => {
   const [filterMapel, setFilterMapel] = useState<string>("SEMUA");
 
   // Get current logged in student's notes if available
-  const currentStudent = siswaList.find((s) => s.nama.toLowerCase().includes(user?.name.toLowerCase() || "arya")) || siswaList[0];
+  const currentStudent =
+    siswaList.find((s) => user?.name && s.nama.toLowerCase().includes(user.name.toLowerCase())) ||
+    siswaList.find((s) => (user?.role === "sd" ? s.nama.toLowerCase().includes("adit") : s.nama.toLowerCase().includes("arya"))) ||
+    siswaList[0];
 
   const mapelOptions = Array.from(new Set(topikEvaluasiList.map((t) => t.mataPelajaran)));
 
@@ -54,8 +57,9 @@ export const EvaluationPage: React.FC = () => {
   ).length;
 
   const handleLaunchRemedial = (topik: TopikEvaluasi) => {
-    // Start session in FOKUS_KELEMAHAN mode
-    startSession("FOKUS_KELEMAHAN", 5, topik.tingkat);
+    // Sesuai aturan: SD 10 soal dan SMP 20 soal untuk sesi fokus kelemahan / remedial
+    const targetCount = topik.tingkat === "SD" ? 10 : 20;
+    startSession("FOKUS_KELEMAHAN", targetCount, topik.tingkat);
     navigate("/latihan/quiz");
   };
 

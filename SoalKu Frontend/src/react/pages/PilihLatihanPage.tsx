@@ -32,8 +32,8 @@ export const PilihLatihanPage: React.FC = () => {
       : "FOKUS_KELEMAHAN";
 
   const [selectedMode, setSelectedMode] = useState<ModeLatihan>(initialMode);
-  const [selectedJumlah, setSelectedJumlah] = useState<number>(10);
   const [tingkat, setTingkat] = useState<"SD" | "SMP">(user?.role === "sd" ? "SD" : "SMP");
+  const [selectedJumlah, setSelectedJumlah] = useState<number>(user?.role === "sd" ? 10 : 20);
 
   const handleStartExam = () => {
     startSession(selectedMode, selectedJumlah, tingkat);
@@ -174,7 +174,7 @@ export const PilihLatihanPage: React.FC = () => {
           </label>
 
           <div className="grid grid-cols-3 gap-3">
-            {[5, 10, 15].map((jumlah) => (
+            {(tingkat === "SD" ? [5, 10, 15] : [10, 15, 20]).map((jumlah) => (
               <button
                 key={jumlah}
                 type="button"
@@ -187,7 +187,11 @@ export const PilihLatihanPage: React.FC = () => {
               >
                 <span className="text-xl">{jumlah} Soal</span>
                 <span className="text-[10px] font-normal opacity-90">
-                  {jumlah === 5 ? "Sesi Cepat" : jumlah === 10 ? "Standar CBT" : "Ujian Komprehensif"}
+                  {jumlah === 5
+                    ? "Sesi Cepat"
+                    : (tingkat === "SD" && jumlah === 10) || (tingkat === "SMP" && jumlah === 20)
+                    ? "Standar Modul"
+                    : "Komprehensif"}
                 </span>
               </button>
             ))}

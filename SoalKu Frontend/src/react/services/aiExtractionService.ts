@@ -1,8 +1,7 @@
 import { Materi, BagianMateri, SoalMateri, TingkatMateri } from "../types/materi";
 
 const GEMINI_API_KEY =
-  (import.meta as any).env?.VITE_GEMINI_API_KEY ||
-  "AQ.Ab8RN6IXtPlxxCk4HjzPSa8eGOhn_R0y1FvAmGstx5Ymf59wNg";
+  (import.meta as any).env?.VITE_GEMINI_API_KEY || "";
 
 const GEMINI_MODEL =
   (import.meta as any).env?.VITE_GEMINI_MODEL || "gemini-3.5-flash-lite";
@@ -96,7 +95,7 @@ Format respon HARUS berupa JSON murni (valid JSON) sesuai skema berikut:
 Aturan Khusus:
 1. Siswa SD: gunakan 3 opsi jawaban (A, B, C).
 2. Siswa SMP: gunakan 4 opsi jawaban (A, B, C, D).
-3. Buatkan minimal 2-3 soal latihan per bagian yang relevan langsung dengan teks/isi dokumen.
+3. Untuk modul SD buatkan total 10 butir soal latihan. Untuk modul SMP buatkan total 20 butir soal latihan yang relevan dengan isi materi.
 4. HANYA berikan JSON murni, jangan sertakan backtick markdown seperti \`\`\`json.`;
 
       if (file && (file.type === "application/pdf" || file.name.endsWith(".pdf"))) {

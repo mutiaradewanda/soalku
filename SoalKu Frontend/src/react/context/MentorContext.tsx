@@ -29,13 +29,29 @@ interface MentorContextType {
     topikNama: string,
     skor: number
   ) => { isLulus: boolean; message: string };
+  catatAktivitasSiswa: (
+    siswaNama: string,
+    sesi: {
+      idSesi: string;
+      tingkat: "SD" | "SMP";
+      mapel: string;
+      mode: string;
+      skor: number;
+      totalBenar: number;
+      totalSalah: number;
+      totalSoal: number;
+      topik?: string;
+    }
+  ) => void;
+  getSiswaByNama: (nama: string) => SiswaBinaan | undefined;
 
   // Kode Undangan Actions
   createKodeUndangan: (targetTingkat: "SD" | "SMP" | "SEMUA", customPrefix?: string) => KodeUndangan;
   salinKodeUndangan: (kode: string) => void;
   redeemKodeUndangan: (
     kode: string,
-    studentTingkat?: "SD" | "SMP"
+    studentTingkat?: "SD" | "SMP",
+    studentNama?: string
   ) => { success: boolean; message: string; kodeObj?: KodeUndangan };
 
   // Helper getters
@@ -264,6 +280,38 @@ const INITIAL_SISWA_LIST: SiswaBinaan[] = [
     statusRemedial: "Perlu Remedial",
     catatanGuru: "Cermati kembali aliran vena pulmonalis pada ringkasan materi AI ya, Arya.",
     terakhirAktif: "Hari ini, 11:20",
+    kodeUndanganTerhubung: "GURU-SMP-2026",
+    guruPembimbing: "Bu Ratna Kumalasari, S.Pd.",
+    riwayatPengerjaan: [
+      {
+        id: "rw-1",
+        idSesi: "#CBT-BIO-8421",
+        tanggal: "Hari ini, 11:20",
+        mapel: "IPA Terpadu • Sistem Pencernaan",
+        topik: "Enzim Lambung & Organ Pencernaan",
+        mode: "ACAK",
+        skor: 85,
+        totalSoal: 20,
+        totalBenar: 17,
+        totalSalah: 3,
+        akurasi: 85,
+        status: "Lulus",
+      },
+      {
+        id: "rw-2",
+        idSesi: "#CBT-BIO-6291",
+        tanggal: "Kemarin, 14:10",
+        mapel: "IPA Biologi",
+        topik: "Sistem Peredaran Darah",
+        mode: "BERWAKTU",
+        skor: 70,
+        totalSoal: 20,
+        totalBenar: 14,
+        totalSalah: 6,
+        akurasi: 70,
+        status: "Cukup",
+      },
+    ],
   },
   {
     id: "sis-2",
@@ -329,6 +377,24 @@ const INITIAL_SISWA_LIST: SiswaBinaan[] = [
     statusRemedial: "Bimbingan",
     catatanGuru: "Rajin bertanya jika belum mengerti skema fotosintesis ya, Adit.",
     terakhirAktif: "Hari ini, 08:30",
+    kodeUndanganTerhubung: "GURU-SD-2026",
+    guruPembimbing: "Pak Bambang Pamungkas",
+    riwayatPengerjaan: [
+      {
+        id: "rw-3",
+        idSesi: "#CBT-SD-3112",
+        tanggal: "Hari ini, 08:30",
+        mapel: "IPAS Ceria",
+        topik: "Bagian Tumbuhan & Fotosintesis",
+        mode: "ACAK",
+        skor: 80,
+        totalSoal: 10,
+        totalBenar: 8,
+        totalSalah: 2,
+        akurasi: 80,
+        status: "Lulus",
+      },
+    ],
   },
 ];
 
@@ -693,6 +759,147 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   };
 
+  const getSiswaByNama = (nama: string): SiswaBinaan | undefined => {
+    const clean = nama.toLowerCase().trim();
+    return siswaList.find(
+      (s) =>
+        s.nama.toLowerCase().trim() === clean ||
+        s.nama.toLowerCase().includes(clean) ||
+        clean.includes(s.nama.toLowerCase())
+    );
+  };
+
+  const catatAktivitasSiswa = (
+    siswaNama: string,
+    sesi: {
+      idSesi: string;
+      tingkat: "SD" | "SMP";
+      mapel: string;
+      mode: string;
+      skor: number;
+      totalBenar: number;
+      totalSalah: number;
+      totalSoal: number;
+      topik?: string;
+    }
+  ) => {
+    const isLulus = sesi.skor >= 70;
+    const nowTime =
+      "Hari ini, " +
+      new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+    const topikTitle = sesi.topik || sesi.mapel || "Modul Latihan Adaptif";
+
+    const newRiwayat = {
+      id: "rw-" + Date.now(),
+      idSesi: sesi.idSesi,
+      tanggal: nowTime,
+      mapel: sesi.mapel,
+      topik: topikTitle,
+      mode: sesi.mode,
+      skor: sesi.skor,
+      totalSoal: sesi.totalSoal,
+      totalBenar: sesi.totalBenar,
+      totalSalah: sesi.totalSalah,
+      akurasi: sesi.totalSoal > 0 ? Math.round((sesi.totalBenar / sesi.totalSoal) * 100) : 0,
+      status: sesi.skor >= 75 ? ("Lulus" as const) : sesi.skor >= 60 ? ("Cukup" as const) : ("Remedial" as const),
+    };
+
+    setSiswaList((prev) => {
+      let found = false;
+      const updated = prev.map((siswa) => {
+        const isTarget =
+          siswa.nama.toLowerCase().trim() === siswaNama.toLowerCase().trim() ||
+          siswa.nama.toLowerCase().includes(siswaNama.toLowerCase()) ||
+          siswaNama.toLowerCase().includes(siswa.nama.toLowerCase());
+
+        if (isTarget) {
+          found = true;
+          const oldRiwayat = siswa.riwayatPengerjaan || [];
+          const updatedRiwayat = [newRiwayat, ...oldRiwayat];
+          const newAkurasi = Math.round(
+            (siswa.akurasiRataRata * siswa.totalLatihan + sesi.skor) / (siswa.totalLatihan + 1)
+          );
+
+          let newStatusRemedial: "Perlu Remedial" | "Bimbingan" | "Tuntas" = siswa.statusRemedial;
+          let newTopikKelemahan = siswa.topikKelemahan;
+          let catatanOtomatis = siswa.catatanGuru;
+
+          if (isLulus) {
+            newStatusRemedial = "Tuntas";
+            catatanOtomatis = `Menyelesaikan ${sesi.mapel} (${sesi.mode}) dengan nilai ${sesi.skor} (${sesi.totalBenar}/${sesi.totalSoal} benar). Capaian sangat bagus!`;
+            if (siswa.topikKelemahan.toLowerCase().includes(topikTitle.toLowerCase())) {
+              newTopikKelemahan = "Tidak ada (Tuntas)";
+            }
+          } else {
+            newStatusRemedial = sesi.skor < 50 ? "Perlu Remedial" : "Bimbingan";
+            newTopikKelemahan = `${topikTitle} (${sesi.skor}%)`;
+            catatanOtomatis = `Perlu penguatan materi pada topik ${topikTitle}. Nilai latihan: ${sesi.skor}.`;
+          }
+
+          return {
+            ...siswa,
+            totalLatihan: siswa.totalLatihan + 1,
+            akurasiRataRata: newAkurasi,
+            statusRemedial: newStatusRemedial,
+            topikKelemahan: newTopikKelemahan,
+            terakhirAktif: nowTime,
+            catatanGuru: catatanOtomatis,
+            riwayatPengerjaan: updatedRiwayat,
+          };
+        }
+        return siswa;
+      });
+
+      if (!found) {
+        const newSiswaObj = {
+          id: "sis-" + Date.now(),
+          nama: siswaNama,
+          kelas: sesi.tingkat === "SD" ? "Kelas 4 SD" : "Kelas 8-A SMP",
+          tingkat: sesi.tingkat,
+          avatarColor: sesi.tingkat === "SD" ? "bg-amber-500" : "bg-[#84A282]",
+          totalLatihan: 1,
+          akurasiRataRata: sesi.skor,
+          topikKelemahan: isLulus ? "Tidak ada (Tuntas)" : `${topikTitle} (${sesi.skor}%)`,
+          statusRemedial: isLulus ? ("Tuntas" as const) : ("Bimbingan" as const),
+          catatanGuru: `Siswa baru terhubung via kode guru. Telah mengerjakan modul ${topikTitle} dengan nilai ${sesi.skor}.`,
+          terakhirAktif: nowTime,
+          riwayatPengerjaan: [newRiwayat],
+        };
+        return [newSiswaObj, ...prev];
+      }
+
+      return updated;
+    });
+
+    // Sinkronkan ke TopikEvaluasi guru jika topik sesuai
+    setTopikEvaluasiList((prev) =>
+      prev.map((te) => {
+        if (
+          te.tingkat === sesi.tingkat &&
+          (te.namaTopik.toLowerCase().includes(topikTitle.toLowerCase()) ||
+            topikTitle.toLowerCase().includes(te.namaTopik.toLowerCase()))
+        ) {
+          const totalDikerjakan = te.totalDikerjakan + sesi.totalSoal;
+          const totalBenar = te.totalBenar + sesi.totalBenar;
+          const persentaseAkurasi = Math.round((totalBenar / totalDikerjakan) * 100);
+          return {
+            ...te,
+            totalDikerjakan,
+            totalBenar,
+            persentaseAkurasi,
+            statusPenguasaan:
+              persentaseAkurasi >= 75
+                ? ("Tuntas & Sangat Baik" as const)
+                : persentaseAkurasi >= 60
+                ? ("Perlu Penguatan" as const)
+                : ("Perlu Remedial" as const),
+          };
+        }
+        return te;
+      })
+    );
+  };
+
   const createKodeUndangan = (
     targetTingkat: "SD" | "SMP" | "SEMUA" = "SMP",
     customPrefix: string = "GURU"
@@ -718,7 +925,8 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const redeemKodeUndangan = (
     kodeInput: string,
-    studentTingkat?: "SD" | "SMP"
+    studentTingkat?: "SD" | "SMP",
+    studentNama?: string
   ): { success: boolean; message: string; kodeObj?: KodeUndangan } => {
     const clean = kodeInput.trim().toUpperCase();
     if (!clean) {
@@ -752,9 +960,67 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       prev.map((k) => (k.id === found.id ? { ...k, totalDipakai: (k.totalDipakai || 0) + 1 } : k))
     );
 
+    // Hubungkan siswa ke profil guru
+    const targetName = studentNama || (studentTingkat === "SD" ? "Adit Pratama" : "Arya Pratama");
+    setSiswaList((prev) => {
+      let foundStudent = false;
+      const updated = prev.map((s) => {
+        if (
+          s.nama.toLowerCase().trim() === targetName.toLowerCase().trim() ||
+          s.nama.toLowerCase().includes(targetName.toLowerCase()) ||
+          targetName.toLowerCase().includes(s.nama.toLowerCase())
+        ) {
+          foundStudent = true;
+          return {
+            ...s,
+            kodeUndanganTerhubung: found.kode,
+            guruPembimbing: found.dibuatOleh,
+            terakhirAktif: "Baru saja terhubung",
+          };
+        }
+        return s;
+      });
+
+      if (!foundStudent) {
+        const newStudent: SiswaBinaan = {
+          id: "sis-" + Date.now(),
+          nama: targetName,
+          kelas: studentTingkat === "SD" ? "Kelas 4 SD" : "Kelas 8-A SMP",
+          tingkat: studentTingkat || "SMP",
+          avatarColor: studentTingkat === "SD" ? "bg-amber-500" : "bg-[#84A282]",
+          totalLatihan: 0,
+          akurasiRataRata: 0,
+          topikKelemahan: "Belum ada riwayat",
+          statusRemedial: "Bimbingan",
+          catatanGuru: `Siswa baru terhubung melalui kode undangan ${found.kode}.`,
+          terakhirAktif: "Baru saja terhubung",
+          kodeUndanganTerhubung: found.kode,
+          guruPembimbing: found.dibuatOleh,
+          riwayatPengerjaan: [],
+        };
+        return [newStudent, ...prev];
+      }
+      return updated;
+    });
+
+    try {
+      localStorage.setItem(
+        "soalku_connected_teacher",
+        JSON.stringify({
+          kode: found.kode,
+          guru: found.dibuatOleh,
+          tingkat: found.targetTingkat,
+          studentName: targetName,
+          connectedAt: new Date().toISOString(),
+        })
+      );
+    } catch (e) {
+      console.error("Gagal menyimpan koneksi guru ke localStorage", e);
+    }
+
     return {
       success: true,
-      message: `Selamat! Kamu berhasil terhubung ke kelas bimbingan ${found.dibuatOleh}!`,
+      message: `Selamat! Kamu berhasil terhubung ke kelas bimbingan ${found.dibuatOleh}! Nilai modul akan otomatis masuk ke laporan guru.`,
       kodeObj: found,
     };
   };
@@ -779,6 +1045,8 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         updateCatatanSiswa,
         updateStatusRemedial,
         catatHasilRemedial,
+        catatAktivitasSiswa,
+        getSiswaByNama,
         createKodeUndangan,
         salinKodeUndangan,
         redeemKodeUndangan,

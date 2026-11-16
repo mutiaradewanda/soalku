@@ -26,7 +26,7 @@ export const SessionResultPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentSession, restartSession, clearSession } = useQuiz();
   const { user, getDashboardRoute } = useAuth();
-  const { catatHasilRemedial } = useMentor();
+  const { catatHasilRemedial, catatAktivitasSiswa } = useMentor();
 
   const [filterMode, setFilterMode] = useState<"ALL" | "SALAH" | "BENAR">("ALL");
   const [expandedSoalId, setExpandedSoalId] = useState<number | null>(null);
@@ -38,12 +38,25 @@ export const SessionResultPage: React.FC = () => {
 
   useEffect(() => {
     if (currentSession && !hasRecordedRemedial) {
-      const studentName = user?.name || "Arya Pratama";
-      const topic = currentSession.daftarSoal[0]?.topik || currentSession.subjek || "Sistem Peredaran Darah";
+      const studentName =
+        user?.name || (currentSession.tingkat === "SD" ? "Adit Pratama" : "Arya Pratama");
+      const topic =
+        currentSession.daftarSoal[0]?.topik || currentSession.subjek || "Modul Belajar";
       catatHasilRemedial(studentName, topic, currentSession.skor);
+      catatAktivitasSiswa(studentName, {
+        idSesi: currentSession.idSesi,
+        tingkat: currentSession.tingkat,
+        mapel: currentSession.mapel,
+        mode: currentSession.mode,
+        skor: currentSession.skor,
+        totalBenar: currentSession.totalBenar,
+        totalSalah: currentSession.totalSalah,
+        totalSoal: currentSession.daftarSoal.length,
+        topik: topic,
+      });
       setHasRecordedRemedial(true);
     }
-  }, [currentSession, hasRecordedRemedial, user, catatHasilRemedial]);
+  }, [currentSession, hasRecordedRemedial, user, catatHasilRemedial, catatAktivitasSiswa]);
 
   if (!currentSession) {
     return (

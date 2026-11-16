@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { KeyRound, X, Check, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import { KeyRound, X, Check, CheckCircle2, AlertCircle, ArrowRight, School } from "lucide-react";
 import { useMentor } from "../context/MentorContext";
+import { useAuth } from "../context/AuthContext";
 
 interface KodeUndanganModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const KodeUndanganModal: React.FC<KodeUndanganModalProps> = ({
   studentTingkat,
   onSuccess,
 }) => {
+  const { user } = useAuth();
   const { redeemKodeUndangan } = useMentor();
   const [kodeInput, setKodeInput] = useState("");
   const [feedback, setFeedback] = useState<{
@@ -23,6 +25,14 @@ export const KodeUndanganModal: React.FC<KodeUndanganModalProps> = ({
   } | null>(null);
 
   if (!isOpen) return null;
+
+  let existingConnection: { kode: string; guru: string } | null = null;
+  try {
+    const raw = localStorage.getItem("soalku_connected_teacher");
+    if (raw) existingConnection = JSON.parse(raw);
+  } catch (e) {
+    // Ignore error
+  }
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -34,7 +44,7 @@ export const KodeUndanganModal: React.FC<KodeUndanganModalProps> = ({
       return;
     }
 
-    const result = redeemKodeUndangan(kodeInput, studentTingkat);
+    const result = redeemKodeUndangan(kodeInput, studentTingkat, user?.name);
     if (result.success) {
       setFeedback({ type: "success", message: result.message });
       if (onSuccess) {
@@ -93,6 +103,23 @@ export const KodeUndanganModal: React.FC<KodeUndanganModalProps> = ({
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             )}
             <span>{feedback.message}</span>
+          </div>
+        )}
+
+        {/* Existing Connection Info */}
+        {existingConnection && (
+          <div className="p-3 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <School className="w-4 h-4 text-[#84A282]" />
+              <div>
+                <span className="text-[11px] text-slate-500 block">Kelas Terhubung Saat Ini:</span>
+                <span className="font-bold text-slate-900 font-mono">{existingConnection.kode}</span>
+                <span className="text-slate-600"> • {existingConnection.guru}</span>
+              </div>
+            </div>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+              Aktif
+            </span>
           </div>
         )}
 

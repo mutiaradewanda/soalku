@@ -24,6 +24,21 @@ export interface SoalReview {
   reviewer?: string;
 }
 
+export interface RiwayatPengerjaanSiswa {
+  id: string;
+  idSesi: string;
+  tanggal: string;
+  mapel: string;
+  topik: string;
+  mode: string;
+  skor: number;
+  totalSoal: number;
+  totalBenar: number;
+  totalSalah: number;
+  akurasi: number;
+  status: "Lulus" | "Remedial" | "Cukup";
+}
+
 export interface SiswaBinaan {
   id: string;
   nama: string;
@@ -36,6 +51,9 @@ export interface SiswaBinaan {
   statusRemedial: "Perlu Remedial" | "Bimbingan" | "Tuntas";
   catatanGuru: string;
   terakhirAktif: string;
+  kodeUndanganTerhubung?: string;
+  guruPembimbing?: string;
+  riwayatPengerjaan?: RiwayatPengerjaanSiswa[];
 }
 
 export interface KodeUndangan {

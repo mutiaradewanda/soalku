@@ -128,6 +128,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
     setErrorMessage(null);
 
     try {
+      if (form.password.length < 8) {
+        throw new Error("Kata sandi minimal 8 karakter.");
+      }
+
       if (mode === "login") {
         if (!form.identifier.trim() || !form.password) {
           throw new Error("Lengkapi kredensial akun dan kata sandi.");

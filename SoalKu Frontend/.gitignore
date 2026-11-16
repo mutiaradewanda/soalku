@@ -9,6 +9,9 @@ pnpm-debug.log*
 dist/
 dist-ssr/
 *.local
+.env
+.env.*
+*.env
 
 # Java / Maven artifacts (for hybrid project)
 target/
