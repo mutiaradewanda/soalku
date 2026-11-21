@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Materi, BagianMateri, TingkatMateri } from "../types/materi";
+import { Materi, TingkatMateri } from "../types/materi";
 import { extractAndProcessDocument } from "../services/aiExtractionService";
 
 interface MateriContextType {
@@ -17,216 +17,8 @@ interface MateriContextType {
   resetToDefaultMateri: () => void;
 }
 
-const SEED_MATERI_LIST: Materi[] = [
-  {
-    id: 1,
-    judul: "Biologi Sistem Pencernaan",
-    tingkat: "SMP",
-    bab: "Bab 4.1",
-    mataPelajaran: "IPA Biologi",
-    deskripsi:
-      "Fungsi enzim pepsin, renin, ptialin, serta penyerapan nutrisi oleh vili usus halus dalam sistem pencernaan manusia.",
-    akurasi: 40,
-    status: "DIGENERATE",
-    namaFileAsli: "Modul_IPA_Sistem_Pencernaan_Kelas8.pdf",
-    ukuranFileKb: 420,
-    tanggalUpload: "20 Okt 2026",
-    poinKunci: [
-      "Enzim ptialin di mulut mengubah amilum menjadi maltosa.",
-      "Getah lambung memproduksi Pepsin, Renin, dan HCl [R-P-L].",
-      "Vili usus halus memaksimalkan bidang penyerapan nutrisi makanan.",
-    ],
-    bagianMateri: [
-      {
-        id: 101,
-        materiId: 1,
-        judulBagian: "Enzim Lambung & Organ Pencernaan Manusia",
-        teksRingkasan:
-          "Enzim pepsin dan HCl diproduksi oleh dinding lambung untuk mencerna protein dan membunuh kuman patogen.",
-        urutan: 1,
-        status: "DIGENERATE",
-        generatedSoal: [
-          {
-            id: 1001,
-            bagianMateriId: 101,
-            pertanyaan: "Bagian lambung memproduksi asam lambung (HCl) yang berfungsi untuk...",
-            opsi: [
-              { label: "A", teks: "Membunuh bakteri patogen dan mengaktifkan pepsin", isBenar: true },
-              { label: "B", teks: "Mengubah amilum menjadi glukosa", isBenar: false },
-              { label: "C", teks: "Mengemulsikan lemak makanan", isBenar: false },
-              { label: "D", teks: "Menyerap vitamin dan mineral ke darah", isBenar: false },
-            ],
-            kunciJawaban: "A",
-            pembahasan: "Asam klorida (HCl) berfungsi menciptakan suasana asam untuk membunuh bakteri serta mengaktifkan pepsinogen.",
-            tingkatKesulitan: "MUDAH",
-          },
-        ],
-      },
-      {
-        id: 102,
-        materiId: 1,
-        judulBagian: "Proses Penyerapan di Usus Halus",
-        teksRingkasan:
-          "Vili pada jonjot usus halus menyerap nutrisi makanan seperti glukosa, asam amino, dan asam lemak.",
-        urutan: 2,
-        status: "DIGENERATE",
-        generatedSoal: [
-          {
-            id: 1002,
-            bagianMateriId: 102,
-            pertanyaan: "Struktur pada dinding usus halus yang berfungsi memperluas bidang penyerapan nutrisi adalah...",
-            opsi: [
-              { label: "A", teks: "Vili (jonjot-jonjot usus)", isBenar: true },
-              { label: "B", teks: "Katup pylorus lambung", isBenar: false },
-              { label: "C", teks: "Kelenjar ludah sublingual", isBenar: false },
-              { label: "D", teks: "Kantong empedu", isBenar: false },
-            ],
-            kunciJawaban: "A",
-            pembahasan: "Vili atau jonjot usus halus memperbesar luas permukaan penyerapan nutrisi hingga puluhan kali lipat.",
-            tingkatKesulitan: "SEDANG",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 2,
-    judul: "Aljabar Dasar & Faktorisasi",
-    tingkat: "SMP",
-    bab: "Bab 3.2",
-    mataPelajaran: "Matematika",
-    deskripsi:
-      "Penyederhanaan suku sejenis, aturan tanda kurung, dan faktorisasi kuadrat selisih dua kuadrat a² - b² = (a+b)(a-b).",
-    akurasi: 78,
-    status: "DIGENERATE",
-    namaFileAsli: "Aljabar_Dasar_SMP_Kelas8.pdf",
-    ukuranFileKb: 310,
-    tanggalUpload: "21 Okt 2026",
-    poinKunci: [
-      "Variabel adalah lambang pengganti nilai yang belum diketahui.",
-      "Operasi penjumlahan/pengurangan hanya bisa dilakukan pada suku yang sejenis.",
-      "Rumus kuadrat sekawan: a² - b² = (a + b)(a - b).",
-    ],
-    bagianMateri: [
-      {
-        id: 201,
-        materiId: 2,
-        judulBagian: "Faktorisasi Bentuk Kuadrat Selisih",
-        teksRingkasan:
-          "Bentuk selisih kuadrat a² - b² selalu dapat difaktorkan menjadi (a+b)(a-b) secara praktis.",
-        urutan: 1,
-        status: "DIGENERATE",
-        generatedSoal: [
-          {
-            id: 2001,
-            bagianMateriId: 201,
-            pertanyaan: "Bentuk faktorisasi dari x² - 49 adalah...",
-            opsi: [
-              { label: "A", teks: "(x + 7)(x - 7)", isBenar: true },
-              { label: "B", teks: "(x - 7)(x - 7)", isBenar: false },
-              { label: "C", teks: "(x + 7)(x + 7)", isBenar: false },
-              { label: "D", teks: "(x - 49)(x + 1)", isBenar: false },
-            ],
-            kunciJawaban: "A",
-            pembahasan: "x² - 49 = x² - 7² = (x + 7)(x - 7).",
-            tingkatKesulitan: "SEDANG",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 3,
-    judul: "Sistem Peredaran Darah Manusia",
-    tingkat: "SMP",
-    bab: "Bab 4.2",
-    mataPelajaran: "IPA Terpadu (Biologi)",
-    deskripsi:
-      "Fungsi bilik jantung, katup aorta, dan sirkulasi peredaran darah ganda tertutup manusia.",
-    akurasi: 42,
-    status: "DIGENERATE",
-    namaFileAsli: "Peredaran_Darah_Manusia.pdf",
-    ukuranFileKb: 540,
-    tanggalUpload: "22 Okt 2026",
-    poinKunci: [
-      "Jantung memiliki 4 ruang utama (2 serambi dan 2 bilik).",
-      "Bilik kiri memompa darah ke seluruh tubuh melewati katup aorta.",
-      "Peredaran darah ganda terdiri dari peredaran darah besar dan kecil.",
-    ],
-    bagianMateri: [
-      {
-        id: 301,
-        materiId: 3,
-        judulBagian: "Fungsi Bilik Jantung & Katup Aorta",
-        teksRingkasan:
-          "Bilik kiri memiliki otot paling tebal untuk memompa darah ke seluruh tubuh melalui katup aorta.",
-        urutan: 1,
-        status: "DIGENERATE",
-        generatedSoal: [
-          {
-            id: 3001,
-            bagianMateriId: 301,
-            pertanyaan: "Mengapa dinding otot bilik kiri jantung lebih tebal daripada bilik kanan?",
-            opsi: [
-              { label: "A", teks: "Memompa darah beroksigen ke seluruh jaringan tubuh", isBenar: true },
-              { label: "B", teks: "Hanya memompa darah menuju paru-paru", isBenar: false },
-              { label: "C", teks: "Menerima darah langsung dari saluran pencernaan", isBenar: false },
-              { label: "D", teks: "Menampung darah kotor dari vena", isBenar: false },
-            ],
-            kunciJawaban: "A",
-            pembahasan: "Bilik kiri memerlukan kekuatan kontraksi tinggi untuk menyalurkan darah ke seluruh organ tubuh manusia.",
-            tingkatKesulitan: "SEDANG",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 4,
-    judul: "Mengenal Bagian Tumbuhan & Fotosintesis",
-    tingkat: "SD",
-    bab: "Bab 2.1",
-    mataPelajaran: "IPAS Ceria",
-    deskripsi:
-      "Fungsi akar, batang, daun, bunga, dan proses fotosintesis pada daun hijau dibantu sinar matahari.",
-    akurasi: 85,
-    status: "DIGENERATE",
-    namaFileAsli: "IPAS_Kelas4_Bagian_Tumbuhan.pdf",
-    ukuranFileKb: 280,
-    tanggalUpload: "23 Okt 2026",
-    poinKunci: [
-      "Akar menyerap air dan zat hara dari dalam tanah.",
-      "Daun memiliki klorofil hijau untuk memasak makanan (fotosintesis).",
-      "Sinar matahari dan air membantu tumbuhan menghasilkan oksigen segar.",
-    ],
-    bagianMateri: [
-      {
-        id: 401,
-        materiId: 4,
-        judulBagian: "Dapur Tumbuhan: Fotosintesis Daun",
-        teksRingkasan:
-          "Daun tumbuhan menggunakan zat hijau klorofil dan cahaya matahari untuk membuat makanan sendiri.",
-        urutan: 1,
-        status: "DIGENERATE",
-        generatedSoal: [
-          {
-            id: 4001,
-            bagianMateriId: 401,
-            pertanyaan: "Bagian tumbuhan yang bertugas menyerap air dan zat hara dari dalam tanah adalah...",
-            opsi: [
-              { label: "A", teks: "Akar", isBenar: true },
-              { label: "B", teks: "Daun", isBenar: false },
-              { label: "C", teks: "Bunga", isBenar: false },
-            ],
-            kunciJawaban: "A",
-            pembahasan: "Akar tumbuhan berada di dalam tanah dan bertugas menyerap air dan nutrisi tanah.",
-            tingkatKesulitan: "MUDAH",
-          },
-        ],
-      },
-    ],
-  },
-];
+// Awal login siswa bersih tanpa modul bawaan/dummy
+const SEED_MATERI_LIST: Materi[] = [];
 
 const MateriContext = createContext<MateriContextType | undefined>(undefined);
 
@@ -234,7 +26,12 @@ export const MateriProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [materiList, setMateriList] = useState<Materi[]>(() => {
     try {
       const saved = localStorage.getItem("soalku_materi_list");
-      return saved ? JSON.parse(saved) : SEED_MATERI_LIST;
+      if (saved) {
+        const parsed: Materi[] = JSON.parse(saved);
+        // Bersihkan modul mock/dummy bawaan (ids: 1, 2, 3, 4)
+        return parsed.filter((m) => ![1, 2, 3, 4].includes(m.id));
+      }
+      return SEED_MATERI_LIST;
     } catch {
       return SEED_MATERI_LIST;
     }
@@ -349,8 +146,8 @@ export const MateriProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const resetToDefaultMateri = () => {
-    setMateriList(SEED_MATERI_LIST);
-    setActiveMateri(SEED_MATERI_LIST[0]);
+    setMateriList([]);
+    setActiveMateri(null);
     localStorage.removeItem("soalku_materi_list");
   };
 

@@ -194,7 +194,14 @@ export const SdDashboard: React.FC = () => {
               <span>Rapor Evaluasi</span>
             </Link>
             <button
-              onClick={() => navigate("/latihan")}
+              onClick={() => {
+                if (sdMateriList.length === 0) {
+                  setUploadError("Silakan unggah berkas modul PDF terlebih dahulu sebelum memulai latihan!");
+                  fileInputRef.current?.click();
+                  return;
+                }
+                navigate("/latihan");
+              }}
               className="flex items-center gap-1.5 px-3.5 py-2 bg-[#84A282] hover:bg-[#739071] text-white rounded-xl text-xs font-bold border-b-2 border-b-[#60795e] shadow-md shadow-[#84A282]/30 active:translate-y-0.5 transition"
             >
               <span>Mulai CBT Adaptif</span>
@@ -229,10 +236,13 @@ export const SdDashboard: React.FC = () => {
         {/* Welcome Banner */}
         <div className="bg-gradient-to-r from-[#84A282] via-[#739071] to-[#60795e] rounded-3xl p-6 sm:p-8 text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="relative z-10 space-y-2 max-w-xl">
-            <h1 className="text-2xl sm:text-3xl font-black">Halo, {user?.name || "Adit Pratama"}!</h1>
+            <h1 className="text-2xl sm:text-3xl font-black">Halo, {user?.name || "Siswa SD"}!</h1>
             <p className="text-[#FEFAF3]/90 text-xs sm:text-sm">
               Kamu terdaftar di <b>{(user as any)?.grade || "Kelas 4 SD"}</b>. Orang Tua pendamping:{" "}
-              <b>{(user as any)?.parentName || "Bpk. Bambang Pamungkas"}</b>. Ayo unggah materi atau pilih latihan ceria hari ini!
+              <b>{(user as any)?.parentName || "-"}</b>.{" "}
+              {sdMateriList.length === 0
+                ? "Ayo unggah materi pelajaran (PDF) pertama kamu di bawah ini untuk belajar bersama naga SoalKu!"
+                : "Ayo buka modul belajarmu atau pilih latihan ceria hari ini!"}
             </p>
           </div>
           <div className="hidden sm:block shrink-0 relative z-10 mr-2 my-0">
@@ -341,8 +351,21 @@ export const SdDashboard: React.FC = () => {
           </div>
 
           {sdMateriList.length === 0 ? (
-            <div className="p-8 text-center bg-white rounded-2xl border border-[#B8CFB3] text-slate-500 text-xs">
-              Belum ada materi SD. Silakan unggah dokumen PDF baru melalui tombol di atas!
+            <div className="p-8 text-center bg-white rounded-3xl border border-dashed border-[#B8CFB3] space-y-3">
+              <BookOpen className="w-10 h-10 text-[#84A282] mx-auto opacity-70" />
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-slate-800">Belum Ada Modul Belajar SD</p>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Ayo unggah berkas materi pelajaran (PDF / Dokumen) melalui dropzone di atas untuk mulai membaca ringkasan materi dan latihan soal ceria bersama naga SoalKu!
+                </p>
+              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition inline-flex items-center gap-2 shadow-sm active:translate-y-0.5"
+              >
+                <UploadCloud className="w-4 h-4" />
+                <span>Unggah Modul PDF Pertama</span>
+              </button>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -432,6 +455,12 @@ export const SmpDashboard: React.FC = () => {
   const topikKelemahanAktif = topikEvaluasiList.find(
     (t) => !t.statusPenguasaan.startsWith("Tuntas") && t.persentaseAkurasi < 70
   );
+
+  const totalSoalDikerjakan = (currentSiswa?.riwayatPengerjaan || []).reduce(
+    (acc, r) => acc + (r.totalSoal || 0),
+    0
+  );
+  const akurasiSiswa = currentSiswa?.akurasiRataRata || 0;
 
   const handleDirectUpload = async (file: File) => {
     setUploadError(null);
@@ -552,7 +581,14 @@ export const SmpDashboard: React.FC = () => {
               <span>Rapor Evaluasi</span>
             </Link>
             <button
-              onClick={() => navigate("/latihan")}
+              onClick={() => {
+                if (smpMateriList.length === 0) {
+                  setUploadError("Silakan unggah berkas modul PDF terlebih dahulu sebelum memulai latihan!");
+                  fileInputRef.current?.click();
+                  return;
+                }
+                navigate("/latihan");
+              }}
               className="flex items-center gap-1.5 px-3.5 py-2 bg-[#84A282] hover:bg-[#739071] text-white rounded-xl text-xs font-bold border-b-2 border-b-[#60795e] shadow-md shadow-[#84A282]/30 active:translate-y-0.5 transition"
             >
               <span>Mulai CBT Adaptif</span>
@@ -589,91 +625,97 @@ export const SmpDashboard: React.FC = () => {
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md">
-                {(user as any)?.grade || "Kelas 8 SMP"} • NISN: {(user as any)?.nisn || "0098765432"}
+                {(user as any)?.grade || "Kelas 8 SMP"} • NISN: {(user as any)?.nisn || "-"}
               </span>
               <h1 className="text-2xl sm:text-3xl font-black">Dasbor Belajar Siswa</h1>
               <p className="text-[#FEFAF3]/90 text-xs sm:text-sm max-w-lg">
-                Target Harian Anda: 3 dari 4 Bab Selesai (75%). Selesaikan simulasi CBT adaptif untuk menjaga streak!
+                {smpMateriList.length === 0
+                  ? "Selamat datang! Unggah berkas modul pelajaran (PDF) untuk memulai rangkuman dan latihan soal adaptif AI."
+                  : currentSiswa && currentSiswa.totalLatihan > 0
+                  ? `Target Belajar: ${currentSiswa.totalLatihan} sesi latihan selesai. Terus tingkatkan capaian belajarmu!`
+                  : "Modul siap dipelajari. Buka modul di bawah atau mulai latihan untuk menguji pemahaman!"}
               </p>
             </div>
             <div className="flex items-center gap-4 bg-white/20 p-4 rounded-2xl border border-white/30 backdrop-blur-md">
               <div className="text-center">
-                <span className="text-2xl font-black text-white">82%</span>
+                <span className="text-2xl font-black text-white">{akurasiSiswa > 0 ? `${akurasiSiswa}%` : "0%"}</span>
                 <p className="text-[10px] text-[#FEFAF3]/80">Akurasi Rata-rata</p>
               </div>
               <div className="w-px h-8 bg-white/20"></div>
               <div className="text-center">
-                <span className="text-2xl font-black text-white">128</span>
+                <span className="text-2xl font-black text-white">{totalSoalDikerjakan}</span>
                 <p className="text-[10px] text-[#FEFAF3]/80">Soal Dikerjakan</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* AI Weakness Recommendation Card */}
-        {topikKelemahanAktif ? (
-          <div className="p-5 rounded-2xl bg-[#F6E2E9]/60 border border-[#B8CFB3] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-[#60795e] uppercase tracking-wider">
-                    Rekomendasi AI • Target Remedial Pekan Ini
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F6E2E9] text-rose-700 border border-[#B8CFB3]">
-                    Akurasi {topikKelemahanAktif.persentaseAkurasi}% • Perlu Remedial
-                  </span>
+        {/* AI Weakness Recommendation Card (hanya muncul setelah murid mengerjakan latihan soal) */}
+        {currentSiswa && currentSiswa.totalLatihan > 0 && (
+          topikKelemahanAktif ? (
+            <div className="p-5 rounded-2xl bg-[#F6E2E9]/60 border border-[#B8CFB3] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-[#60795e] uppercase tracking-wider">
+                      Rekomendasi AI • Target Remedial Pekan Ini
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F6E2E9] text-rose-700 border border-[#B8CFB3]">
+                      Akurasi {topikKelemahanAktif.persentaseAkurasi}% • Perlu Remedial
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-base mt-0.5">
+                    {topikKelemahanAktif.namaTopik} ({topikKelemahanAktif.mataPelajaran})
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-1">
+                    {topikKelemahanAktif.rekomendasiAksi}
+                  </p>
                 </div>
-                <h3 className="font-bold text-slate-900 text-base mt-0.5">
-                  {topikKelemahanAktif.namaTopik} ({topikKelemahanAktif.mataPelajaran})
-                </h3>
-                <p className="text-xs text-slate-600 mt-1">
-                  {topikKelemahanAktif.rekomendasiAksi}
-                </p>
               </div>
+              <button
+                onClick={() => {
+                  navigate("/latihan/pilih?mode=FOKUS_KELEMAHAN");
+                }}
+                className="px-4 py-2.5 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition shadow-sm"
+              >
+                <span>Latihan Remedial</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              onClick={() => {
-                navigate("/latihan/pilih?mode=FOKUS_KELEMAHAN");
-              }}
-              className="px-4 py-2.5 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition shadow-sm"
-            >
-              <span>Latihan Remedial</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        ) : (
-          <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-700 shrink-0 border border-emerald-200">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                    Status Remedial • Semua Target Tuntas!
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-300">
-                    Lulus KKM (&gt;= 70)
-                  </span>
+          ) : (
+            <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-700 shrink-0 border border-emerald-200">
+                  <CheckCircle2 className="w-6 h-6" />
                 </div>
-                <h3 className="font-bold text-emerald-950 text-base mt-0.5">
-                  Hebat! Tidak Ada Materi Remedial yang Tertunda
-                </h3>
-                <p className="text-xs text-emerald-800 mt-1">
-                  Seluruh materi yang sebelumnya perlu evaluasi telah Anda selesaikan dengan nilai di atas 70. Laporan kelulusan telah tercatat di Dasbor Guru.
-                </p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                      Status Remedial • Semua Target Tuntas!
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-300">
+                      Lulus KKM (&gt;= 70)
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-emerald-950 text-base mt-0.5">
+                    Hebat! Tidak Ada Materi Remedial yang Tertunda
+                  </h3>
+                  <p className="text-xs text-emerald-800 mt-1">
+                    Seluruh materi yang sebelumnya perlu evaluasi telah Anda selesaikan dengan nilai di atas 70. Laporan kelulusan telah tercatat di Dasbor Guru.
+                  </p>
+                </div>
               </div>
+              <button
+                onClick={() => {
+                  navigate("/latihan/pilih?mode=ACAK");
+                }}
+                className="px-4 py-2.5 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition shadow-sm"
+              >
+                <span>Latihan Pengayaan</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              onClick={() => {
-                navigate("/latihan/pilih?mode=ACAK");
-              }}
-              className="px-4 py-2.5 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition shadow-sm"
-            >
-              <span>Latihan Pengayaan</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
+          )
         )}
 
         {/* Catatan Pembimbing Guru */}
@@ -779,65 +821,84 @@ export const SmpDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {smpMateriList.map((materi) => (
-              <div
-                key={materi.id}
-                className="p-5 rounded-2xl bg-white border border-[#B8CFB3] hover:border-[#84A282] transition flex flex-col justify-between group shadow-sm"
+          {smpMateriList.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-3xl border border-dashed border-[#B8CFB3] space-y-3">
+              <BookOpen className="w-10 h-10 text-[#84A282] mx-auto opacity-70" />
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-slate-800">Belum Ada Modul Belajar</p>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Unggah berkas materi pembelajaran (PDF / DOCX) melalui dropzone di atas untuk langsung diringkas otomatis oleh AI dan menghasilkan butir latihan soal CBT.
+                </p>
+              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition inline-flex items-center gap-2 shadow-sm active:translate-y-0.5"
               >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-[10px] font-bold">
-                    <span className="px-2 py-0.5 rounded-full bg-[#F6E2E9] text-[#739071] border border-[#B8CFB3]">
-                      {materi.bab} • {materi.mataPelajaran}
-                    </span>
+                <UploadCloud className="w-4 h-4" />
+                <span>Unggah Berkas PDF Sekarang</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {smpMateriList.map((materi) => (
+                <div
+                  key={materi.id}
+                  className="p-5 rounded-2xl bg-white border border-[#B8CFB3] hover:border-[#84A282] transition flex flex-col justify-between group shadow-sm"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-[10px] font-bold">
+                      <span className="px-2 py-0.5 rounded-full bg-[#F6E2E9] text-[#739071] border border-[#B8CFB3]">
+                        {materi.bab} • {materi.mataPelajaran}
+                      </span>
+                    </div>
+
+                    <h4 className="font-bold text-slate-900 text-base group-hover:text-[#84A282] transition-colors">
+                      {materi.judul}
+                    </h4>
+
+                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                      {materi.deskripsi}
+                    </p>
+
+                    {/* Akurasi bar */}
+                    {materi.akurasi > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-500">Penguasaan Materi</span>
+                          <span className={`font-bold ${materi.akurasi < 50 ? "text-amber-400" : "text-[#60795e]"}`}>
+                            {materi.akurasi}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-[#e8e2d8] rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className={`h-1.5 rounded-full ${materi.akurasi < 50 ? "bg-amber-400" : "bg-emerald-400"
+                              }`}
+                            style={{ width: `${materi.akurasi}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  <h4 className="font-bold text-slate-900 text-base group-hover:text-[#84A282] transition-colors">
-                    {materi.judul}
-                  </h4>
-
-                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                    {materi.deskripsi}
-                  </p>
-
-                  {/* Akurasi bar */}
-                  {materi.akurasi > 0 && (
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-slate-500">Penguasaan Materi</span>
-                        <span className={`font-bold ${materi.akurasi < 50 ? "text-amber-400" : "text-[#60795e]"}`}>
-                          {materi.akurasi}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-[#e8e2d8] rounded-full h-1.5 overflow-hidden">
-                        <div
-                          className={`h-1.5 rounded-full ${materi.akurasi < 50 ? "bg-amber-400" : "bg-emerald-400"
-                            }`}
-                          style={{ width: `${materi.akurasi}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  )}
+                  <div className="pt-4 mt-4 border-t border-[#B8CFB3]/50 flex items-center justify-between gap-2">
+                    <button
+                      onClick={() => setDetailMateri(materi)}
+                      className="flex-1 py-2 bg-[#F6E2E9] hover:bg-[#F6E2E9]/80 border border-[#B8CFB3] text-[#739071] font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition"
+                    >
+                      <span>Ringkasan & Soal AI</span>
+                    </button>
+                    <button
+                      onClick={() => deleteMateri(materi.id)}
+                      className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition"
+                      title="Hapus Modul"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-
-                <div className="pt-4 mt-4 border-t border-[#B8CFB3]/50 flex items-center justify-between gap-2">
-                  <button
-                    onClick={() => setDetailMateri(materi)}
-                    className="flex-1 py-2 bg-[#F6E2E9] hover:bg-[#F6E2E9]/80 border border-[#B8CFB3] text-[#739071] font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition"
-                  >
-                    <span>Ringkasan & Soal AI</span>
-                  </button>
-                  <button
-                    onClick={() => deleteMateri(materi.id)}
-                    className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition"
-                    title="Hapus Modul"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Practice Modes */}
@@ -845,7 +906,14 @@ export const SmpDashboard: React.FC = () => {
           <h2 className="text-lg font-bold text-white mb-3">Pilihan Mode Latihan Kilat</h2>
           <div className="grid sm:grid-cols-3 gap-4">
             <div
-              onClick={() => navigate("/latihan/pilih?mode=ACAK")}
+              onClick={() => {
+                if (smpMateriList.length === 0) {
+                  setUploadError("Silakan unggah berkas modul PDF terlebih dahulu sebelum memulai latihan!");
+                  fileInputRef.current?.click();
+                  return;
+                }
+                navigate("/latihan/pilih?mode=ACAK");
+              }}
               className="p-5 rounded-2xl bg-white border border-[#B8CFB3] hover:border-[#84A282] shadow-sm transition cursor-pointer group"
             >
               <div className="w-10 h-10 rounded-xl bg-[#B8CFB3]/40 text-[#60795e] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
@@ -859,7 +927,14 @@ export const SmpDashboard: React.FC = () => {
             </div>
 
             <div
-              onClick={() => navigate("/latihan/pilih?mode=BERWAKTU")}
+              onClick={() => {
+                if (smpMateriList.length === 0) {
+                  setUploadError("Silakan unggah berkas modul PDF terlebih dahulu sebelum memulai simulasi ujian!");
+                  fileInputRef.current?.click();
+                  return;
+                }
+                navigate("/latihan/pilih?mode=BERWAKTU");
+              }}
               className="p-5 rounded-2xl bg-white border border-[#B8CFB3] hover:border-[#84A282] shadow-sm transition cursor-pointer group"
             >
               <div className="w-10 h-10 rounded-xl bg-[#B8CFB3]/40 text-[#60795e] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
@@ -873,7 +948,14 @@ export const SmpDashboard: React.FC = () => {
             </div>
 
             <div
-              onClick={() => navigate("/latihan/pilih?mode=FOKUS_KELEMAHAN")}
+              onClick={() => {
+                if (smpMateriList.length === 0) {
+                  setUploadError("Silakan unggah berkas modul PDF terlebih dahulu sebelum memulai latihan!");
+                  fileInputRef.current?.click();
+                  return;
+                }
+                navigate("/latihan/pilih?mode=FOKUS_KELEMAHAN");
+              }}
               className="p-5 rounded-2xl bg-white border border-[#B8CFB3] hover:border-[#84A282] shadow-sm transition cursor-pointer group"
             >
               <div className="w-10 h-10 rounded-xl bg-[#F6E2E9] text-[#739071] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
