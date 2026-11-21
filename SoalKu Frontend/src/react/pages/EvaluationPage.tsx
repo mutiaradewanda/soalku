@@ -28,7 +28,7 @@ export const EvaluationPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, getDashboardRoute } = useAuth();
   const { topikEvaluasiList, siswaList } = useMentor();
-  const { startSession } = useQuiz();
+  const { startSession, startRemedialSession } = useQuiz();
 
   const [filterTingkat, setFilterTingkat] = useState<"SEMUA" | "SMP" | "SD">("SEMUA");
   const [filterMapel, setFilterMapel] = useState<string>("SEMUA");
@@ -57,9 +57,7 @@ export const EvaluationPage: React.FC = () => {
   ).length;
 
   const handleLaunchRemedial = (topik: TopikEvaluasi) => {
-    // Sesuai aturan: SD 10 soal dan SMP 20 soal untuk sesi fokus kelemahan / remedial
-    const targetCount = topik.tingkat === "SD" ? 10 : 20;
-    startSession("FOKUS_KELEMAHAN", targetCount, topik.tingkat);
+    startRemedialSession(topik.tingkat, topik.namaTopik);
     navigate("/latihan/quiz");
   };
 

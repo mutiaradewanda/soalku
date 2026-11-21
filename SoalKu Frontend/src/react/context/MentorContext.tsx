@@ -286,9 +286,12 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           } else {
             return {
               ...siswa,
+              statusRemedial: "Perlu Remedial" as const,
+              topikKelemahan: `${topikNama} (${skor}%)`,
+              akurasiRataRata: skor,
               totalLatihan: siswa.totalLatihan + 1,
               terakhirAktif: "Baru saja",
-              catatanGuru: `Siswa telah mengikuti remedial topik "${topikNama}" dengan nilai ${skor} (< 70). Masih memerlukan bimbingan ulang.`,
+              catatanGuru: `Siswa memperoleh nilai ${skor} (< 70 KKM) pada topik "${topikNama}". Diwajibkan mengikuti latihan remedial adaptif.`,
             };
           }
         }
@@ -296,16 +299,28 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
 
       // Jika tidak ada nama spesifik yang cocok, perbarui profil siswa aktif pertama
-      if (!found && updated.length > 0 && isLulus) {
-        updated[0] = {
-          ...updated[0],
-          statusRemedial: "Tuntas" as const,
-          topikKelemahan: "Tidak ada (Tuntas Remedial)",
-          akurasiRataRata: Math.max(updated[0].akurasiRataRata, skor),
-          totalLatihan: updated[0].totalLatihan + 1,
-          terakhirAktif: "Baru saja",
-          catatanGuru: `Siswa telah menyelesaikan remedial topik "${topikNama}" dengan nilai ${skor} (LULUS >= 70). Status dinyatakan Tuntas & sudah tidak remedial lagi.`,
-        };
+      if (!found && updated.length > 0) {
+        if (isLulus) {
+          updated[0] = {
+            ...updated[0],
+            statusRemedial: "Tuntas" as const,
+            topikKelemahan: "Tidak ada (Tuntas Remedial)",
+            akurasiRataRata: Math.max(updated[0].akurasiRataRata, skor),
+            totalLatihan: updated[0].totalLatihan + 1,
+            terakhirAktif: "Baru saja",
+            catatanGuru: `Siswa telah menyelesaikan remedial topik "${topikNama}" dengan nilai ${skor} (LULUS >= 70). Status dinyatakan Tuntas & sudah tidak remedial lagi.`,
+          };
+        } else {
+          updated[0] = {
+            ...updated[0],
+            statusRemedial: "Perlu Remedial" as const,
+            topikKelemahan: `${topikNama} (${skor}%)`,
+            akurasiRataRata: skor,
+            totalLatihan: updated[0].totalLatihan + 1,
+            terakhirAktif: "Baru saja",
+            catatanGuru: `Siswa memperoleh nilai ${skor} (< 70 KKM) pada topik "${topikNama}". Diwajibkan mengikuti latihan remedial adaptif.`,
+          };
+        }
       }
       return updated;
     });
@@ -334,28 +349,40 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           } else {
             return {
               ...t,
+              persentaseAkurasi: skor,
+              statusPenguasaan: "Perlu Remedial" as const,
               totalBenar: t.totalBenar + Math.round((skor / 100) * 5),
               totalDikerjakan: t.totalDikerjakan + 5,
+              rekomendasiAksi: `Nilai latihan ${skor} (< 70 KKM). Fokus latihan remedial pada butir soal yang keliru (${topikNama}).`,
             };
           }
         }
         return t;
       });
 
-      // Jika topik tidak persis cocok tetapi siswa lulus remedial, tuntaskan topik terlemah
-      if (!topicFound && isLulus) {
-        // Cari topik dengan akurasi terendah yang masih remedial
-        const lowestIndex = updated.findIndex((t) => t.statusPenguasaan === "Perlu Remedial");
-        if (lowestIndex !== -1) {
-          updated[lowestIndex] = {
-            ...updated[lowestIndex],
-            persentaseAkurasi: Math.max(updated[lowestIndex].persentaseAkurasi, skor),
-            statusPenguasaan: "Tuntas & Sangat Baik" as const,
-            totalBenar: updated[lowestIndex].totalBenar + Math.round((skor / 100) * 5),
-            totalDikerjakan: updated[lowestIndex].totalDikerjakan + 5,
-            rekomendasiAksi: `Siswa telah menuntaskan remedial dengan nilai ${skor} (>= 70). Seluruh indikator kompetensi telah tuntas.`,
-          };
-        }
+      if (!topicFound) {
+        const newTopik: TopikEvaluasi = {
+          id: Date.now(),
+          bagianMateriId: 101,
+          namaTopik: topikNama,
+          mataPelajaran: topikNama.toLowerCase().includes("inggris")
+            ? "Bahasa Inggris"
+            : topikNama.toLowerCase().includes("matematika")
+            ? "Matematika"
+            : topikNama.toLowerCase().includes("ipa") || topikNama.toLowerCase().includes("darah")
+            ? "IPA Terpadu"
+            : "Latihan Adaptif",
+          tingkat: "SMP",
+          totalDikerjakan: 20,
+          totalBenar: Math.round((skor / 100) * 20),
+          persentaseAkurasi: skor,
+          statusPenguasaan: isLulus ? ("Tuntas & Sangat Baik" as const) : ("Perlu Remedial" as const),
+          rekomendasiAksi: isLulus
+            ? `Siswa telah menuntaskan materi dengan nilai ${skor} (>= 70).`
+            : `Nilai latihan ${skor} (< 70 KKM). Diwajibkan mengikuti remedial adaptif untuk memperkuat pemahaman.`,
+          tipsPenguatan: "Fokus pada penguasaan butir soal dan kosa kata yang belum tepat dijawab.",
+        };
+        return [newTopik, ...updated];
       }
       return updated;
     });
@@ -441,9 +468,9 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               newTopikKelemahan = "Tidak ada (Tuntas)";
             }
           } else {
-            newStatusRemedial = sesi.skor < 50 ? "Perlu Remedial" : "Bimbingan";
+            newStatusRemedial = "Perlu Remedial";
             newTopikKelemahan = `${topikTitle} (${sesi.skor}%)`;
-            catatanOtomatis = `Perlu penguatan materi pada topik ${topikTitle}. Nilai latihan: ${sesi.skor}.`;
+            catatanOtomatis = `Perlu penguatan materi pada topik ${topikTitle}. Nilai latihan: ${sesi.skor}. Diwajibkan mengikuti latihan remedial.`;
           }
 
           return {
@@ -481,8 +508,10 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           totalLatihan: 1,
           akurasiRataRata: sesi.skor,
           topikKelemahan: isLulus ? "Tidak ada (Tuntas)" : `${topikTitle} (${sesi.skor}%)`,
-          statusRemedial: isLulus ? ("Tuntas" as const) : ("Bimbingan" as const),
-          catatanGuru: `Siswa baru terhubung via kode guru. Telah mengerjakan modul ${topikTitle} dengan nilai ${sesi.skor}.`,
+          statusRemedial: isLulus ? ("Tuntas" as const) : ("Perlu Remedial" as const),
+          catatanGuru: `Siswa mengerjakan modul ${topikTitle} dengan nilai ${sesi.skor}. ${
+            isLulus ? "Capaian tuntas." : "Diwajibkan mengikuti remedial adaptif."
+          }`,
           terakhirAktif: nowTime,
           kodeUndanganTerhubung: connectedCode,
           guruPembimbing: connectedGuru,
@@ -495,13 +524,15 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
 
     // Sinkronkan ke TopikEvaluasi guru jika topik sesuai
-    setTopikEvaluasiList((prev) =>
-      prev.map((te) => {
+    setTopikEvaluasiList((prev) => {
+      let matchFound = false;
+      const updated = prev.map((te) => {
         if (
           te.tingkat === sesi.tingkat &&
           (te.namaTopik.toLowerCase().includes(topikTitle.toLowerCase()) ||
             topikTitle.toLowerCase().includes(te.namaTopik.toLowerCase()))
         ) {
+          matchFound = true;
           const totalDikerjakan = te.totalDikerjakan + sesi.totalSoal;
           const totalBenar = te.totalBenar + sesi.totalBenar;
           const persentaseAkurasi = Math.round((totalBenar / totalDikerjakan) * 100);
@@ -511,16 +542,40 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             totalBenar,
             persentaseAkurasi,
             statusPenguasaan:
-              persentaseAkurasi >= 75
+              persentaseAkurasi >= 70
                 ? ("Tuntas & Sangat Baik" as const)
-                : persentaseAkurasi >= 60
-                ? ("Perlu Penguatan" as const)
                 : ("Perlu Remedial" as const),
+            rekomendasiAksi:
+              persentaseAkurasi >= 70
+                ? "Telah menuntaskan kriteria kelulusan KKM."
+                : `Fokus latihan remedial pada butir soal yang keliru (${topikTitle}).`,
           };
         }
         return te;
-      })
-    );
+      });
+
+      if (!matchFound) {
+        const newAkurasi = sesi.totalSoal > 0 ? Math.round((sesi.totalBenar / sesi.totalSoal) * 100) : 0;
+        const newTopik: TopikEvaluasi = {
+          id: Date.now(),
+          bagianMateriId: 101,
+          namaTopik: topikTitle,
+          mataPelajaran: sesi.mapel,
+          tingkat: sesi.tingkat,
+          totalDikerjakan: sesi.totalSoal,
+          totalBenar: sesi.totalBenar,
+          persentaseAkurasi: newAkurasi,
+          statusPenguasaan: newAkurasi >= 70 ? ("Tuntas & Sangat Baik" as const) : ("Perlu Remedial" as const),
+          rekomendasiAksi:
+            newAkurasi >= 70
+              ? "Telah menuntaskan kriteria kelulusan KKM."
+              : `Nilai ${newAkurasi} belum tuntas KKM 70. Fokus latihan remedial pada butir soal yang keliru (${topikTitle}).`,
+          tipsPenguatan: "Fokus pada penguasaan butir soal dan kosa kata yang belum tepat dijawab.",
+        };
+        return [newTopik, ...updated];
+      }
+      return updated;
+    });
   };
 
   const createKodeUndangan = (

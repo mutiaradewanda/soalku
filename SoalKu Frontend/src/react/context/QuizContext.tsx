@@ -11,6 +11,7 @@ interface QuizContextType {
     customMapel?: string,
     customSubjek?: string
   ) => SesiLatihan;
+  startRemedialSession: (tingkat?: "SD" | "SMP", customTopik?: string) => SesiLatihan;
   answerQuestion: (soalId: number, opsiIndex: number) => void;
   toggleRaguRagu: (soalId: number) => void;
   decrementTimer: () => void;
@@ -697,6 +698,517 @@ const BANK_SOAL_SD: SoalQuiz[] = [
 ];
 
 const STORAGE_KEY_MISTAKES = "soalku_riwayat_kesalahan";
+export const STORAGE_KEY_WRONG_QUESTIONS = "soalku_soal_salah_terakhir";
+
+const generateVocabularyDrills = (tingkat: "SD" | "SMP"): SoalQuiz[] => {
+  if (tingkat === "SD") {
+    return [
+      {
+        id: 70001,
+        tingkat: "SD",
+        bagianMateriId: 701,
+        topik: "Vocabulary - Benda Sekitar",
+        pertanyaan: "What is the English word for 'buku catatan'?",
+        opsi: [
+          { label: "A", teks: "Notebook" },
+          { label: "B", teks: "Eraser" },
+          { label: "C", teks: "Ruler" },
+        ],
+        kunciJawabanIndex: 0,
+        pembahasan: "Buku catatan dalam Bahasa Inggris adalah notebook.",
+        kesulitan: "MUDAH",
+        insightKelemahan: "Target Remedial Vocabulary: Mengingat kosa kata alat tulis.",
+      },
+      {
+        id: 70002,
+        tingkat: "SD",
+        bagianMateriId: 701,
+        topik: "Vocabulary - Hewan",
+        pertanyaan: "Which animal can swim gracefully in the river?",
+        opsi: [
+          { label: "A", teks: "A fish" },
+          { label: "B", teks: "A cat" },
+          { label: "C", teks: "A rabbit" },
+        ],
+        kunciJawabanIndex: 0,
+        pembahasan: "Ikan (fish) berenang di air.",
+        kesulitan: "MUDAH",
+        insightKelemahan: "Target Remedial Vocabulary: Mengingat kosa kata hewan.",
+      },
+      {
+        id: 70003,
+        tingkat: "SD",
+        bagianMateriId: 701,
+        topik: "Vocabulary - Lawan Kata",
+        pertanyaan: "What is the opposite (lawan kata) of 'big'?",
+        opsi: [
+          { label: "A", teks: "Small" },
+          { label: "B", teks: "Tall" },
+          { label: "C", teks: "Heavy" },
+        ],
+        kunciJawabanIndex: 0,
+        pembahasan: "Lawan kata dari big (besar) adalah small (kecil).",
+        kesulitan: "MUDAH",
+        insightKelemahan: "Target Remedial Vocabulary: Pasangan antonim dasar.",
+      },
+      {
+        id: 70004,
+        tingkat: "SD",
+        bagianMateriId: 701,
+        topik: "Vocabulary - Ungkapan Santun",
+        pertanyaan: "When your mother gives you a delicious cake, you say...",
+        opsi: [
+          { label: "A", teks: "Thank you, Mom" },
+          { label: "B", teks: "Good night" },
+          { label: "C", teks: "I am sorry" },
+        ],
+        kunciJawabanIndex: 0,
+        pembahasan: "Ucapkan 'Thank you' ketika menerima kebaikan atau hadiah.",
+        kesulitan: "MUDAH",
+        insightKelemahan: "Target Remedial Vocabulary: Ungkapan terima kasih sehari-hari.",
+      },
+      {
+        id: 70005,
+        tingkat: "SD",
+        bagianMateriId: 701,
+        topik: "Vocabulary - Anggota Tubuh",
+        pertanyaan: "We use our ears to...",
+        opsi: [
+          { label: "A", teks: "Hear sounds" },
+          { label: "B", teks: "See colors" },
+          { label: "C", teks: "Smell soup" },
+        ],
+        kunciJawabanIndex: 0,
+        pembahasan: "Telinga (ears) digunakan untuk mendengar suara (hear sounds).",
+        kesulitan: "MUDAH",
+        insightKelemahan: "Target Remedial Vocabulary: Fungsi panca indra.",
+      },
+      {
+        id: 70006,
+        tingkat: "SD",
+        bagianMateriId: 701,
+        topik: "Vocabulary - Profesi",
+        pertanyaan: "A person who helps sick people in a clinic or hospital is a...",
+        opsi: [
+          { label: "A", teks: "Doctor" },
+          { label: "B", teks: "Farmer" },
+          { label: "C", teks: "Pilot" },
+        ],
+        kunciJawabanIndex: 0,
+        pembahasan: "Dokter (doctor) merawat orang yang sakit di rumah sakit.",
+        kesulitan: "MUDAH",
+        insightKelemahan: "Target Remedial Vocabulary: Kosa kata profesi pekerjaan.",
+      },
+      {
+        id: 70007,
+        tingkat: "SD",
+        bagianMateriId: 701,
+        topik: "Vocabulary - Warna",
+        pertanyaan: "The color of fresh healthy grass is...",
+        opsi: [
+          { label: "A", teks: "Green" },
+          { label: "B", teks: "Purple" },
+          { label: "C", teks: "Orange" },
+        ],
+        kunciJawabanIndex: 0,
+        pembahasan: "Rumput segar berwarna hijau (green).",
+        kesulitan: "MUDAH",
+        insightKelemahan: "Target Remedial Vocabulary: Kosa kata warna alam.",
+      },
+      {
+        id: 70008,
+        tingkat: "SD",
+        bagianMateriId: 701,
+        topik: "Vocabulary - Buah",
+        pertanyaan: "Which of the following is a delicious sweet fruit?",
+        opsi: [
+          { label: "A", teks: "Banana" },
+          { label: "B", teks: "Table" },
+          { label: "C", teks: "Pencil" },
+        ],
+        kunciJawabanIndex: 0,
+        pembahasan: "Pisang (banana) adalah buah.",
+        kesulitan: "MUDAH",
+        insightKelemahan: "Target Remedial Vocabulary: Kosa kata makanan dan buah.",
+      },
+      {
+        id: 70009,
+        tingkat: "SD",
+        bagianMateriId: 701,
+        topik: "Vocabulary - Emosi",
+        pertanyaan: "The opposite of 'sad' is...",
+        opsi: [
+          { label: "A", teks: "Happy" },
+          { label: "B", teks: "Angry" },
+          { label: "C", teks: "Sleepy" },
+        ],
+        kunciJawabanIndex: 0,
+        pembahasan: "Lawan kata dari sad (sedih) adalah happy (gembira).",
+        kesulitan: "MUDAH",
+        insightKelemahan: "Target Remedial Vocabulary: Kata sifat perasaan/emosi.",
+      },
+      {
+        id: 70010,
+        tingkat: "SD",
+        bagianMateriId: 701,
+        topik: "Vocabulary - Waktu",
+        pertanyaan: "When meeting a teacher at 10:00 AM, you say...",
+        opsi: [
+          { label: "A", teks: "Good morning" },
+          { label: "B", teks: "Good night" },
+          { label: "C", teks: "Goodbye" },
+        ],
+        kunciJawabanIndex: 0,
+        pembahasan: "Pukul 10:00 pagi menggunakan sapaan Good morning.",
+        kesulitan: "MUDAH",
+        insightKelemahan: "Target Remedial Vocabulary: Sapaan berdasarkan waktu.",
+      },
+    ];
+  }
+
+  return [
+    {
+      id: 80001,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Contextual Meaning",
+      pertanyaan: "The city experienced rapid industrial growth. The word 'rapid' is closest in meaning to...",
+      opsi: [
+        { label: "A", teks: "fast and quick" },
+        { label: "B", teks: "very slow" },
+        { label: "C", teks: "boring and dull" },
+        { label: "D", teks: "extremely heavy" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "'Rapid' berarti cepat atau pesat (fast and quick).",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Pemahaman sinonim kontekstual.",
+    },
+    {
+      id: 80002,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Antonyms",
+      pertanyaan: "What is the antonym (opposite meaning) of the word 'generous'?",
+      opsi: [
+        { label: "A", teks: "Stingy" },
+        { label: "B", teks: "Polite" },
+        { label: "C", teks: "Honest" },
+        { label: "D", teks: "Helpful" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Generous (dermawan) berlawanan dengan stingy (pelit).",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Pasangan antonim kata sifat kepribadian.",
+    },
+    {
+      id: 80003,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Phrasal Verbs",
+      pertanyaan: "The school committee had to ___ the sports tournament because of heavy rainfall.",
+      opsi: [
+        { label: "A", teks: "postpone" },
+        { label: "B", teks: "continue" },
+        { label: "C", teks: "celebrate" },
+        { label: "D", teks: "applaud" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Postpone berarti menunda kegiatan (put off).",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Kata kerja formal dalam konteks.",
+    },
+    {
+      id: 80004,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Phrasal Verbs",
+      pertanyaan: "She always helps her mother to 'look after' her younger siblings. 'Look after' means...",
+      opsi: [
+        { label: "A", teks: "to take care of" },
+        { label: "B", teks: "to search for" },
+        { label: "C", teks: "to ignore" },
+        { label: "D", teks: "to look at mirror" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "'Look after' berarti merawat atau mengasuh (to take care of).",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Pemahaman makna idiomatis phrasal verb.",
+    },
+    {
+      id: 80005,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Adjectives",
+      pertanyaan: "After climbing the mountain for seven hours, the hikers were completely 'exhausted'. 'Exhausted' means...",
+      opsi: [
+        { label: "A", teks: "extremely tired and fatigued" },
+        { label: "B", teks: "very energetic" },
+        { label: "C", teks: "cheerful and happy" },
+        { label: "D", teks: "feeling cold" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "'Exhausted' berarti sangat lelah (extremely tired).",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Kata sifat intensitas tinggi.",
+    },
+    {
+      id: 80006,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Everyday Expressions",
+      pertanyaan: "Which of the following is the most polite expression to request someone's assistance?",
+      opsi: [
+        { label: "A", teks: "Could you please assist me with this calculation?" },
+        { label: "B", teks: "Hey, do this right now!" },
+        { label: "C", teks: "Give me your work!" },
+        { label: "D", teks: "I demand your help immediately!" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "'Could you please assist me...' adalah permohonan bantuan paling santun.",
+      kesulitan: "MUDAH",
+      insightKelemahan: "Target Remedial Vocabulary: Politeness and polite requests.",
+    },
+    {
+      id: 80007,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Synonyms",
+      pertanyaan: "The visitors marveled at the 'enormous' ancient stone temple. 'Enormous' is synonymous with...",
+      opsi: [
+        { label: "A", teks: "gigantic and huge" },
+        { label: "B", teks: "tiny and miniature" },
+        { label: "C", teks: "narrow and deep" },
+        { label: "D", teks: "rough and sharp" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Enormous bermakna luar biasa besar / raksasa (gigantic / huge).",
+      kesulitan: "MUDAH",
+      insightKelemahan: "Target Remedial Vocabulary: Kosa kata deskriptif ukuran.",
+    },
+    {
+      id: 80008,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Apology Expressions",
+      pertanyaan: "You accidentally spilled water on your classmate's notebook. What should you immediately say?",
+      opsi: [
+        { label: "A", teks: "I am terribly sorry, let me help you dry it." },
+        { label: "B", teks: "You are welcome!" },
+        { label: "C", teks: "Congratulations on your notes!" },
+        { label: "D", teks: "Good afternoon, nice to meet you." },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Ungkapan permohonan maaf atas ketidaksengajaan adalah 'I am terribly sorry'.",
+      kesulitan: "MUDAH",
+      insightKelemahan: "Target Remedial Vocabulary: Ungkapan permintaan maaf sosial.",
+    },
+    {
+      id: 80009,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Professions",
+      pertanyaan: "A professional who designs blueprints for modern houses and bridges is an...",
+      opsi: [
+        { label: "A", teks: "architect" },
+        { label: "B", teks: "author" },
+        { label: "C", teks: "artist" },
+        { label: "D", teks: "accountant" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Architect (arsitek) adalah profesi yang merancang denah dan konstruksi bangunan.",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Kosa kata seputar profesi keahlian.",
+    },
+    {
+      id: 80010,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Context Clues",
+      pertanyaan: "A delivery box marked with 'FRAGILE' warning sticker indicates that the contents are...",
+      opsi: [
+        { label: "A", teks: "easily broken or damaged" },
+        { label: "B", teks: "extremely heavy in weight" },
+        { label: "C", teks: "dangerous and poisonous" },
+        { label: "D", teks: "delicious to consume" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "'Fragile' berarti barang mudah pecah atau rusak jika terjatuh.",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Membaca tanda petunjuk kemasan publik.",
+    },
+    {
+      id: 80011,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Synonyms",
+      pertanyaan: "The young soldier showed a 'courageous' attitude during the rescue mission. 'Courageous' means...",
+      opsi: [
+        { label: "A", teks: "brave and fearless" },
+        { label: "B", teks: "timid and shy" },
+        { label: "C", teks: "proud and arrogant" },
+        { label: "D", teks: "weak and nervous" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Courageous adalah sinonim dari brave (pemberani / berani).",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Kata sifat keberanian.",
+    },
+    {
+      id: 80012,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Antonyms",
+      pertanyaan: "The train will 'depart' from platform 3 at 08:30 AM. What is the antonym of 'depart'?",
+      opsi: [
+        { label: "A", teks: "Arrive" },
+        { label: "B", teks: "Leave" },
+        { label: "C", teks: "Move" },
+        { label: "D", teks: "Travel" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Depart (berangkat) berlawanan dengan arrive (tiba / sampai).",
+      kesulitan: "MUDAH",
+      insightKelemahan: "Target Remedial Vocabulary: Istilah transportasi umum.",
+    },
+    {
+      id: 80013,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Adjectives",
+      pertanyaan: "The fresh morning air in the pine forest is invigorating and clean. The opposite of 'fresh' is...",
+      opsi: [
+        { label: "A", teks: "polluted and stale" },
+        { label: "B", teks: "sweet" },
+        { label: "C", teks: "warm" },
+        { label: "D", teks: "breezy" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Lawan dari fresh (segar) adalah polluted (tercemar / basi).",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Kosa kata lingkungan dan kondisi alam.",
+    },
+    {
+      id: 80014,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Public Places",
+      pertanyaan: "A public building where valuable artifacts and historic artworks are curated is a...",
+      opsi: [
+        { label: "A", teks: "museum" },
+        { label: "B", teks: "pharmacy" },
+        { label: "C", teks: "warehouse" },
+        { label: "D", teks: "gymnasium" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Museum adalah tempat memamerkan benda bersejarah dan artefak seni.",
+      kesulitan: "MUDAH",
+      insightKelemahan: "Target Remedial Vocabulary: Kosa kata fasilitas umum bersejarah.",
+    },
+    {
+      id: 80015,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Verbs",
+      pertanyaan: "Regular exercise and adequate sleep can 'enhance' your immune system. 'Enhance' means...",
+      opsi: [
+        { label: "A", teks: "improve and strengthen" },
+        { label: "B", teks: "destroy and weaken" },
+        { label: "C", teks: "replace" },
+        { label: "D", teks: "prevent" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "'Enhance' berarti meningkatkan atau memperkuat (improve and strengthen).",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Kata kerja kognitif tingkat lanjut.",
+    },
+    {
+      id: 80016,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Response Expressions",
+      pertanyaan: "Rian: 'Could I borrow your pencil sharpener?' - Dina: 'Sure, ___.'",
+      opsi: [
+        { label: "A", teks: "here you are" },
+        { label: "B", teks: "I disagree" },
+        { label: "C", teks: "no way at all" },
+        { label: "D", teks: "see you next time" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "'Here you are' adalah frasa santun saat menyerahkan benda yang dipinjam.",
+      kesulitan: "MUDAH",
+      insightKelemahan: "Target Remedial Vocabulary: Ungkapan transaksi meminjam barang.",
+    },
+    {
+      id: 80017,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Historical Context",
+      pertanyaan: "Archaeologists discovered ancient pottery dating back two thousand years. 'Ancient' means...",
+      opsi: [
+        { label: "A", teks: "belonging to very distant past" },
+        { label: "B", teks: "brand new model" },
+        { label: "C", teks: "futuristic and digital" },
+        { label: "D", teks: "cheap and worthless" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Ancient berarti kuno / berasal dari masa lampau ribuan tahun lalu.",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Kosa kata kronologis waktu sejarah.",
+    },
+    {
+      id: 80018,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Community Helpers",
+      pertanyaan: "A brave public worker whose primary duty is combating hazardous blazes and fires is a...",
+      opsi: [
+        { label: "A", teks: "firefighter" },
+        { label: "B", teks: "mechanic" },
+        { label: "C", teks: "carpenter" },
+        { label: "D", teks: "fisherman" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Firefighter (pemadam kebakaran) bertugas memadamkan api.",
+      kesulitan: "MUDAH",
+      insightKelemahan: "Target Remedial Vocabulary: Nama profesi pelayanan darurat.",
+    },
+    {
+      id: 80019,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Idiomatic Expressions",
+      pertanyaan: "'The English quiz was a piece of cake for Anita because she had studied well.' The idiom 'a piece of cake' means...",
+      opsi: [
+        { label: "A", teks: "very easy and effortless" },
+        { label: "B", teks: "delicious sweet bakery" },
+        { label: "C", teks: "confusing and difficult" },
+        { label: "D", teks: "taking too much time" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "Idiom 'a piece of cake' berarti sesuatu yang sangat mudah dikerjakan.",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Idiom umum Bahasa Inggris.",
+    },
+    {
+      id: 80020,
+      tingkat: "SMP",
+      bagianMateriId: 801,
+      topik: "Vocabulary - Contextual Adjectives",
+      pertanyaan: "Students must always be ___ and attentive when conducting chemical experiments in the laboratory.",
+      opsi: [
+        { label: "A", teks: "cautious and careful" },
+        { label: "B", teks: "reckless and noisy" },
+        { label: "C", teks: "careless" },
+        { label: "D", teks: "sleepy and lazy" },
+      ],
+      kunciJawabanIndex: 0,
+      pembahasan: "'Cautious and careful' (berhati-hati) adalah sikap yang wajib saat praktikum.",
+      kesulitan: "SEDANG",
+      insightKelemahan: "Target Remedial Vocabulary: Kata sifat kewaspadaan kontekstual.",
+    },
+  ];
+};
 
 // Data awal kelemahan adaptif siswa (Use Case 3 & 10 PRD)
 const INITIAL_MISTAKE_MAP: Record<number, { countSalah: number; lastSalahAt: number }> = {
@@ -1000,12 +1512,14 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     })();
 
+    const wrongQuestions: SoalQuiz[] = [];
     session.daftarSoal.forEach((soal) => {
       const jawaban = session.jawabanMap[soal.id];
       if (jawaban && jawaban.selectedOpsiIndex === soal.kunciJawabanIndex) {
         benar++;
       } else {
         salah++;
+        wrongQuestions.push(soal);
         // Soal salah atau belum dijawab dicatat ke riwayat kelemahan siswa
         const curr = mistakeMap[soal.id]?.countSalah || 0;
         mistakeMap[soal.id] = {
@@ -1017,6 +1531,9 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       localStorage.setItem(STORAGE_KEY_MISTAKES, JSON.stringify(mistakeMap));
+      if (wrongQuestions.length > 0) {
+        localStorage.setItem(STORAGE_KEY_WRONG_QUESTIONS, JSON.stringify(wrongQuestions));
+      }
     } catch (e) {
       console.error("Gagal menyimpan riwayat kesalahan soal", e);
     }
@@ -1061,6 +1578,88 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
+  const startRemedialSession = (
+    tingkat: "SD" | "SMP" = "SMP",
+    customTopik?: string
+  ): SesiLatihan => {
+    const targetCount = tingkat === "SD" ? 10 : 20;
+
+    let wrongQuestions: SoalQuiz[] = [];
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_WRONG_QUESTIONS);
+      if (raw) {
+        wrongQuestions = JSON.parse(raw);
+      }
+    } catch (e) {
+      console.warn("Gagal membaca soal salah:", e);
+    }
+
+    let detectedTopic = customTopik || "";
+    if (!detectedTopic && wrongQuestions.length > 0) {
+      detectedTopic = wrongQuestions[0].topik || "";
+    }
+
+    const combinedWrongText = (
+      detectedTopic + " " + wrongQuestions.map((q) => q.pertanyaan + " " + q.topik).join(" ")
+    ).toLowerCase();
+
+    const isVocabWeakness =
+      combinedWrongText.includes("vocab") ||
+      combinedWrongText.includes("meaning") ||
+      combinedWrongText.includes("synonym") ||
+      combinedWrongText.includes("antonym") ||
+      combinedWrongText.includes("greeting") ||
+      combinedWrongText.includes("expression") ||
+      combinedWrongText.includes("kosa kata") ||
+      combinedWrongText.includes("inggris");
+
+    // Pool awal: gunakan butir soal yang sebelumnya dijawab salah
+    let remedialPool: SoalQuiz[] = wrongQuestions.map((q, idx) => ({
+      ...q,
+      id: q.id + 50000 + idx,
+      insightKelemahan: `Target Remedial: Evaluasi butir soal yang sebelumnya belum tepat dijawab.`,
+    }));
+
+    // Generate bank soal penguatan kosakata/topik terkait
+    const drillQuestions = generateVocabularyDrills(tingkat);
+    const existingPertanyaan = new Set(remedialPool.map((q) => q.pertanyaan.trim().toLowerCase()));
+
+    drillQuestions.forEach((q) => {
+      if (!existingPertanyaan.has(q.pertanyaan.trim().toLowerCase())) {
+        remedialPool.push(q);
+        existingPertanyaan.add(q.pertanyaan.trim().toLowerCase());
+      }
+    });
+
+    if (remedialPool.length < targetCount) {
+      let multiplier = 1;
+      const basePool = [...remedialPool];
+      while (remedialPool.length < targetCount) {
+        const slice = basePool.slice(0, targetCount - remedialPool.length).map((q, idx) => ({
+          ...q,
+          id: q.id + 20000 * multiplier + idx,
+        }));
+        remedialPool = [...remedialPool, ...slice];
+        multiplier++;
+      }
+    } else if (remedialPool.length > targetCount) {
+      remedialPool = remedialPool.slice(0, targetCount);
+    }
+
+    const subjectTitle = isVocabWeakness
+      ? "Vocabulary & Daily Expressions (Bahasa Inggris)"
+      : detectedTopic || "Materi Remedial Adaptif";
+
+    return startSession(
+      "FOKUS_KELEMAHAN",
+      targetCount,
+      tingkat,
+      remedialPool,
+      `Remedial: ${subjectTitle}`,
+      `Kelas ${tingkat === "SD" ? "4 SD" : "8 SMP"} • Remedial Adaptif AI`
+    );
+  };
+
   const clearSession = () => {
     setCurrentSession(null);
     localStorage.removeItem("soalku_active_session");
@@ -1071,6 +1670,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         currentSession,
         startSession,
+        startRemedialSession,
         answerQuestion,
         toggleRaguRagu,
         decrementTimer,

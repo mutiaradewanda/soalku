@@ -420,7 +420,7 @@ export const SmpDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { materiList, deleteMateri, uploadMateri } = useMateri();
-  const { startSession } = useQuiz();
+  const { startSession, startRemedialSession } = useQuiz();
   const { topikEvaluasiList, getSiswaByNama } = useMentor();
 
   const currentSiswa = user?.name ? getSiswaByNama(user.name) : undefined;
@@ -438,9 +438,36 @@ export const SmpDashboard: React.FC = () => {
 
   const smpMateriList = materiList.filter((m) => m.tingkat === "SMP");
   const detailMateri = materiList.find((m) => m.id === detailMateriId) || null;
-  const topikKelemahanAktif = topikEvaluasiList.find(
-    (t) => !t.statusPenguasaan.startsWith("Tuntas") && t.persentaseAkurasi < 70
-  );
+
+  const lastRiwayat = currentSiswa?.riwayatPengerjaan?.[0];
+  const isLastFailed = lastRiwayat ? lastRiwayat.skor < 70 : false;
+  const isStudentRemedial =
+    currentSiswa &&
+    (currentSiswa.statusRemedial === "Perlu Remedial" ||
+      currentSiswa.statusRemedial === "Bimbingan" ||
+      currentSiswa.akurasiRataRata < 70 ||
+      isLastFailed);
+
+  const topikKelemahanAktif =
+    topikEvaluasiList.find(
+      (t) => !t.statusPenguasaan.startsWith("Tuntas") && t.persentaseAkurasi < 70
+    ) ||
+    (isStudentRemedial
+      ? {
+          id: 999999,
+          namaTopik:
+            lastRiwayat?.topik ||
+            currentSiswa?.topikKelemahan?.replace(/\s*\(\d+%\)/, "") ||
+            "Evaluasi Materi Terakhir",
+          mataPelajaran: lastRiwayat?.mapel || "Latihan Adaptif",
+          tingkat: "SMP" as const,
+          totalDikerjakan: lastRiwayat?.totalSoal || 20,
+          totalBenar: lastRiwayat?.totalBenar || 0,
+          persentaseAkurasi: lastRiwayat?.skor ?? currentSiswa?.akurasiRataRata ?? 0,
+          statusPenguasaan: "Perlu Remedial" as const,
+          rekomendasiAksi: `Skor latihan terakhir: ${lastRiwayat?.skor ?? 0}% (Belum tuntas KKM 70). Fokus latihan remedial adaptif telah disiapkan untuk butir soal yang keliru.`,
+        }
+      : undefined);
 
   const totalSoalDikerjakan = (currentSiswa?.riwayatPengerjaan || []).reduce(
     (acc, r) => acc + (r.totalSoal || 0),
@@ -661,7 +688,8 @@ export const SmpDashboard: React.FC = () => {
               </div>
               <button
                 onClick={() => {
-                  navigate("/latihan/pilih?mode=FOKUS_KELEMAHAN");
+                  startRemedialSession("SMP", topikKelemahanAktif.namaTopik);
+                  navigate("/latihan/quiz");
                 }}
                 className="px-4 py-2.5 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white font-bold text-xs flex items-center justify-center gap-2 shrink-0 transition shadow-sm"
               >

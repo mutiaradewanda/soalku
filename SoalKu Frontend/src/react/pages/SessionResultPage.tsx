@@ -24,7 +24,7 @@ import { DragonMascot } from "../components/DragonMascot";
 
 export const SessionResultPage: React.FC = () => {
   const navigate = useNavigate();
-  const { currentSession, restartSession, clearSession } = useQuiz();
+  const { currentSession, restartSession, clearSession, startRemedialSession } = useQuiz();
   const { user, getDashboardRoute } = useAuth();
   const { catatHasilRemedial, catatAktivitasSiswa } = useMentor();
 
@@ -383,12 +383,28 @@ export const SessionResultPage: React.FC = () => {
             <span>Kembali ke Dasbor Siswa</span>
           </button>
 
-          <button
-            onClick={handleRestart}
-            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[#84A282]/20 transition"
-          >
-            <span>Ulangi Latihan</span>
-          </button>
+          {!isLulus ? (
+            <button
+              onClick={() => {
+                startRemedialSession(
+                  currentSession.tingkat,
+                  currentSession.daftarSoal[0]?.topik || currentSession.mapel
+                );
+                navigate("/latihan/quiz");
+              }}
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[#84A282]/20 transition"
+            >
+              <span>Mulai Latihan Remedial Adaptif</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={handleRestart}
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[#84A282]/20 transition"
+            >
+              <span>Ulangi Latihan</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
