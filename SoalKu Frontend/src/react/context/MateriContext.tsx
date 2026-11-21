@@ -94,7 +94,15 @@ export const MateriProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       file
     );
 
-    setMateriList((prev) => [newMateri, ...prev]);
+    setMateriList((prev) => {
+      const updated = [newMateri, ...prev];
+      try {
+        localStorage.setItem("soalku_materi_list", JSON.stringify(updated));
+      } catch (e) {
+        console.error("Gagal menyimpan materi ke localStorage", e);
+      }
+      return updated;
+    });
     setActiveMateri(newMateri);
     return newMateri;
   };

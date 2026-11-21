@@ -7,7 +7,9 @@ interface QuizContextType {
     mode: ModeLatihan,
     jumlahSoal?: number,
     tingkat?: "SD" | "SMP",
-    customQuestions?: SoalQuiz[]
+    customQuestions?: SoalQuiz[],
+    customMapel?: string,
+    customSubjek?: string
   ) => SesiLatihan;
   answerQuestion: (soalId: number, opsiIndex: number) => void;
   toggleRaguRagu: (soalId: number) => void;
@@ -736,24 +738,86 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     mode: ModeLatihan,
     jumlahSoal?: number,
     tingkat: "SD" | "SMP" = "SMP",
-    customQuestions?: SoalQuiz[]
+    customQuestions?: SoalQuiz[],
+    customMapel?: string,
+    customSubjek?: string
   ): SesiLatihan => {
     // Default jumlah butir soal: SD = 10 soal, SMP = 20 soal
     const targetCount = jumlahSoal ?? (tingkat === "SD" ? 10 : 20);
     const defaultBank = tingkat === "SD" ? BANK_SOAL_SD : BANK_SOAL_SMP;
 
     let pool: SoalQuiz[] = [];
+    let detectedMapel = customMapel;
+    let detectedSubjek = customSubjek;
+
     if (customQuestions && customQuestions.length > 0) {
       pool = [...customQuestions];
-      // Jika butir soal modul kurang dari targetCount (SD: 10, SMP: 20),
-      // lengkapi dari bank soal kurikulum agar selalu memenuhi kuota latihan
-      if (pool.length < targetCount) {
-        const existingIds = new Set(pool.map((q) => q.id));
-        const additional = defaultBank.filter((q) => !existingIds.has(q.id));
-        pool = [...pool, ...additional];
+      if (!detectedMapel && pool[0]?.topik) {
+        detectedMapel = pool[0].topik;
       }
     } else {
-      pool = [...defaultBank];
+      // Periksa apakah siswa memiliki modul yang diunggah di localStorage
+      try {
+        const savedMateri = localStorage.getItem("soalku_materi_list");
+        if (savedMateri) {
+          const parsedList: any[] = JSON.parse(savedMateri);
+          const relevantMateri = parsedList.filter(
+            (m) => m.tingkat === tingkat && m.bagianMateri && m.bagianMateri.length > 0
+          );
+          if (relevantMateri.length > 0) {
+            const extractedQuestions: SoalQuiz[] = [];
+            relevantMateri.forEach((m) => {
+              (m.bagianMateri || []).forEach((bm: any) => {
+                (bm.generatedSoal || []).forEach((s: any) => {
+                  extractedQuestions.push({
+                    id: s.id,
+                    tingkat: m.tingkat,
+                    bagianMateriId: bm.id,
+                    topik: bm.judulBagian || m.judul,
+                    pertanyaan: s.pertanyaan,
+                    opsi: (s.opsi || []).map((o: any) => ({ label: o.label, teks: o.teks })),
+                    kunciJawabanIndex:
+                      (s.opsi || []).findIndex((o: any) => o.isBenar) !== -1
+                        ? (s.opsi || []).findIndex((o: any) => o.isBenar)
+                        : 0,
+                    pembahasan: s.pembahasan || `Pembahasan materi ${m.judul}.`,
+                    kesulitan: s.tingkatKesulitan || "SEDANG",
+                  });
+                });
+              });
+            });
+
+            if (extractedQuestions.length > 0) {
+              pool = extractedQuestions;
+              if (!detectedMapel) {
+                detectedMapel = relevantMateri[0].mataPelajaran || relevantMateri[0].judul;
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Gagal membaca modul tersimpan untuk bank soal:", err);
+      }
+
+      if (pool.length === 0) {
+        pool = [...defaultBank];
+      }
+    }
+
+    // Pastikan jika soal berasal dari modul custom, JANGAN dicampur dengan defaultBank (IPA)!
+    // Jika soal kurang dari targetCount, duplikasi soal dari pool yang sama dengan ID baru
+    if (pool.length > 0 && pool.length < targetCount) {
+      let cycle = 1;
+      const initialPool = [...pool];
+      while (pool.length < targetCount) {
+        const remaining = targetCount - pool.length;
+        const slice = initialPool.slice(0, remaining).map((q, idx) => ({
+          ...q,
+          id: q.id + 10000 * cycle + idx,
+        }));
+        pool = [...pool, ...slice];
+        cycle++;
+      }
     }
 
     // Ambil riwayat kesalahan siswa untuk mode FOKUS_KELEMAHAN
@@ -819,11 +883,14 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     const session: SesiLatihan = {
-      idSesi: `#CBT-BIO-${Math.floor(1000 + Math.random() * 9000)}`,
+      idSesi: `#CBT-${tingkat}-${Math.floor(1000 + Math.random() * 9000)}`,
       mode,
       tingkat,
-      mapel: tingkat === "SD" ? "IPAS & Matematika" : "IPA Terpadu • Biologi Sistem Pencernaan",
-      subjek: tingkat === "SD" ? "Kelas 4 SD" : "Kelas 8 SMP",
+      mapel:
+        detectedMapel ||
+        (tingkat === "SD" ? "IPAS & Matematika" : "IPA Terpadu • Biologi Sistem Pencernaan"),
+      subjek:
+        detectedSubjek || (tingkat === "SD" ? "Kelas 4 SD" : "Kelas 8 SMP"),
       waktuDetikSisa: totalWaktu,
       totalDetik: totalWaktu,
       daftarSoal: selectedQuestions,
@@ -984,7 +1051,14 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const restartSession = (): SesiLatihan => {
     if (!currentSession) throw new Error("Tidak ada sesi untuk diulang");
-    return startSession(currentSession.mode, currentSession.daftarSoal.length, currentSession.tingkat);
+    return startSession(
+      currentSession.mode,
+      currentSession.daftarSoal.length,
+      currentSession.tingkat,
+      currentSession.daftarSoal,
+      currentSession.mapel,
+      currentSession.subjek
+    );
   };
 
   const clearSession = () => {

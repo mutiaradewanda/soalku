@@ -70,10 +70,11 @@ export const SdDashboard: React.FC = () => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [detailMateri, setDetailMateri] = useState<Materi | null>(null);
+  const [detailMateriId, setDetailMateriId] = useState<number | null>(null);
   const [isKodeModalOpen, setIsKodeModalOpen] = useState(false);
 
   const sdMateriList = materiList.filter((m) => m.tingkat === "SD");
+  const detailMateri = materiList.find((m) => m.id === detailMateriId) || null;
 
   const handleDirectUpload = async (file: File) => {
     setUploadError(null);
@@ -102,7 +103,8 @@ export const SdDashboard: React.FC = () => {
     setUploadProgressStep("Mengekstrak dokumen & AI merangkum materi SD...");
 
     try {
-      await uploadMateri(file, "", "SD");
+      const newMateri = await uploadMateri(file, "", "SD");
+      setDetailMateriId(newMateri.id);
       setUploadSuccess(`Berhasil! Modul "${file.name}" langsung diunggah dan dirangkum oleh AI.`);
       setTimeout(() => setUploadSuccess(null), 6000);
     } catch (err: any) {
@@ -131,17 +133,17 @@ export const SdDashboard: React.FC = () => {
           id: s.id,
           tingkat: materi.tingkat,
           bagianMateriId: bm.id,
-          topik: bm.judulBagian,
+          topik: bm.judulBagian || materi.judul,
           pertanyaan: s.pertanyaan,
           opsi: s.opsi.map((o) => ({ label: o.label, teks: o.teks })),
           kunciJawabanIndex: s.opsi.findIndex((o) => o.isBenar) !== -1 ? s.opsi.findIndex((o) => o.isBenar) : 0,
-          pembahasan: s.pembahasan || "Pembahasan materi terpadu dari modul ekstraksi AI.",
+          pembahasan: s.pembahasan || `Pembahasan materi ${materi.judul}.`,
           kesulitan: s.tingkatKesulitan,
         });
       });
     });
 
-    startSession("ACAK", 10, "SD", questions);
+    startSession("ACAK", 10, "SD", questions, materi.mataPelajaran || materi.judul, materi.judul);
     navigate("/latihan/quiz");
   };
 
@@ -375,7 +377,7 @@ export const SdDashboard: React.FC = () => {
 
                   <div className="pt-4 mt-3 border-t border-[#B8CFB3]/40 flex items-center justify-between gap-2">
                     <button
-                      onClick={() => setDetailMateri(materi)}
+                      onClick={() => setDetailMateriId(materi.id)}
                       className="flex-1 py-2 bg-[#FEFAF3] hover:bg-[#84A282] text-[#60795e] hover:text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 border border-[#B8CFB3] transition shadow-sm"
                     >
                       <span>Buka Modul</span>
@@ -399,7 +401,7 @@ export const SdDashboard: React.FC = () => {
       <MateriDetailModal
         materi={detailMateri}
         isOpen={!!detailMateri}
-        onClose={() => setDetailMateri(null)}
+        onClose={() => setDetailMateriId(null)}
         onStartPractice={handleStartPracticeFromMateri}
       />
 
@@ -431,10 +433,11 @@ export const SmpDashboard: React.FC = () => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [detailMateri, setDetailMateri] = useState<Materi | null>(null);
+  const [detailMateriId, setDetailMateriId] = useState<number | null>(null);
   const [isKodeModalOpen, setIsKodeModalOpen] = useState(false);
 
   const smpMateriList = materiList.filter((m) => m.tingkat === "SMP");
+  const detailMateri = materiList.find((m) => m.id === detailMateriId) || null;
   const topikKelemahanAktif = topikEvaluasiList.find(
     (t) => !t.statusPenguasaan.startsWith("Tuntas") && t.persentaseAkurasi < 70
   );
@@ -472,7 +475,8 @@ export const SmpDashboard: React.FC = () => {
     setUploadProgressStep("Mengekstrak dokumen & menyusun modul CBT SMP via AI...");
 
     try {
-      await uploadMateri(file, "", "SMP");
+      const newMateri = await uploadMateri(file, "", "SMP");
+      setDetailMateriId(newMateri.id);
       setUploadSuccess(`Berhasil! Modul "${file.name}" langsung diunggah dan siap dipelajari.`);
       setTimeout(() => setUploadSuccess(null), 6000);
     } catch (err: any) {
@@ -501,17 +505,17 @@ export const SmpDashboard: React.FC = () => {
           id: s.id,
           tingkat: materi.tingkat,
           bagianMateriId: bm.id,
-          topik: bm.judulBagian,
+          topik: bm.judulBagian || materi.judul,
           pertanyaan: s.pertanyaan,
           opsi: s.opsi.map((o) => ({ label: o.label, teks: o.teks })),
           kunciJawabanIndex: s.opsi.findIndex((o) => o.isBenar) !== -1 ? s.opsi.findIndex((o) => o.isBenar) : 0,
-          pembahasan: s.pembahasan || "Pembahasan materi terpadu dari modul ekstraksi AI.",
+          pembahasan: s.pembahasan || `Pembahasan materi ${materi.judul}.`,
           kesulitan: s.tingkatKesulitan,
         });
       });
     });
 
-    startSession("ACAK", 20, "SMP", questions);
+    startSession("ACAK", 20, "SMP", questions, materi.mataPelajaran || materi.judul, materi.judul);
     navigate("/latihan/quiz");
   };
 
@@ -848,7 +852,7 @@ export const SmpDashboard: React.FC = () => {
 
                   <div className="pt-4 mt-4 border-t border-[#B8CFB3]/50 flex items-center justify-between gap-2">
                     <button
-                      onClick={() => setDetailMateri(materi)}
+                      onClick={() => setDetailMateriId(materi.id)}
                       className="flex-1 py-2 bg-[#F6E2E9] hover:bg-[#F6E2E9]/80 border border-[#B8CFB3] text-[#739071] font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition"
                     >
                       <span>Ringkasan & Soal AI</span>
@@ -941,7 +945,7 @@ export const SmpDashboard: React.FC = () => {
       <MateriDetailModal
         materi={detailMateri}
         isOpen={!!detailMateri}
-        onClose={() => setDetailMateri(null)}
+        onClose={() => setDetailMateriId(null)}
         onStartPractice={handleStartPracticeFromMateri}
       />
 
