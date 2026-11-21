@@ -344,30 +344,13 @@ export const SdDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Modul Belajar Siswa SD */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-800">Modul Belajar Mandiri SD</h3>
-          </div>
-
-          {sdMateriList.length === 0 ? (
-            <div className="p-8 text-center bg-white rounded-3xl border border-dashed border-[#B8CFB3] space-y-3">
-              <BookOpen className="w-10 h-10 text-[#84A282] mx-auto opacity-70" />
-              <div className="space-y-1">
-                <p className="text-sm font-bold text-slate-800">Belum Ada Modul Belajar SD</p>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Ayo unggah berkas materi pelajaran (PDF / Dokumen) melalui dropzone di atas untuk mulai membaca ringkasan materi dan latihan soal ceria bersama naga SoalKu!
-                </p>
-              </div>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition inline-flex items-center gap-2 shadow-sm active:translate-y-0.5"
-              >
-                <UploadCloud className="w-4 h-4" />
-                <span>Unggah Modul PDF Pertama</span>
-              </button>
+        {/* Modul Belajar Siswa SD (Tampil saat berkas modul telah diunggah) */}
+        {sdMateriList.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-800">Modul Belajar Mandiri SD</h3>
             </div>
-          ) : (
+
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {sdMateriList.map((materi) => (
                 <div
@@ -408,8 +391,8 @@ export const SdDashboard: React.FC = () => {
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Detail Modal */}
@@ -812,33 +795,16 @@ export const SmpDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Modul Sedang Dipelajari SMP */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Modul Sedang Dipelajari</h3>
-              <p className="text-xs text-slate-500">Hasil ekstraksi berkas materi dan kurikulum adaptif</p>
-            </div>
-          </div>
-
-          {smpMateriList.length === 0 ? (
-            <div className="p-8 text-center bg-white rounded-3xl border border-dashed border-[#B8CFB3] space-y-3">
-              <BookOpen className="w-10 h-10 text-[#84A282] mx-auto opacity-70" />
-              <div className="space-y-1">
-                <p className="text-sm font-bold text-slate-800">Belum Ada Modul Belajar</p>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Unggah berkas materi pembelajaran (PDF / DOCX) melalui dropzone di atas untuk langsung diringkas otomatis oleh AI dan menghasilkan butir latihan soal CBT.
-                </p>
+        {/* Modul Sedang Dipelajari SMP (Tampil saat berkas modul telah diunggah) */}
+        {smpMateriList.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Modul Sedang Dipelajari</h3>
+                <p className="text-xs text-slate-500">Hasil ekstraksi berkas materi dan kurikulum adaptif</p>
               </div>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition inline-flex items-center gap-2 shadow-sm active:translate-y-0.5"
-              >
-                <UploadCloud className="w-4 h-4" />
-                <span>Unggah Berkas PDF Sekarang</span>
-              </button>
             </div>
-          ) : (
+
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {smpMateriList.map((materi) => (
                 <div
@@ -898,8 +864,8 @@ export const SmpDashboard: React.FC = () => {
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Practice Modes */}
         <div>
@@ -1038,12 +1004,11 @@ export const GuruDashboard: React.FC = () => {
   };
 
   const guruJenjang = ((user as any)?.jenjang === "SD" ? "SD" : "SMP") as "SD" | "SMP";
-  const [targetTingkat, setTargetTingkat] = useState<"SD" | "SMP">(guruJenjang);
 
   const handleCreateNewCode = () => {
     const creator = user?.name || "Guru Pembimbing";
-    const newCode = createKodeUndangan(targetTingkat, "GURU", creator);
-    showToast(`Kode Undangan ${newCode.kode} (${targetTingkat}) berhasil diterbitkan!`);
+    const newCode = createKodeUndangan(guruJenjang, "GURU", creator);
+    showToast(`Kode Undangan ${newCode.kode} berhasil diterbitkan!`);
   };
 
   const handleQuickApprove = (soalId: number) => {
@@ -1090,14 +1055,9 @@ export const GuruDashboard: React.FC = () => {
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-bold text-slate-900">{user?.name || "Guru Pembimbing"}</h2>
-                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#84A282]/20 text-[#60795e] border border-[#B8CFB3]">
-                    Guru {guruJenjang}
-                  </span>
-                </div>
+                <h2 className="text-base font-bold text-slate-900">{user?.name || "Guru Pembimbing"}</h2>
                 <p className="text-[11px] text-slate-500">
-                  Panel Guru {guruJenjang} • {(user as any)?.subject || "Manajemen Kelas & Tiket Siswa"}
+                  Panel Guru • {(user as any)?.subject || "Manajemen Kelas & Tiket Siswa"}
                 </p>
               </div>
             </div>
@@ -1119,35 +1079,20 @@ export const GuruDashboard: React.FC = () => {
                   <Ticket className="w-6 h-6 text-[#84A282]" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-slate-900">Pembuatan Kode Tiket Bimbingan</h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FEFAF3] text-[#60795e] border border-[#B8CFB3]">
-                      Jenjang {guruJenjang}
-                    </span>
-                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">Pembuatan Kode Tiket Bimbingan</h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Buat kode tiket kelas untuk dibagikan kepada murid {guruJenjang} Anda
+                    Buat kode tiket kelas untuk dibagikan kepada murid Anda
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <select
-                  value={targetTingkat}
-                  onChange={(e) => setTargetTingkat(e.target.value as "SD" | "SMP")}
-                  className="px-3 py-2 bg-slate-50 border border-[#B8CFB3] rounded-xl text-xs font-bold text-slate-700 focus:outline-none"
-                >
-                  <option value="SD">Tiket Murid SD</option>
-                  <option value="SMP">Tiket Murid SMP</option>
-                </select>
-                <button
-                  onClick={handleCreateNewCode}
-                  className="px-4 py-2.5 bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-[#84A282]/20 active:translate-y-0.5 shrink-0"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Buat Kode Tiket</span>
-                </button>
-              </div>
+              <button
+                onClick={handleCreateNewCode}
+                className="px-4 py-2.5 bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-[#84A282]/20 active:translate-y-0.5"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Buat Kode Tiket Baru</span>
+              </button>
             </div>
 
             {/* Informative Banner */}
@@ -1256,12 +1201,7 @@ export const GuruDashboard: React.FC = () => {
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-slate-900">{user?.name}</h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#84A282]/20 text-[#60795e] border border-[#B8CFB3]">
-                  Guru {guruJenjang}
-                </span>
-              </div>
+              <h2 className="text-base font-bold text-slate-900">{user?.name}</h2>
               <p className="text-[11px] text-slate-500">
                 {(user as any)?.subject || "Guru Pembimbing"}
               </p>
@@ -1299,16 +1239,11 @@ export const GuruDashboard: React.FC = () => {
           <div className="relative z-10 space-y-3">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-md">
-                    Portal Guru {guruJenjang}
-                  </span>
-                </div>
                 <h1 className="text-2xl sm:text-3xl font-black">
                   Halo, {user?.name || "Guru Pembimbing"}
                 </h1>
                 <p className="text-xs sm:text-sm text-emerald-100 mt-1 max-w-xl leading-relaxed">
-                  Guru {guruJenjang} • {(user as any)?.subject || "Mata Pelajaran"} • Pantau titik kelemahan materi tiap anak binaan dan setujui bank soal hasil ekstraksi AI.
+                  {(user as any)?.subject || "Wali Kelas & Guru Pembimbing"} • Pantau titik kelemahan materi tiap anak binaan dan setujui bank soal hasil ekstraksi AI.
                 </p>
               </div>
 
