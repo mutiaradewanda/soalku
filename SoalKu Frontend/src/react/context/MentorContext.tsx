@@ -49,7 +49,9 @@ interface MentorContextType {
   createKodeUndangan: (
     targetTingkat?: "SD" | "SMP" | "SEMUA",
     customPrefix?: string,
-    dibuatOleh?: string
+    dibuatOleh?: string,
+    guruEmail?: string,
+    guruId?: string
   ) => KodeUndangan;
   salinKodeUndangan: (kode: string) => void;
   redeemKodeUndangan: (
@@ -298,30 +300,6 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return siswa;
       });
 
-      // Jika tidak ada nama spesifik yang cocok, perbarui profil siswa aktif pertama
-      if (!found && updated.length > 0) {
-        if (isLulus) {
-          updated[0] = {
-            ...updated[0],
-            statusRemedial: "Tuntas" as const,
-            topikKelemahan: "Tidak ada (Tuntas Remedial)",
-            akurasiRataRata: Math.max(updated[0].akurasiRataRata, skor),
-            totalLatihan: updated[0].totalLatihan + 1,
-            terakhirAktif: "Baru saja",
-            catatanGuru: `Siswa telah menyelesaikan remedial topik "${topikNama}" dengan nilai ${skor} (LULUS >= 70). Status dinyatakan Tuntas & sudah tidak remedial lagi.`,
-          };
-        } else {
-          updated[0] = {
-            ...updated[0],
-            statusRemedial: "Perlu Remedial" as const,
-            topikKelemahan: `${topikNama} (${skor}%)`,
-            akurasiRataRata: skor,
-            totalLatihan: updated[0].totalLatihan + 1,
-            terakhirAktif: "Baru saja",
-            catatanGuru: `Siswa memperoleh nilai ${skor} (< 70 KKM) pada topik "${topikNama}". Diwajibkan mengikuti latihan remedial adaptif.`,
-          };
-        }
-      }
       return updated;
     });
 
@@ -490,12 +468,16 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (!found) {
         let connectedCode: string | undefined = undefined;
         let connectedGuru: string | undefined = undefined;
+        let connectedGuruEmail: string | undefined = undefined;
+        let connectedGuruId: string | undefined = undefined;
         try {
           const raw = localStorage.getItem("soalku_connected_teacher");
           if (raw) {
             const parsed = JSON.parse(raw);
             connectedCode = parsed.kode;
             connectedGuru = parsed.guru;
+            connectedGuruEmail = parsed.guruEmail;
+            connectedGuruId = parsed.guruId;
           }
         } catch {}
 
@@ -515,6 +497,8 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           terakhirAktif: nowTime,
           kodeUndanganTerhubung: connectedCode,
           guruPembimbing: connectedGuru,
+          guruEmail: connectedGuruEmail,
+          guruId: connectedGuruId,
           riwayatPengerjaan: [newRiwayat],
         };
         return [newSiswaObj, ...prev];
@@ -581,7 +565,9 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const createKodeUndangan = (
     targetTingkat: "SD" | "SMP" | "SEMUA" = "SMP",
     customPrefix: string = "GURU",
-    dibuatOleh: string = "Guru Pembimbing"
+    dibuatOleh: string = "Guru Pembimbing",
+    guruEmail?: string,
+    guruId?: string
   ): KodeUndangan => {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const newKode: KodeUndangan = {
@@ -590,6 +576,8 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       status: "AKTIF",
       expiredAt: "7 Hari (Sekali Pakai)",
       dibuatOleh,
+      guruEmail,
+      guruId,
       targetTingkat,
       totalDipakai: 0,
     };
@@ -641,6 +629,8 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // Hubungkan siswa ke profil guru
     const targetName = studentNama || (studentTingkat === "SD" ? "Siswa SD" : "Siswa SMP");
+    const targetTingkat = studentTingkat || (found.targetTingkat !== "SEMUA" ? found.targetTingkat : "SMP");
+
     setSiswaList((prev) => {
       let foundStudent = false;
       const updated = prev.map((s) => {
@@ -652,8 +642,11 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           foundStudent = true;
           return {
             ...s,
+            tingkat: targetTingkat,
             kodeUndanganTerhubung: found.kode,
             guruPembimbing: found.dibuatOleh,
+            guruEmail: found.guruEmail,
+            guruId: found.guruId,
             terakhirAktif: "Baru saja terhubung",
           };
         }
@@ -664,9 +657,9 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const newStudent: SiswaBinaan = {
           id: "sis-" + Date.now(),
           nama: targetName,
-          kelas: studentTingkat === "SD" ? "Kelas 4 SD" : "Kelas 8-A SMP",
-          tingkat: studentTingkat || "SMP",
-          avatarColor: studentTingkat === "SD" ? "bg-amber-500" : "bg-[#84A282]",
+          kelas: targetTingkat === "SD" ? "Kelas 4 SD" : "Kelas 8-A SMP",
+          tingkat: targetTingkat,
+          avatarColor: targetTingkat === "SD" ? "bg-amber-500" : "bg-[#84A282]",
           totalLatihan: 0,
           akurasiRataRata: 0,
           topikKelemahan: "Belum ada riwayat",
@@ -675,6 +668,8 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           terakhirAktif: "Baru saja terhubung",
           kodeUndanganTerhubung: found.kode,
           guruPembimbing: found.dibuatOleh,
+          guruEmail: found.guruEmail,
+          guruId: found.guruId,
           riwayatPengerjaan: [],
         };
         return [newStudent, ...prev];
@@ -688,7 +683,9 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         JSON.stringify({
           kode: found.kode,
           guru: found.dibuatOleh,
-          tingkat: found.targetTingkat,
+          guruEmail: found.guruEmail,
+          guruId: found.guruId,
+          targetTingkat: found.targetTingkat,
           studentName: targetName,
           connectedAt: new Date().toISOString(),
         })

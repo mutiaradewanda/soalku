@@ -66,4 +66,5 @@ export interface LoginPayload {
   role: UserRole;
   identifier: string;
   password: string;
+  jenjang?: "SD" | "SMP";
 }

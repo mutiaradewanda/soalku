@@ -30,7 +30,18 @@ export const EvaluationPage: React.FC = () => {
   const { topikEvaluasiList, siswaList } = useMentor();
   const { startSession, startRemedialSession } = useQuiz();
 
-  const [filterTingkat, setFilterTingkat] = useState<"SEMUA" | "SMP" | "SD">("SEMUA");
+  const defaultTingkat: "SEMUA" | "SMP" | "SD" =
+    user?.role === "sd"
+      ? "SD"
+      : user?.role === "smp"
+      ? "SMP"
+      : (user as any)?.jenjang === "SD"
+      ? "SD"
+      : (user as any)?.jenjang === "SMP"
+      ? "SMP"
+      : "SEMUA";
+
+  const [filterTingkat, setFilterTingkat] = useState<"SEMUA" | "SMP" | "SD">(defaultTingkat);
   const [filterMapel, setFilterMapel] = useState<string>("SEMUA");
 
   // Get current logged in student's notes if available

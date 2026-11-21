@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useMateri } from "../context/MateriContext";
@@ -1017,8 +1017,89 @@ export const GuruDashboard: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const pendingQuestions = soalList.filter((s) => s.statusReview === "MENUNGGU");
-  const pendingCount = getPendingCount();
+  const [guruJenjang, setGuruJenjang] = useState<"SD" | "SMP">(() => {
+    const userJenjang = (user as any)?.jenjang;
+    if (userJenjang === "SD" || userJenjang === "SMP") return userJenjang;
+    return "SD";
+  });
+
+  const handleSwitchJenjang = (target: "SD" | "SMP") => {
+    setGuruJenjang(target);
+    if (user) {
+      const updated = { ...user, jenjang: target };
+      localStorage.setItem("soalku_auth_user", JSON.stringify(updated));
+    }
+    showToast(`Beralih ke Panel Guru ${target}`);
+  };
+
+  const handleCreateNewCode = () => {
+    const creator = user?.name || "Guru Pembimbing";
+    const userEmail = (user as any)?.email;
+    const userId = user?.id;
+    const newCode = createKodeUndangan(guruJenjang, "GURU", creator, userEmail, userId);
+    showToast(`Kode Undangan ${newCode.kode} (${guruJenjang}) berhasil diterbitkan!`);
+  };
+
+  const handleQuickApprove = (soalId: number) => {
+    approveSoal(soalId, user?.name || "Bu Ratna Kumalasari, S.Pd.");
+    showToast("Soal berhasil disetujui masuk ke Bank Soal Siswa!");
+  };
+
+  // 1. Filter kode tiket yang HANYA milik guru ini dan HANYA untuk jenjang guru ini (SD atau SMP)
+  const myKodeList = useMemo(() => {
+    return kodeUndanganList.filter((k) => {
+      // Jenjang tiket harus cocok dengan jenjang guru saat ini (atau SEMUA)
+      if (k.targetTingkat !== "SEMUA" && k.targetTingkat !== guruJenjang) return false;
+
+      // Tiket harus dibuat oleh guru yang sedang login
+      const uEmail = (user as any)?.email?.toLowerCase().trim();
+      const uName = user?.name?.toLowerCase().trim();
+      const uId = user?.id;
+
+      const matchId = Boolean(uId && k.guruId && k.guruId === uId);
+      const matchEmail = Boolean(uEmail && k.guruEmail && k.guruEmail.toLowerCase().trim() === uEmail);
+      const matchName = Boolean(uName && k.dibuatOleh && k.dibuatOleh.toLowerCase().trim() === uName);
+
+      return matchId || matchEmail || matchName;
+    });
+  }, [kodeUndanganList, guruJenjang, user]);
+
+  // 2. Filter siswa aktif:
+  // - Jenjang siswa HARUS sama dengan jenjang guru saat ini (SD vs SMP)
+  // - Siswa harus sudah menyelesaikan kuis/latihan (riwayat > 0)
+  // - Siswa harus terhubung ke kode tiket milik guru ini atau ke akun guru ini
+  const activeStudents = useMemo(() => {
+    return siswaList.filter((s) => {
+      if (s.tingkat !== guruJenjang) return false;
+
+      const hasWorked = (s.riwayatPengerjaan && s.riwayatPengerjaan.length > 0) || (s.totalLatihan || 0) > 0;
+      if (!hasWorked) return false;
+
+      const uEmail = (user as any)?.email?.toLowerCase().trim();
+      const uName = user?.name?.toLowerCase().trim();
+      const uId = user?.id;
+
+      const matchKode = Boolean(
+        s.kodeUndanganTerhubung &&
+        myKodeList.some((k) => k.kode.toUpperCase() === s.kodeUndanganTerhubung?.toUpperCase())
+      );
+      const matchEmail = Boolean(uEmail && s.guruEmail && s.guruEmail.toLowerCase().trim() === uEmail);
+      const matchName = Boolean(uName && s.guruPembimbing && s.guruPembimbing.toLowerCase().trim() === uName);
+      const matchId = Boolean(uId && s.guruId && s.guruId === uId);
+
+      return matchKode || matchEmail || matchName || matchId;
+    });
+  }, [siswaList, guruJenjang, myKodeList, user]);
+
+  const avgAkurasi =
+    activeStudents.length > 0
+      ? (activeStudents.reduce((acc, s) => acc + (s.akurasiRataRata || 0), 0) / activeStudents.length).toFixed(1) + "%"
+      : "0%";
+
+  const pendingQuestions = soalList.filter(
+    (s) => s.statusReview === "MENUNGGU" && (!s.tingkat || s.tingkat === guruJenjang)
+  );
+  const pendingCount = pendingQuestions.length;
 
   const availablePendingMapel = Array.from(
     new Set(pendingQuestions.map((s) => s.mataPelajaran))
@@ -1034,37 +1115,6 @@ export const GuruDashboard: React.FC = () => {
     showToast(`Kode ${kode} berhasil disalin ke clipboard!`);
     setTimeout(() => setCopiedCode(null), 2000);
   };
-
-  const guruJenjang = ((user as any)?.jenjang === "SD" ? "SD" : "SMP") as "SD" | "SMP";
-
-  const handleCreateNewCode = () => {
-    const creator = user?.name || "Guru Pembimbing";
-    const newCode = createKodeUndangan(guruJenjang, "GURU", creator);
-    showToast(`Kode Undangan ${newCode.kode} berhasil diterbitkan!`);
-  };
-
-  const handleQuickApprove = (soalId: number) => {
-    approveSoal(soalId, user?.name || "Bu Ratna Kumalasari, S.Pd.");
-    showToast("Soal berhasil disetujui masuk ke Bank Soal Siswa!");
-  };
-
-  // Filter siswa aktif yang sudah menyelesaikan latihan/kuis
-  const activeStudents = siswaList.filter((s) => {
-    const hasWorked = (s.riwayatPengerjaan && s.riwayatPengerjaan.length > 0) || (s.totalLatihan || 0) > 0;
-    const isLinkedToTeacher = Boolean(
-      s.kodeUndanganTerhubung &&
-      (
-        kodeUndanganList.some((k) => k.kode.toUpperCase() === s.kodeUndanganTerhubung?.toUpperCase()) ||
-        (user?.name && s.guruPembimbing && s.guruPembimbing.toLowerCase().trim() === user.name.toLowerCase().trim())
-      )
-    );
-    return hasWorked && isLinkedToTeacher;
-  });
-
-  const avgAkurasi =
-    activeStudents.length > 0
-      ? (activeStudents.reduce((acc, s) => acc + (s.akurasiRataRata || 0), 0) / activeStudents.length).toFixed(1) + "%"
-      : "0%";
 
   // Sesuai permintaan pengguna: Jika guru awal-awal login (belum ada murid yang mengerjakan soal),
   // HANYA ada card pembuatan kode tiket saja.
@@ -1087,20 +1137,53 @@ export const GuruDashboard: React.FC = () => {
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-900">{user?.name || "Guru Pembimbing"}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-bold text-slate-900">{user?.name || "Guru Pembimbing"}</h2>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#84A282] text-white">
+                    Guru {guruJenjang}
+                  </span>
+                </div>
                 <p className="text-[11px] text-slate-500">
-                  Panel Guru • {(user as any)?.subject || "Manajemen Kelas & Tiket Siswa"}
+                  Panel Guru {guruJenjang} • {(user as any)?.subject || (guruJenjang === "SD" ? "Guru Kelas SD" : "Guru Mata Pelajaran SMP")}
                 </p>
               </div>
             </div>
 
-            <button
-              onClick={logout}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 border-b-2 border-b-rose-300 rounded-xl text-xs font-semibold transition shadow-sm active:translate-y-0.5"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Keluar</span>
-            </button>
+            <div className="flex items-center gap-2.5">
+              {/* Jenjang Switcher SD / SMP */}
+              <div className="flex items-center bg-[#FEFAF3] p-1 rounded-xl border border-[#B8CFB3] shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => handleSwitchJenjang("SD")}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                    guruJenjang === "SD"
+                      ? "bg-[#84A282] text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Guru SD
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSwitchJenjang("SMP")}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                    guruJenjang === "SMP"
+                      ? "bg-[#84A282] text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Guru SMP
+                </button>
+              </div>
+
+              <button
+                onClick={logout}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 border-b-2 border-b-rose-300 rounded-xl text-xs font-semibold transition shadow-sm active:translate-y-0.5"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Keluar</span>
+              </button>
+            </div>
           </div>
 
           {/* SINGLE CARD: Pembuatan & Manajemen Kode Tiket Siswa */}
@@ -1111,9 +1194,9 @@ export const GuruDashboard: React.FC = () => {
                   <Ticket className="w-6 h-6 text-[#84A282]" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">Pembuatan Kode Tiket Bimbingan</h3>
+                  <h3 className="text-lg font-bold text-slate-900">Pembuatan Kode Tiket Bimbingan ({guruJenjang})</h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Buat kode tiket kelas untuk dibagikan kepada murid Anda
+                    Buat kode tiket kelas jenjang {guruJenjang} untuk dibagikan kepada murid Anda
                   </p>
                 </div>
               </div>
@@ -1123,7 +1206,7 @@ export const GuruDashboard: React.FC = () => {
                 className="px-4 py-2.5 bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-[#84A282]/20 active:translate-y-0.5"
               >
                 <Plus className="w-4 h-4" />
-                <span>Buat Kode Tiket Baru</span>
+                <span>Buat Kode Tiket Baru ({guruJenjang})</span>
               </button>
             </div>
 
@@ -1131,10 +1214,10 @@ export const GuruDashboard: React.FC = () => {
             <div className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-2">
               <div className="flex items-center gap-2 text-[#60795e] font-bold text-xs">
                 <Sparkles className="w-4 h-4 text-[#84A282]" />
-                <span>Alur Kerja Bimbingan Siswa:</span>
+                <span>Alur Kerja Bimbingan Siswa {guruJenjang}:</span>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Saat ini belum ada murid yang terhubung atau mengerjakan soal. Silakan terbitkan kode tiket di bawah ini dan bagikan ke murid Anda. Setelah murid menautkan kode tiket tersebut di akun mereka dan mulai mengerjakan latihan soal atau kuis, data nilai, capaian materi, serta riwayat lengkap pengerjaannya akan <strong>otomatis langsung muncul di dashboard guru ini</strong>.
+                Saat ini belum ada murid {guruJenjang} yang terhubung atau mengerjakan soal. Silakan terbitkan kode tiket jenjang {guruJenjang} di bawah ini dan bagikan ke murid Anda. Setelah murid menautkan kode tiket tersebut di akun mereka dan mulai mengerjakan latihan soal atau kuis, data nilai, capaian materi, serta riwayat lengkap pengerjaannya akan <strong>otomatis langsung muncul di dashboard guru ini</strong>.
               </p>
             </div>
 
@@ -1142,17 +1225,17 @@ export const GuruDashboard: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                  Daftar Kode Tiket Aktif ({kodeUndanganList.length})
+                  Daftar Kode Tiket Aktif Guru {guruJenjang} ({myKodeList.length})
                 </h4>
               </div>
 
-              {kodeUndanganList.length === 0 ? (
+              {myKodeList.length === 0 ? (
                 <div className="p-8 text-center rounded-2xl bg-[#FEFAF3] border border-dashed border-[#B8CFB3] space-y-3">
                   <Ticket className="w-10 h-10 text-[#84A282] mx-auto opacity-70" />
                   <div className="space-y-1">
-                    <p className="text-sm font-bold text-slate-800">Belum Ada Kode Tiket Dibuat</p>
+                    <p className="text-sm font-bold text-slate-800">Belum Ada Kode Tiket Dibuat ({guruJenjang})</p>
                     <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                      Klik tombol <strong>+ Buat Kode Tiket Baru</strong> di atas untuk membuat kode tiket bimbingan pertama Anda.
+                      Klik tombol <strong>+ Buat Kode Tiket Baru ({guruJenjang})</strong> di atas untuk membuat kode tiket bimbingan jenjang {guruJenjang} pertama Anda.
                     </p>
                   </div>
                   <button
@@ -1165,7 +1248,7 @@ export const GuruDashboard: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid sm:grid-cols-2 gap-3.5">
-                  {kodeUndanganList.map((k) => (
+                  {myKodeList.map((k) => (
                     <div
                       key={k.id}
                       className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] space-y-3 transition shadow-sm"
@@ -1233,14 +1316,45 @@ export const GuruDashboard: React.FC = () => {
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">{user?.name}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900">{user?.name}</h2>
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#84A282] text-white">
+                  Guru {guruJenjang}
+                </span>
+              </div>
               <p className="text-[11px] text-slate-500">
-                {(user as any)?.subject || "Guru Pembimbing"}
+                Panel Guru {guruJenjang} • {(user as any)?.subject || (guruJenjang === "SD" ? "Guru Kelas SD" : "Guru Mata Pelajaran SMP")}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5">
+            {/* Jenjang Switcher SD / SMP */}
+            <div className="flex items-center bg-[#FEFAF3] p-1 rounded-xl border border-[#B8CFB3] shadow-inner">
+              <button
+                type="button"
+                onClick={() => handleSwitchJenjang("SD")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                  guruJenjang === "SD"
+                    ? "bg-[#84A282] text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Guru SD
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSwitchJenjang("SMP")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                  guruJenjang === "SMP"
+                    ? "bg-[#84A282] text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Guru SMP
+              </button>
+            </div>
+
             <Link
               to="/mentor/review"
               className="relative px-3.5 py-2 rounded-xl bg-[#F6E2E9] border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-[#739071] hover:bg-[#F6E2E9]/80 text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:translate-y-0.5"
@@ -1275,7 +1389,7 @@ export const GuruDashboard: React.FC = () => {
                   Halo, {user?.name || "Guru Pembimbing"}
                 </h1>
                 <p className="text-xs sm:text-sm text-emerald-100 mt-1 max-w-xl leading-relaxed">
-                  {(user as any)?.subject || "Wali Kelas & Guru Pembimbing"} • Pantau titik kelemahan materi tiap anak binaan dan setujui bank soal hasil ekstraksi AI.
+                  Guru {guruJenjang} • {(user as any)?.subject || (guruJenjang === "SD" ? "Guru Kelas SD" : "Guru Mata Pelajaran SMP")} • Pantau titik kelemahan materi tiap anak binaan dan setujui bank soal hasil ekstraksi AI.
                 </p>
               </div>
 
@@ -1330,13 +1444,13 @@ export const GuruDashboard: React.FC = () => {
                         </p>
                       </div>
                       <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
-                        {kodeUndanganList.length > 0 ? (
+                        {myKodeList.length > 0 ? (
                           <button
-                            onClick={() => handleCopyKode(kodeUndanganList[0].kode)}
+                            onClick={() => handleCopyKode(myKodeList[0].kode)}
                             className="px-4 py-2 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition inline-flex items-center gap-2 shadow-sm active:translate-y-0.5"
                           >
                             <Copy className="w-3.5 h-3.5" />
-                            <span>Salin Kode Tiket Aktif ({kodeUndanganList[0].kode})</span>
+                            <span>Salin Kode Tiket Aktif ({myKodeList[0].kode})</span>
                           </button>
                         ) : (
                           <button
@@ -1344,7 +1458,7 @@ export const GuruDashboard: React.FC = () => {
                             className="px-4 py-2 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition inline-flex items-center gap-2 shadow-sm active:translate-y-0.5"
                           >
                             <Plus className="w-3.5 h-3.5" />
-                            <span>Buat Kode Tiket Sekarang</span>
+                            <span>Buat Kode Tiket Sekarang ({guruJenjang})</span>
                           </button>
                         )}
                       </div>
@@ -1592,18 +1706,18 @@ export const GuruDashboard: React.FC = () => {
               </p>
 
               <div className="space-y-2.5">
-                {kodeUndanganList.length === 0 ? (
+                {myKodeList.length === 0 ? (
                   <div className="p-6 text-center rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-2">
                     <Ticket className="w-8 h-8 text-[#84A282] mx-auto" />
                     <p className="text-xs text-slate-700 font-semibold">
-                      Belum ada kode tiket aktif
+                      Belum ada kode tiket aktif ({guruJenjang})
                     </p>
                     <p className="text-[11px] text-slate-500">
-                      Klik tombol <strong>+ Buat Kode</strong> di atas untuk membuat kode tiket bimbingan pertama Anda.
+                      Klik tombol <strong>+ Buat Kode</strong> di atas untuk membuat kode tiket bimbingan jenjang {guruJenjang} pertama Anda.
                     </p>
                   </div>
                 ) : (
-                  kodeUndanganList.map((k) => (
+                  myKodeList.map((k) => (
                     <div
                       key={k.id}
                       className="p-3.5 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] flex items-center justify-between gap-3 text-xs transition shadow-sm"

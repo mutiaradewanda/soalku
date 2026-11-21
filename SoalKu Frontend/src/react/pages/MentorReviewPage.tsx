@@ -71,13 +71,20 @@ export const MentorReviewPage: React.FC = () => {
     }
   };
 
-  // Distinct subjects in the question bank
+  const guruJenjang = ((user as any)?.jenjang === "SD" ? "SD" : "SMP") as "SD" | "SMP";
+
+  // Distinct subjects in the question bank for this jenjang
   const availableMapelList = Array.from(
-    new Set(soalList.map((s) => s.mataPelajaran))
+    new Set(
+      soalList
+        .filter((s) => !s.tingkat || s.tingkat === guruJenjang)
+        .map((s) => s.mataPelajaran)
+    )
   ).filter(Boolean);
 
   // Filtered list
   const filteredList = soalList.filter((s) => {
+    if (s.tingkat && s.tingkat !== guruJenjang) return false;
     if (s.statusReview !== activeTab) return false;
     if (filterMapel !== "SEMUA" && s.mataPelajaran !== filterMapel) return false;
     if (searchQuery.trim()) {
@@ -98,9 +105,9 @@ export const MentorReviewPage: React.FC = () => {
     return acc;
   }, {});
 
-  const pendingCount = getPendingCount();
-  const approvedCount = getApprovedCount();
-  const rejectedCount = getRejectedCount();
+  const pendingCount = soalList.filter((s) => s.statusReview === "MENUNGGU" && (!s.tingkat || s.tingkat === guruJenjang)).length;
+  const approvedCount = soalList.filter((s) => s.statusReview === "DISETUJUI" && (!s.tingkat || s.tingkat === guruJenjang)).length;
+  const rejectedCount = soalList.filter((s) => s.statusReview === "DITOLAK" && (!s.tingkat || s.tingkat === guruJenjang)).length;
 
   return (
     <div className="min-h-screen bg-transparent text-slate-800 p-4 sm:p-6 md:p-10 relative">

@@ -53,6 +53,8 @@ export interface SiswaBinaan {
   terakhirAktif: string;
   kodeUndanganTerhubung?: string;
   guruPembimbing?: string;
+  guruEmail?: string;
+  guruId?: string;
   riwayatPengerjaan?: RiwayatPengerjaanSiswa[];
 }
 
@@ -62,6 +64,8 @@ export interface KodeUndangan {
   status: "AKTIF" | "DIGUNAKAN" | "KEDALUWARSA";
   expiredAt: string;
   dibuatOleh: string;
+  guruEmail?: string;
+  guruId?: string;
   targetTingkat: "SD" | "SMP" | "SEMUA";
   totalDipakai: number;
 }

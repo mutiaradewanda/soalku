@@ -145,7 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: derivedName,
         nuptkOrNip: payload.identifier,
         subject: "Guru Pembimbing",
-        jenjang: "SMP",
+        jenjang: payload.jenjang || "SD",
         email: payload.identifier.includes("@") ? payload.identifier : `${payload.identifier}@sekolah.sch.id`,
       };
     }
