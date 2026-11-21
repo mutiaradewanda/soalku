@@ -985,6 +985,153 @@ export const GuruDashboard: React.FC = () => {
       ? (activeStudents.reduce((acc, s) => acc + (s.akurasiRataRata || 0), 0) / activeStudents.length).toFixed(1) + "%"
       : "0%";
 
+  // Sesuai permintaan pengguna: Jika guru awal-awal login (belum ada murid yang mengerjakan soal),
+  // HANYA ada card pembuatan kode tiket saja.
+  if (activeStudents.length === 0) {
+    return (
+      <div className="min-h-screen bg-transparent text-slate-800 p-4 sm:p-6 md:p-10 relative">
+        {/* Toast */}
+        {toastMessage && (
+          <div className="fixed top-6 right-6 z-50 bg-[#84A282] text-white px-5 py-3 rounded-2xl shadow-xl font-bold text-xs flex items-center gap-2 border border-[#B8CFB3] animate-in slide-in-from-top duration-200">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>{toastMessage}</span>
+          </div>
+        )}
+
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Top Navbar */}
+          <div className="flex items-center justify-between bg-white border border-[#B8CFB3] border-b-4 border-b-[#84A282]/50 rounded-2xl p-4 shadow-lg shadow-black/8">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-[#B8CFB3]/40 text-[#60795e] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] shadow-sm">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">{user?.name || "Guru Pembimbing"}</h2>
+                <p className="text-[11px] text-slate-500">Panel Guru • Manajemen Kelas & Tiket Siswa</p>
+              </div>
+            </div>
+
+            <button
+              onClick={logout}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 border-b-2 border-b-rose-300 rounded-xl text-xs font-semibold transition shadow-sm active:translate-y-0.5"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Keluar</span>
+            </button>
+          </div>
+
+          {/* SINGLE CARD: Pembuatan & Manajemen Kode Tiket Siswa */}
+          <div className="bg-white border border-[#B8CFB3] border-b-4 border-b-[#84A282]/50 rounded-3xl p-6 sm:p-8 shadow-xl shadow-black/5 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#B8CFB3]/60 pb-5">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-[#B8CFB3]/40 text-[#60795e] flex items-center justify-center border border-[#B8CFB3] shadow-sm shrink-0">
+                  <Ticket className="w-6 h-6 text-[#84A282]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Pembuatan Kode Tiket Bimbingan</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Buat kode tiket kelas untuk dibagikan kepada murid Anda
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleCreateNewCode}
+                className="px-4 py-2.5 bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-[#84A282]/20 active:translate-y-0.5"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Buat Kode Tiket Baru</span>
+              </button>
+            </div>
+
+            {/* Informative Banner */}
+            <div className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-2">
+              <div className="flex items-center gap-2 text-[#60795e] font-bold text-xs">
+                <Sparkles className="w-4 h-4 text-[#84A282]" />
+                <span>Alur Kerja Bimbingan Siswa:</span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Saat ini belum ada murid yang terhubung atau mengerjakan soal. Silakan terbitkan kode tiket di bawah ini dan bagikan ke murid Anda. Setelah murid menautkan kode tiket tersebut di akun mereka dan mulai mengerjakan latihan soal atau kuis, data nilai, capaian materi, serta riwayat lengkap pengerjaannya akan <strong>otomatis langsung muncul di dashboard guru ini</strong>.
+              </p>
+            </div>
+
+            {/* List of Created Ticket Codes */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                  Daftar Kode Tiket Aktif ({kodeUndanganList.length})
+                </h4>
+              </div>
+
+              {kodeUndanganList.length === 0 ? (
+                <div className="p-8 text-center rounded-2xl bg-[#FEFAF3] border border-dashed border-[#B8CFB3] space-y-3">
+                  <Ticket className="w-10 h-10 text-[#84A282] mx-auto opacity-70" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-slate-800">Belum Ada Kode Tiket Dibuat</p>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                      Klik tombol <strong>+ Buat Kode Tiket Baru</strong> di atas untuk membuat kode tiket bimbingan pertama Anda.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleCreateNewCode}
+                    className="px-4 py-2 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm active:translate-y-0.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Buat Kode Tiket Sekarang</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-3.5">
+                  {kodeUndanganList.map((k) => (
+                    <div
+                      key={k.id}
+                      className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] space-y-3 transition shadow-sm"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono font-black text-slate-900 tracking-wider text-base">
+                          {k.kode}
+                        </span>
+                        <span className="text-[10px] font-bold text-[#60795e] bg-white border border-[#B8CFB3] px-2.5 py-0.5 rounded-full">
+                          {k.status}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-[#B8CFB3]/40">
+                        <span>Jenjang: {k.targetTingkat}</span>
+                        <span>Berlaku: {k.expiredAt}</span>
+                      </div>
+
+                      <button
+                        onClick={() => handleCopyKode(k.kode)}
+                        className={`w-full py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border shadow-sm ${
+                          copiedCode === k.kode
+                            ? "bg-emerald-600 text-white border-emerald-500"
+                            : "bg-white hover:bg-[#FEFAF3] text-slate-700 border-[#B8CFB3]"
+                        }`}
+                      >
+                        {copiedCode === k.kode ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Kode Berhasil Disalin!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Salin Kode Tiket</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-transparent text-slate-800 p-4 sm:p-6 md:p-10 relative">
       {/* Toast */}
