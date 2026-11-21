@@ -41,13 +41,13 @@ Aplikasi Desktop berbasis **Java 21 (LTS)** dan **JavaFX** yang dirancang sesuai
 ## 🏛️ Penerapan Konsep OOP & Design Pattern
 
 - **Abstraksi & Pewarisan (Inheritance)**:
-  - Kelas abstrak [`Soal`](file:///c:/Users/HP%20VICTUS/Downloads/SoalKu%20frontend/src/main/java/com/soalku/model/Soal.java) diturunkan ke [`SoalPilihanGandaSD`](file:///c:/Users/HP%20VICTUS/Downloads/SoalKu%20frontend/src/main/java/com/soalku/model/SoalPilihanGandaSD.java) dan [`SoalPilihanGandaSMP`](file:///c:/Users/HP%20VICTUS/Downloads/SoalKu%20frontend/src/main/java/com/soalku/model/SoalPilihanGandaSMP.java).
+  - Kelas abstrak [`Soal`](file:///c:/Users/HP%20VICTUS/Downloads/soalku/frontend/src/main/java/com/soalku/model/Soal.java) diturunkan ke [`SoalPilihanGandaSD`](file:///c:/Users/HP%20VICTUS/Downloads/soalku/frontend/src/main/java/com/soalku/model/SoalPilihanGandaSD.java) dan [`SoalPilihanGandaSMP`](file:///c:/Users/HP%20VICTUS/Downloads/soalku/frontend/src/main/java/com/soalku/model/SoalPilihanGandaSMP.java).
 - **Polimorfisme (Polymorphism)**:
   - Metode `getMaksimalOpsi()` mengembalikan 3 opsi untuk tingkat SD dan 4 opsi untuk tingkat SMP.
 - **Factory Pattern**:
-  - [`SoalFactory`](file:///c:/Users/HP%20VICTUS/Downloads/SoalKu%20frontend/src/main/java/com/soalku/factory/SoalFactory.java) mengenkapsulasi pembuatan objek soal dan opsi jawaban sesuai aturan bisnis PRD.
+  - [`SoalFactory`](file:///c:/Users/HP%20VICTUS/Downloads/soalku/frontend/src/main/java/com/soalku/factory/SoalFactory.java) mengenkapsulasi pembuatan objek soal dan opsi jawaban sesuai aturan bisnis PRD.
 - **Strategy Pattern**:
-  - Antarmuka [`LatihanStrategy`](file:///c:/Users/HP%20VICTUS/Downloads/SoalKu%20frontend/src/main/java/com/soalku/strategy/LatihanStrategy.java) dengan implementasi:
+  - Antarmuka [`LatihanStrategy`](file:///c:/Users/HP%20VICTUS/Downloads/soalku/frontend/src/main/java/com/soalku/strategy/LatihanStrategy.java) dengan implementasi:
     - [`ModeAcakStrategy`](file:///c:/Users/HP%20VICTUS/Downloads/SoalKu%20frontend/src/main/java/com/soalku/strategy/ModeAcakStrategy.java): Mengacak butir soal di seluruh modul.
     - [`ModeBerwaktuStrategy`](file:///c:/Users/HP%20VICTUS/Downloads/SoalKu%20frontend/src/main/java/com/soalku/strategy/ModeBerwaktuStrategy.java): Simulasi ujian dengan countdown timer ketat.
     - [`ModeFokusKelemahanStrategy`](file:///c:/Users/HP%20VICTUS/Downloads/SoalKu%20frontend/src/main/java/com/soalku/strategy/ModeFokusKelemahanStrategy.java): Algoritma adaptif memprioritaskan butir soal dari materi dengan frekuensi kesalahan tertinggi.
@@ -91,7 +91,7 @@ Akses di browser pada: `http://localhost:5173/`
 - **Install Prompt Otomatis**: Mendeteksi perangkat Android/Desktop dan menyediakan panduan 3-langkah untuk iOS Safari.
 
 ### Cara Deploy ke Vercel:
-Konfigurasi Vercel SPA telah disiapkan di [`vercel.json`](file:///c:/Users/HP%20VICTUS/Downloads/SoalKu%20frontend/vercel.json).
+Konfigurasi Vercel SPA telah disiapkan di [`vercel.json`](file:///c:/Users/HP%20VICTUS/Downloads/soalku/frontend/vercel.json).
 
 **Opsi 1: Menggunakan Vercel CLI (1 Perintah)**
 ```bash
@@ -105,7 +105,7 @@ npx vercel --prod
 **Opsi 2: Hubungkan Repository GitHub ke Dashboard Vercel**
 1. Push proyek ke repository GitHub / GitLab.
 2. Buka [Vercel Dashboard](https://vercel.com/new).
-3. Pilih repository `SoalKu frontend` lalu klik **Import**.
+3. Pilih repository Anda, atur root directory ke `frontend`, lalu klik **Import**.
 4. Framework otomatis terdeteksi sebagai **Vite**.
 5. Klik **Deploy** — selesai! Proyek akan aktif dengan URL HTTPS resmi.
 

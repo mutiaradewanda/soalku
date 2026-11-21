@@ -13,6 +13,7 @@ export class ApiError extends Error {
 }
 
 const TOKEN_KEY = "soalku_access_token";
+const API_BASE_URL = ((import.meta as any).env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
 export function getToken(): string | null {
   try {
@@ -50,11 +51,12 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     headers.set("Content-Type", "application/json");
   }
 
+  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const response = await fetch(endpoint, {
+    const response = await fetch(url, {
       ...options,
       headers,
       signal: controller.signal,

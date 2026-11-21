@@ -477,7 +477,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
                     name="password"
                     value={form.password}
                     onChange={handleInputChange}
-                    placeholder="Minimal 6 karakter"
+                    placeholder="Minimal 8 karakter"
+                    minLength={8}
                     className={`w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 ${themeConfig.focusRing}`}
                   />
                 </div>

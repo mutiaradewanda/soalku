@@ -173,8 +173,8 @@ export const PilihLatihanPage: React.FC = () => {
             2. Tentukan Jumlah Butir Soal Sesi Ini
           </label>
 
-          <div className="grid grid-cols-3 gap-3">
-            {(tingkat === "SD" ? [5, 10, 15] : [10, 15, 20]).map((jumlah) => (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[5, 10, 15, 20].map((jumlah) => (
               <button
                 key={jumlah}
                 type="button"
@@ -189,8 +189,10 @@ export const PilihLatihanPage: React.FC = () => {
                 <span className="text-[10px] font-normal opacity-90">
                   {jumlah === 5
                     ? "Sesi Cepat"
-                    : (tingkat === "SD" && jumlah === 10) || (tingkat === "SMP" && jumlah === 20)
-                    ? "Standar Modul"
+                    : jumlah === 10
+                    ? "Standar SD"
+                    : jumlah === 20
+                    ? "Standar SMP"
                     : "Komprehensif"}
                 </span>
               </button>

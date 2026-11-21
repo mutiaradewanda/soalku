@@ -16,33 +16,29 @@
 @keyframes fadeInPage {
   from {
     opacity: 0;
-    transform: translateY(4px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 @keyframes fadeOutPage {
   from {
     opacity: 1;
-    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: translateY(-4px);
   }
 }
 
 .animate-page-enter {
-  animation: fadeInPage 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: opacity, transform;
+  animation: fadeInPage 0.2s ease-in-out forwards;
+  will-change: opacity;
 }
 
 .animate-page-exit {
-  animation: fadeOutPage 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: opacity, transform;
+  animation: fadeOutPage 0.14s ease-in-out forwards;
+  will-change: opacity;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -14,6 +14,29 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const USERS_STORAGE_KEY = "soalku_registered_users";
+
+const saveRegisteredProfile = (identifier: string, user: AuthUser) => {
+  try {
+    const raw = localStorage.getItem(USERS_STORAGE_KEY);
+    const map = raw ? JSON.parse(raw) : {};
+    map[identifier.toLowerCase().trim()] = user;
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(map));
+  } catch {
+    // Ignore storage errors
+  }
+};
+
+const getRegisteredProfile = (identifier: string): AuthUser | null => {
+  try {
+    const raw = localStorage.getItem(USERS_STORAGE_KEY);
+    const map = raw ? JSON.parse(raw) : {};
+    return map[identifier.toLowerCase().trim()] || null;
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(() => {
     try {
@@ -36,7 +59,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const token = getToken();
     if (token) {
-      authApi.me().catch(() => {
+      authApi.me().then((me) => {
+        if (me?.nama) {
+          setUser((prev) => (prev ? { ...prev, name: me.nama } : null));
+        }
+      }).catch(() => {
         clearToken();
       });
     }
@@ -75,8 +102,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       token: token || "jwt_token_" + Math.random().toString(36).substring(2),
     };
 
+    const savedProfile =
+      getRegisteredProfile(payload.identifier) || getRegisteredProfile(email);
+
     let loggedInUser: AuthUser;
-    if (payload.role === "sd") {
+    if (savedProfile) {
+      loggedInUser = {
+        ...savedProfile,
+        ...base,
+      };
+    } else if (payload.role === "sd") {
       loggedInUser = {
         ...base,
         role: "sd",
@@ -161,6 +196,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         grade: payload.grade,
         parentName: payload.parentName,
       };
+      saveRegisteredProfile(email, newUser);
+      saveRegisteredProfile(payload.nisn, newUser);
     } else if (payload.role === "smp") {
       newUser = {
         ...base,
@@ -170,6 +207,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         grade: payload.grade,
         contact: payload.contact,
       };
+      saveRegisteredProfile(email, newUser);
+      saveRegisteredProfile(payload.nisn, newUser);
     } else {
       newUser = {
         ...base,
@@ -179,6 +218,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         subject: payload.subject,
         email: payload.email,
       };
+      saveRegisteredProfile(email, newUser);
+      saveRegisteredProfile(payload.nipOrNuptk, newUser);
     }
 
     setUser(newUser);

@@ -10,6 +10,10 @@ foreach ($line in (Get-Content -LiteralPath $Path)) {
     if ($pair.Length -ne 2 -or $key -notin $allowed) {
         throw 'Invalid configuration entry; use only keys from .env.example.'
     }
-    [Environment]::SetEnvironmentVariable($key, $pair[1].Trim(), 'Process')
+    $val = $pair[1].Trim()
+    if ($val.Length -ge 2 -and (($val.StartsWith('"') -and $val.EndsWith('"')) -or ($val.StartsWith("'") -and $val.EndsWith("'")))) {
+        $val = $val.Substring(1, $val.Length - 2)
+    }
+    [Environment]::SetEnvironmentVariable($key, $val, 'Process')
 }
 Write-Host 'SoalKu local configuration loaded into this shell; values hidden.'
