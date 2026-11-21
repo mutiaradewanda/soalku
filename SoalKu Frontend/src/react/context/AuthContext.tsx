@@ -145,6 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: derivedName,
         nuptkOrNip: payload.identifier,
         subject: "Guru Pembimbing",
+        jenjang: "SMP",
         email: payload.identifier.includes("@") ? payload.identifier : `${payload.identifier}@sekolah.sch.id`,
       };
     }
@@ -226,6 +227,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         nuptkOrNip: payload.nipOrNuptk,
         subject: payload.subject,
         email: payload.email,
+        jenjang: payload.jenjang || "SMP",
       };
       saveRegisteredProfile(email, newUser);
       saveRegisteredProfile(payload.nipOrNuptk, newUser);

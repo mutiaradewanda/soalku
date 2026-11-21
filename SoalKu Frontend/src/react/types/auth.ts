@@ -27,6 +27,7 @@ export interface GuruUser extends BaseUser {
   nuptkOrNip: string;
   subject: string;
   email: string;
+  jenjang: "SD" | "SMP";
 }
 
 export type AuthUser = SdUser | SmpUser | GuruUser;
@@ -55,6 +56,7 @@ export interface RegisterGuruPayload {
   nipOrNuptk: string;
   subject: string;
   email: string;
+  jenjang: "SD" | "SMP";
   password: string;
 }
 

@@ -1037,10 +1037,13 @@ export const GuruDashboard: React.FC = () => {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  const guruJenjang = ((user as any)?.jenjang === "SD" ? "SD" : "SMP") as "SD" | "SMP";
+  const [targetTingkat, setTargetTingkat] = useState<"SD" | "SMP">(guruJenjang);
+
   const handleCreateNewCode = () => {
     const creator = user?.name || "Guru Pembimbing";
-    const newCode = createKodeUndangan("SMP", "GURU", creator);
-    showToast(`Kode Undangan ${newCode.kode} berhasil diterbitkan!`);
+    const newCode = createKodeUndangan(targetTingkat, "GURU", creator);
+    showToast(`Kode Undangan ${newCode.kode} (${targetTingkat}) berhasil diterbitkan!`);
   };
 
   const handleQuickApprove = (soalId: number) => {
@@ -1087,8 +1090,15 @@ export const GuruDashboard: React.FC = () => {
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-900">{user?.name || "Guru Pembimbing"}</h2>
-                <p className="text-[11px] text-slate-500">Panel Guru • Manajemen Kelas & Tiket Siswa</p>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-bold text-slate-900">{user?.name || "Guru Pembimbing"}</h2>
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#84A282]/20 text-[#60795e] border border-[#B8CFB3]">
+                    Guru {guruJenjang}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Panel Guru {guruJenjang} • {(user as any)?.subject || "Manajemen Kelas & Tiket Siswa"}
+                </p>
               </div>
             </div>
 
@@ -1109,20 +1119,35 @@ export const GuruDashboard: React.FC = () => {
                   <Ticket className="w-6 h-6 text-[#84A282]" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">Pembuatan Kode Tiket Bimbingan</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-slate-900">Pembuatan Kode Tiket Bimbingan</h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FEFAF3] text-[#60795e] border border-[#B8CFB3]">
+                      Jenjang {guruJenjang}
+                    </span>
+                  </div>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Buat kode tiket kelas untuk dibagikan kepada murid Anda
+                    Buat kode tiket kelas untuk dibagikan kepada murid {guruJenjang} Anda
                   </p>
                 </div>
               </div>
 
-              <button
-                onClick={handleCreateNewCode}
-                className="px-4 py-2.5 bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-[#84A282]/20 active:translate-y-0.5"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Buat Kode Tiket Baru</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <select
+                  value={targetTingkat}
+                  onChange={(e) => setTargetTingkat(e.target.value as "SD" | "SMP")}
+                  className="px-3 py-2 bg-slate-50 border border-[#B8CFB3] rounded-xl text-xs font-bold text-slate-700 focus:outline-none"
+                >
+                  <option value="SD">Tiket Murid SD</option>
+                  <option value="SMP">Tiket Murid SMP</option>
+                </select>
+                <button
+                  onClick={handleCreateNewCode}
+                  className="px-4 py-2.5 bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-[#84A282]/20 active:translate-y-0.5 shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Buat Kode Tiket</span>
+                </button>
+              </div>
             </div>
 
             {/* Informative Banner */}
@@ -1231,7 +1256,15 @@ export const GuruDashboard: React.FC = () => {
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">{user?.name}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900">{user?.name}</h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#84A282]/20 text-[#60795e] border border-[#B8CFB3]">
+                  Guru {guruJenjang}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                {(user as any)?.subject || "Guru Pembimbing"}
+              </p>
             </div>
           </div>
 
@@ -1266,11 +1299,16 @@ export const GuruDashboard: React.FC = () => {
           <div className="relative z-10 space-y-3">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-md">
+                    Portal Guru {guruJenjang}
+                  </span>
+                </div>
                 <h1 className="text-2xl sm:text-3xl font-black">
-                  Halo, {user?.name || "Bu Ratna Kumalasari, S.Pd."}
+                  Halo, {user?.name || "Guru Pembimbing"}
                 </h1>
                 <p className="text-xs sm:text-sm text-emerald-100 mt-1 max-w-xl leading-relaxed">
-                  Wali Kelas & Guru IPA Terpadu • Pantau titik kelemahan materi tiap anak binaan dan setujui bank soal hasil ekstraksi AI.
+                  Guru {guruJenjang} • {(user as any)?.subject || "Mata Pelajaran"} • Pantau titik kelemahan materi tiap anak binaan dan setujui bank soal hasil ekstraksi AI.
                 </p>
               </div>
 

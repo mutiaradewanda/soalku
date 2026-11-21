@@ -34,6 +34,7 @@ public class LoginView extends StackPane {
     private TextField txtNama;            // Nama Lengkap / beserta Gelar
     private TextField txtNisn;            // NISN Siswa
     private ComboBox<String> cbKelas;     // Dropdown Kelas (1-6 SD / 7-9 SMP)
+    private ComboBox<String> cbJenjangGuru; // Dropdown Jenjang (Guru SD / Guru SMP)
     private TextField txtOrangTua;        // Nama Orang Tua (SD)
     private TextField txtKontak;          // Email/No HP (SMP)
     private TextField txtNip;             // NIP/NUPTK (Guru)
@@ -337,6 +338,10 @@ public class LoginView extends StackPane {
         txtNisn = new TextField();
         cbKelas = new ComboBox<>();
         cbKelas.setMaxWidth(Double.MAX_VALUE);
+        cbJenjangGuru = new ComboBox<>();
+        cbJenjangGuru.getItems().addAll("Guru SD (Sekolah Dasar)", "Guru SMP (Sekolah Menengah Pertama)");
+        cbJenjangGuru.setValue("Guru SMP (Sekolah Menengah Pertama)");
+        cbJenjangGuru.setMaxWidth(Double.MAX_VALUE);
         txtOrangTua = new TextField();
         txtKontak = new TextField();
         txtNip = new TextField();
@@ -430,6 +435,7 @@ public class LoginView extends StackPane {
                 txtEmail.setPromptText("nama.guru@sekolah.sch.id");
 
                 formContainer.getChildren().addAll(
+                        createFieldGroup("Jenjang Guru Pengajar:", cbJenjangGuru),
                         createFieldGroup("Nama Lengkap & Gelar:", txtNama),
                         createFieldGroup("NIP / NUPTK:", txtNip),
                         createFieldGroup("Mata Pelajaran yang Diampu:", txtMapel),

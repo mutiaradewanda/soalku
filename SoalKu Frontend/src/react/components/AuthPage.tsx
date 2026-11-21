@@ -72,6 +72,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
     guruNip: "",
     guruSubject: "",
     guruEmail: "",
+    guruJenjang: "SMP" as "SD" | "SMP",
   });
 
   const handleInputChange = (
@@ -175,6 +176,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
             nipOrNuptk: form.guruNip,
             subject: form.guruSubject,
             email: form.guruEmail,
+            jenjang: form.guruJenjang,
             password: form.password,
           });
           navigate(getDashboardRoute(newUser.role));
@@ -433,6 +435,31 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">Jenjang Guru</label>
+                        <select
+                          name="guruJenjang"
+                          value={form.guruJenjang}
+                          onChange={handleInputChange}
+                          className={`w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 ${themeConfig.focusRing}`}
+                        >
+                          <option value="SD">Guru SD (Sekolah Dasar)</option>
+                          <option value="SMP">Guru SMP (Sekolah Menengah)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">Mata Pelajaran</label>
+                        <input
+                          type="text"
+                          name="guruSubject"
+                          value={form.guruSubject}
+                          onChange={handleInputChange}
+                          placeholder={form.guruJenjang === "SD" ? "Contoh: Guru Kelas / IPAS" : "Contoh: IPA Terpadu"}
+                          className={`w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 ${themeConfig.focusRing}`}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
                         <label className="block text-xs font-medium text-slate-700 mb-1">NIP / NUPTK</label>
                         <input
                           type="text"
@@ -444,27 +471,16 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">Mata Pelajaran</label>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">Email Resmi Sekolah</label>
                         <input
-                          type="text"
-                          name="guruSubject"
-                          value={form.guruSubject}
+                          type="email"
+                          name="guruEmail"
+                          value={form.guruEmail}
                           onChange={handleInputChange}
-                          placeholder="Contoh: IPA Terpadu"
+                          placeholder="nama.guru@sekolah.sch.id"
                           className={`w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 ${themeConfig.focusRing}`}
                         />
                       </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">Email Resmi Sekolah</label>
-                      <input
-                        type="email"
-                        name="guruEmail"
-                        value={form.guruEmail}
-                        onChange={handleInputChange}
-                        placeholder="nama.guru@sekolah.sch.id"
-                        className={`w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 ${themeConfig.focusRing}`}
-                      />
                     </div>
                   </>
                 )}
@@ -496,7 +512,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
                   ? "Memproses..."
                   : mode === "login"
                   ? `Masuk Sebagai ${role === "sd" ? "Siswa SD" : role === "smp" ? "Siswa SMP" : "Guru"}`
-                  : `Daftar Akun ${role === "sd" ? "Siswa SD" : role === "smp" ? "Siswa SMP" : "Guru"}`}
+                  : `Daftar Akun ${role === "sd" ? "Siswa SD" : role === "smp" ? "Siswa SMP" : `Guru ${form.guruJenjang}`}`}
               </span>
               <ArrowRight className="w-4 h-4" />
             </button>
