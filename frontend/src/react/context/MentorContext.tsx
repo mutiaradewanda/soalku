@@ -46,7 +46,11 @@ interface MentorContextType {
   getSiswaByNama: (nama: string) => SiswaBinaan | undefined;
 
   // Kode Undangan Actions
-  createKodeUndangan: (targetTingkat: "SD" | "SMP" | "SEMUA", customPrefix?: string) => KodeUndangan;
+  createKodeUndangan: (
+    targetTingkat?: "SD" | "SMP" | "SEMUA",
+    customPrefix?: string,
+    dibuatOleh?: string
+  ) => KodeUndangan;
   salinKodeUndangan: (kode: string) => void;
   redeemKodeUndangan: (
     kode: string,
@@ -267,166 +271,9 @@ const INITIAL_SOAL_LIST: SoalReview[] = [
   },
 ];
 
-const INITIAL_SISWA_LIST: SiswaBinaan[] = [
-  {
-    id: "sis-1",
-    nama: "Arya Pratama",
-    kelas: "Kelas 8-A SMP",
-    tingkat: "SMP",
-    avatarColor: "bg-[#84A282]",
-    totalLatihan: 14,
-    akurasiRataRata: 82,
-    topikKelemahan: "Sistem Peredaran Darah (42%)",
-    statusRemedial: "Perlu Remedial",
-    catatanGuru: "Cermati kembali aliran vena pulmonalis pada ringkasan materi AI ya, Arya.",
-    terakhirAktif: "Hari ini, 11:20",
-    kodeUndanganTerhubung: "GURU-SMP-2026",
-    guruPembimbing: "Bu Ratna Kumalasari, S.Pd.",
-    riwayatPengerjaan: [
-      {
-        id: "rw-1",
-        idSesi: "#CBT-BIO-8421",
-        tanggal: "Hari ini, 11:20",
-        mapel: "IPA Terpadu • Sistem Pencernaan",
-        topik: "Enzim Lambung & Organ Pencernaan",
-        mode: "ACAK",
-        skor: 85,
-        totalSoal: 20,
-        totalBenar: 17,
-        totalSalah: 3,
-        akurasi: 85,
-        status: "Lulus",
-      },
-      {
-        id: "rw-2",
-        idSesi: "#CBT-BIO-6291",
-        tanggal: "Kemarin, 14:10",
-        mapel: "IPA Biologi",
-        topik: "Sistem Peredaran Darah",
-        mode: "BERWAKTU",
-        skor: 70,
-        totalSoal: 20,
-        totalBenar: 14,
-        totalSalah: 6,
-        akurasi: 70,
-        status: "Cukup",
-      },
-    ],
-  },
-  {
-    id: "sis-2",
-    nama: "Mutiara Dewanda",
-    kelas: "Kelas 8-A SMP",
-    tingkat: "SMP",
-    avatarColor: "bg-emerald-600",
-    totalLatihan: 18,
-    akurasiRataRata: 92,
-    topikKelemahan: "Tidak ada (Tuntas Semua)",
-    statusRemedial: "Tuntas",
-    catatanGuru: "Prestasi belajar sangat konsisten dan solid, pertahankan!",
-    terakhirAktif: "Hari ini, 09:40",
-  },
-  {
-    id: "sis-3",
-    nama: "Dzaky Ahsanal",
-    kelas: "Kelas 8-A SMP",
-    tingkat: "SMP",
-    avatarColor: "bg-amber-600",
-    totalLatihan: 12,
-    akurasiRataRata: 74,
-    topikKelemahan: "Enzim Lambung & Organ (55%)",
-    statusRemedial: "Bimbingan",
-    catatanGuru: "Perlu penguatan hafalan enzim getah lambung menggunakan rumus cepat R-P-L.",
-    terakhirAktif: "Kemarin, 16:15",
-  },
-  {
-    id: "sis-4",
-    nama: "Raffi Azzaky",
-    kelas: "Kelas 8-A SMP",
-    tingkat: "SMP",
-    avatarColor: "bg-cyan-600",
-    totalLatihan: 15,
-    akurasiRataRata: 86,
-    topikKelemahan: "Faktorisasi Aljabar Kuadrat (68%)",
-    statusRemedial: "Tuntas",
-    catatanGuru: "Pemahaman konsep sudah baik, latihan soal mode berwaktu ditingkatkan.",
-    terakhirAktif: "Kemarin, 14:00",
-  },
-  {
-    id: "sis-5",
-    nama: "Mohammad Thoriq",
-    kelas: "Kelas 8-A SMP",
-    tingkat: "SMP",
-    avatarColor: "bg-purple-600",
-    totalLatihan: 16,
-    akurasiRataRata: 88,
-    topikKelemahan: "Unsur Intrinsik Cerpen (72%)",
-    statusRemedial: "Tuntas",
-    catatanGuru: "Daya analisis soal penalaran naratif sangat memuaskan.",
-    terakhirAktif: "2 hari yang lalu",
-  },
-  {
-    id: "sis-6",
-    nama: "Adit Pratama",
-    kelas: "Kelas 4 SD",
-    tingkat: "SD",
-    avatarColor: "bg-amber-500",
-    totalLatihan: 8,
-    akurasiRataRata: 78,
-    topikKelemahan: "Bagian Tumbuhan & Akar (50%)",
-    statusRemedial: "Bimbingan",
-    catatanGuru: "Rajin bertanya jika belum mengerti skema fotosintesis ya, Adit.",
-    terakhirAktif: "Hari ini, 08:30",
-    kodeUndanganTerhubung: "GURU-SD-2026",
-    guruPembimbing: "Pak Bambang Pamungkas",
-    riwayatPengerjaan: [
-      {
-        id: "rw-3",
-        idSesi: "#CBT-SD-3112",
-        tanggal: "Hari ini, 08:30",
-        mapel: "IPAS Ceria",
-        topik: "Bagian Tumbuhan & Fotosintesis",
-        mode: "ACAK",
-        skor: 80,
-        totalSoal: 10,
-        totalBenar: 8,
-        totalSalah: 2,
-        akurasi: 80,
-        status: "Lulus",
-      },
-    ],
-  },
-];
+const INITIAL_SISWA_LIST: SiswaBinaan[] = [];
 
-const INITIAL_KODE_UNDANGAN: KodeUndangan[] = [
-  {
-    id: "kod-1",
-    kode: "GURU-SMP-2026",
-    status: "AKTIF",
-    expiredAt: "24 Apr 2027",
-    dibuatOleh: "Bu Ratna Kumalasari, S.Pd.",
-    targetTingkat: "SMP",
-    totalDipakai: 18,
-  },
-  {
-    id: "kod-2",
-    kode: "GURU-IPA-2026",
-    status: "AKTIF",
-    expiredAt: "31 Des 2026",
-    dibuatOleh: "Bu Ratna Kumalasari, S.Pd.",
-    targetTingkat: "SMP",
-    totalDipakai: 14,
-  },
-  {
-    id: "kod-3",
-    kode: "GURU-SD-2026",
-    status: "AKTIF",
-    expiredAt: "15 Jun 2027",
-    dibuatOleh: "Pak Bambang Pamungkas",
-    targetTingkat: "SD",
-    totalDipakai: 9,
-  },
-];
+const INITIAL_KODE_UNDANGAN: KodeUndangan[] = [];
 
 const INITIAL_TOPIK_EVALUASI: TopikEvaluasi[] = [
   {
@@ -517,7 +364,14 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [siswaList, setSiswaList] = useState<SiswaBinaan[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_SISWA);
-      return saved ? JSON.parse(saved) : INITIAL_SISWA_LIST;
+      if (saved) {
+        const parsed: SiswaBinaan[] = JSON.parse(saved);
+        // Purge legacy mock dummy students
+        return parsed.filter(
+          (s) => !["sis-1", "sis-2", "sis-3", "sis-4", "sis-5", "sis-6"].includes(s.id)
+        );
+      }
+      return INITIAL_SISWA_LIST;
     } catch {
       return INITIAL_SISWA_LIST;
     }
@@ -526,7 +380,14 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [kodeUndanganList, setKodeUndanganList] = useState<KodeUndangan[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_KODE);
-      return saved ? JSON.parse(saved) : INITIAL_KODE_UNDANGAN;
+      if (saved) {
+        const parsed: KodeUndangan[] = JSON.parse(saved);
+        // Purge legacy mock codes
+        return parsed.filter(
+          (k) => !["kod-1", "kod-2", "kod-3"].includes(k.id)
+        );
+      }
+      return INITIAL_KODE_UNDANGAN;
     } catch {
       return INITIAL_KODE_UNDANGAN;
     }
@@ -816,8 +677,9 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           found = true;
           const oldRiwayat = siswa.riwayatPengerjaan || [];
           const updatedRiwayat = [newRiwayat, ...oldRiwayat];
+          const totalLatihanBaru = (siswa.totalLatihan || 0) + 1;
           const newAkurasi = Math.round(
-            (siswa.akurasiRataRata * siswa.totalLatihan + sesi.skor) / (siswa.totalLatihan + 1)
+            ((siswa.akurasiRataRata || 0) * (siswa.totalLatihan || 0) + sesi.skor) / totalLatihanBaru
           );
 
           let newStatusRemedial: "Perlu Remedial" | "Bimbingan" | "Tuntas" = siswa.statusRemedial;
@@ -838,7 +700,7 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
           return {
             ...siswa,
-            totalLatihan: siswa.totalLatihan + 1,
+            totalLatihan: totalLatihanBaru,
             akurasiRataRata: newAkurasi,
             statusRemedial: newStatusRemedial,
             topikKelemahan: newTopikKelemahan,
@@ -851,7 +713,18 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
 
       if (!found) {
-        const newSiswaObj = {
+        let connectedCode: string | undefined = undefined;
+        let connectedGuru: string | undefined = undefined;
+        try {
+          const raw = localStorage.getItem("soalku_connected_teacher");
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            connectedCode = parsed.kode;
+            connectedGuru = parsed.guru;
+          }
+        } catch {}
+
+        const newSiswaObj: SiswaBinaan = {
           id: "sis-" + Date.now(),
           nama: siswaNama,
           kelas: sesi.tingkat === "SD" ? "Kelas 4 SD" : "Kelas 8-A SMP",
@@ -863,6 +736,8 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           statusRemedial: isLulus ? ("Tuntas" as const) : ("Bimbingan" as const),
           catatanGuru: `Siswa baru terhubung via kode guru. Telah mengerjakan modul ${topikTitle} dengan nilai ${sesi.skor}.`,
           terakhirAktif: nowTime,
+          kodeUndanganTerhubung: connectedCode,
+          guruPembimbing: connectedGuru,
           riwayatPengerjaan: [newRiwayat],
         };
         return [newSiswaObj, ...prev];
@@ -902,7 +777,8 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const createKodeUndangan = (
     targetTingkat: "SD" | "SMP" | "SEMUA" = "SMP",
-    customPrefix: string = "GURU"
+    customPrefix: string = "GURU",
+    dibuatOleh: string = "Guru Pembimbing"
   ): KodeUndangan => {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const newKode: KodeUndangan = {
@@ -910,7 +786,7 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       kode: `${customPrefix}-${targetTingkat}-${randomSuffix}`,
       status: "AKTIF",
       expiredAt: "7 Hari (Sekali Pakai)",
-      dibuatOleh: "Bu Ratna Kumalasari, S.Pd.",
+      dibuatOleh,
       targetTingkat,
       totalDipakai: 0,
     };

@@ -437,13 +437,13 @@ public class LoginView extends StackPane {
                 );
             }
 
-            txtPassword.setPromptText("Minimal 6 karakter");
+            txtPassword.setPromptText("Minimal 8 karakter");
             formContainer.getChildren().add(createFieldGroup("Kata Sandi Baru:", txtPassword));
 
         } else {
-            // Mode Login
-            btnDemoAccount.setVisible(true);
-            btnDemoAccount.setManaged(true);
+            // Mode Login (Demo accounts disabled in production)
+            btnDemoAccount.setVisible(false);
+            btnDemoAccount.setManaged(false);
 
             if (selectedRole == Role.SISWA_SD) {
                 btnSubmit.setText("Masuk Sebagai Siswa SD");
@@ -486,6 +486,11 @@ public class LoginView extends StackPane {
         String pass = txtPassword.getText().trim();
         if (pass.isBlank()) {
             showError("Kata sandi wajib diisi!");
+            return;
+        }
+
+        if (isRegisterMode && pass.length() < 8) {
+            showError("Kata sandi baru minimal 8 karakter!");
             return;
         }
 

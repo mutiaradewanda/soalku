@@ -50,6 +50,7 @@ import {
   AlertCircle,
   ArrowUpRight,
   Loader2,
+  Ticket,
 } from "lucide-react";
 
 export const SdDashboard: React.FC = () => {
@@ -955,7 +956,8 @@ export const GuruDashboard: React.FC = () => {
   };
 
   const handleCreateNewCode = () => {
-    const newCode = createKodeUndangan("SMP", "GURU");
+    const creator = user?.name || "Guru Pembimbing";
+    const newCode = createKodeUndangan("SMP", "GURU", creator);
     showToast(`Kode Undangan ${newCode.kode} berhasil diterbitkan!`);
   };
 
@@ -963,6 +965,25 @@ export const GuruDashboard: React.FC = () => {
     approveSoal(soalId, user?.name || "Bu Ratna Kumalasari, S.Pd.");
     showToast("Soal berhasil disetujui masuk ke Bank Soal Siswa!");
   };
+
+  // Filter siswa aktif yang sudah menyelesaikan latihan/kuis
+  const activeStudents = siswaList.filter((s) => {
+    const hasWorked = (s.riwayatPengerjaan && s.riwayatPengerjaan.length > 0) || (s.totalLatihan || 0) > 0;
+    const isLinkedToTeacher = Boolean(
+      s.kodeUndanganTerhubung &&
+      (
+        kodeUndanganList.length === 0 ||
+        kodeUndanganList.some((k) => k.kode.toUpperCase() === s.kodeUndanganTerhubung?.toUpperCase()) ||
+        (user?.name && s.guruPembimbing?.toLowerCase().trim() === user.name.toLowerCase().trim())
+      )
+    );
+    return hasWorked && isLinkedToTeacher;
+  });
+
+  const avgAkurasi =
+    activeStudents.length > 0
+      ? (activeStudents.reduce((acc, s) => acc + (s.akurasiRataRata || 0), 0) / activeStudents.length).toFixed(1) + "%"
+      : "0%";
 
   return (
     <div className="min-h-screen bg-transparent text-slate-800 p-4 sm:p-6 md:p-10 relative">
@@ -1027,12 +1048,12 @@ export const GuruDashboard: React.FC = () => {
 
               <div className="flex items-center gap-3">
                 <div className="p-3.5 rounded-2xl bg-white/20 border border-white/30 text-center min-w-[95px] backdrop-blur-md">
-                  <span className="text-2xl font-black text-emerald-300 block">{siswaList.length}</span>
+                  <span className="text-2xl font-black text-emerald-300 block">{activeStudents.length}</span>
                   <span className="text-[10px] font-bold text-emerald-100 uppercase">Siswa Binaan</span>
                 </div>
                 <div className="p-3.5 rounded-2xl bg-white/20 border border-white/30 text-center min-w-[95px] backdrop-blur-md">
-                  <span className="text-2xl font-black text-[#60795e] block">84.4%</span>
-                  <span className="text-[10px] font-bold text-cyan-100 uppercase">Akurasi Kelas</span>
+                  <span className="text-2xl font-black text-emerald-200 block">{avgAkurasi}</span>
+                  <span className="text-[10px] font-bold text-emerald-100 uppercase">Akurasi Kelas</span>
                 </div>
                 <div className="p-3.5 rounded-2xl bg-white/20 border border-white/30 text-center min-w-[95px] backdrop-blur-md">
                   <span className="text-2xl font-black text-amber-300 block">{pendingCount}</span>
@@ -1062,111 +1083,146 @@ export const GuruDashboard: React.FC = () => {
 
                 {/* Students List */}
                 <div className="space-y-3">
-                  {siswaList.map((siswa) => {
-                    const isRemedial = siswa.statusRemedial === "Perlu Remedial";
-                    const isBimbingan = siswa.statusRemedial === "Bimbingan";
-                    const isTuntas = siswa.statusRemedial === "Tuntas";
-
-                    return (
-                      <div
-                        key={siswa.id}
-                        className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] transition space-y-3 shadow-sm"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shadow-sm ${
-                                isRemedial ? "bg-rose-600" : isBimbingan ? "bg-amber-600" : "bg-emerald-600"
-                              }`}
-                            >
-                              {siswa.nama.slice(0, 2).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-sm font-bold text-slate-900">{siswa.nama}</h4>
-                                {siswa.kodeUndanganTerhubung && (
-                                  <span className="px-1.5 py-0.5 rounded-md bg-[#B8CFB3]/40 text-[#60795e] font-mono text-[9px] font-bold">
-                                    {siswa.kodeUndanganTerhubung}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-[11px] text-slate-500">
-                                {siswa.kelas} • {siswa.totalLatihan} Bab Tuntas Dikerjakan
-                              </p>
-                            </div>
-                          </div>
-
-                          <span
-                            className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
-                              isRemedial
-                                ? "bg-rose-50 text-rose-700 border-rose-200"
-                                : isBimbingan
-                                ? "bg-amber-50 text-amber-700 border-amber-200"
-                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            }`}
-                          >
-                            {isTuntas ? "✓ Tuntas / Lulus" : siswa.statusRemedial}
-                          </span>
-                        </div>
-
-                        {/* Accuracy bar */}
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-slate-500">
-                              Fokus Kelemahan: <b className="text-slate-800">{siswa.topikKelemahan}</b>
-                            </span>
-                            <span
-                              className={`font-black ${
-                                isRemedial
-                                  ? "text-rose-500"
-                                  : isBimbingan
-                                  ? "text-amber-500"
-                                  : "text-[#60795e]"
-                              }`}
-                            >
-                              Akurasi: {siswa.akurasiRataRata}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-[#e8e2d8] rounded-full h-1.5 overflow-hidden">
-                            <div
-                              className={`h-1.5 rounded-full ${
-                                isRemedial
-                                  ? "bg-rose-500"
-                                  : isBimbingan
-                                  ? "bg-amber-500"
-                                  : "bg-emerald-500"
-                              }`}
-                              style={{ width: `${siswa.akurasiRataRata}%` }}
-                            ></div>
-                          </div>
-                        </div>
-
-                        {/* Catatan Guru & Action Buttons */}
-                        <div className="p-2.5 rounded-xl bg-white border border-[#B8CFB3] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
-                          <p className="text-slate-700 italic text-[11px] line-clamp-1 flex-1">
-                            “{siswa.catatanGuru}”
-                          </p>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <button
-                              onClick={() => setSelectedSiswaForHistory(siswa)}
-                              className="px-3 py-1.5 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:translate-y-0.5"
-                              title="Pantau riwayat modul siswa"
-                            >
-                              <Activity className="w-3.5 h-3.5" />
-                              <span>Pantau ({siswa.riwayatPengerjaan?.length || 0})</span>
-                            </button>
-                            <button
-                              onClick={() => setSelectedSiswaForNote(siswa)}
-                              className="px-3 py-1.5 rounded-xl bg-[#FEFAF3] hover:bg-[#F6E2E9]/60 text-[#60795e] text-xs font-bold border border-[#B8CFB3] transition flex items-center gap-1.5 shadow-sm active:translate-y-0.5"
-                            >
-                              <MessageSquare className="w-3.5 h-3.5" />
-                              <span>Catatan</span>
-                            </button>
-                          </div>
-                        </div>
+                  {activeStudents.length === 0 ? (
+                    <div className="p-8 text-center rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-4">
+                      <div className="w-14 h-14 rounded-2xl bg-[#B8CFB3]/40 text-[#60795e] flex items-center justify-center mx-auto border border-[#B8CFB3]">
+                        <Ticket className="w-7 h-7 text-[#84A282]" />
                       </div>
-                    );
-                  })}
+                      <div className="max-w-md mx-auto space-y-1.5">
+                        <h4 className="text-base font-bold text-slate-800">
+                          Belum Ada Siswa Terhubung
+                        </h4>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Bagikan kode tiket bimbingan kepada murid Anda. Setelah murid menautkan kode undangan dan mulai mengerjakan latihan soal atau kuis, data progres, nilai, serta riwayat pengerjaannya akan otomatis muncul di sini.
+                        </p>
+                      </div>
+                      <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+                        {kodeUndanganList.length > 0 ? (
+                          <button
+                            onClick={() => handleCopyKode(kodeUndanganList[0].kode)}
+                            className="px-4 py-2 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition inline-flex items-center gap-2 shadow-sm active:translate-y-0.5"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Salin Kode Tiket Aktif ({kodeUndanganList[0].kode})</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={handleCreateNewCode}
+                            className="px-4 py-2 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition inline-flex items-center gap-2 shadow-sm active:translate-y-0.5"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Buat Kode Tiket Sekarang</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    activeStudents.map((siswa) => {
+                      const isRemedial = siswa.statusRemedial === "Perlu Remedial";
+                      const isBimbingan = siswa.statusRemedial === "Bimbingan";
+                      const isTuntas = siswa.statusRemedial === "Tuntas";
+
+                      return (
+                        <div
+                          key={siswa.id}
+                          className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] transition space-y-3 shadow-sm"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shadow-sm ${
+                                  isRemedial ? "bg-rose-600" : isBimbingan ? "bg-amber-600" : "bg-emerald-600"
+                                }`}
+                              >
+                                {siswa.nama.slice(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="text-sm font-bold text-slate-900">{siswa.nama}</h4>
+                                  {siswa.kodeUndanganTerhubung && (
+                                    <span className="px-1.5 py-0.5 rounded-md bg-[#B8CFB3]/40 text-[#60795e] font-mono text-[9px] font-bold">
+                                      {siswa.kodeUndanganTerhubung}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[11px] text-slate-500">
+                                  {siswa.kelas} • {siswa.totalLatihan} Bab Tuntas Dikerjakan
+                                </p>
+                              </div>
+                            </div>
+
+                            <span
+                              className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
+                                isRemedial
+                                  ? "bg-rose-50 text-rose-700 border-rose-200"
+                                  : isBimbingan
+                                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                                  : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              }`}
+                            >
+                              {isTuntas ? "✓ Tuntas / Lulus" : siswa.statusRemedial}
+                            </span>
+                          </div>
+
+                          {/* Accuracy bar */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-slate-500">
+                                Fokus Kelemahan: <b className="text-slate-800">{siswa.topikKelemahan}</b>
+                              </span>
+                              <span
+                                className={`font-black ${
+                                  isRemedial
+                                    ? "text-rose-500"
+                                    : isBimbingan
+                                    ? "text-amber-500"
+                                    : "text-[#60795e]"
+                                }`}
+                              >
+                                Akurasi: {siswa.akurasiRataRata}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-[#e8e2d8] rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className={`h-1.5 rounded-full ${
+                                  isRemedial
+                                    ? "bg-rose-500"
+                                    : isBimbingan
+                                    ? "bg-amber-500"
+                                    : "bg-emerald-500"
+                                }`}
+                                style={{ width: `${siswa.akurasiRataRata}%` }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          {/* Catatan Guru & Action Buttons */}
+                          <div className="p-2.5 rounded-xl bg-white border border-[#B8CFB3] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                            <p className="text-slate-700 italic text-[11px] line-clamp-1 flex-1">
+                              “{siswa.catatanGuru}”
+                            </p>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                onClick={() => setSelectedSiswaForHistory(siswa)}
+                                className="px-3 py-1.5 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:translate-y-0.5"
+                                title="Pantau riwayat modul siswa"
+                              >
+                                <Activity className="w-3.5 h-3.5" />
+                                <span>Pantau ({siswa.riwayatPengerjaan?.length || 0})</span>
+                              </button>
+                              <button
+                                onClick={() => setSelectedSiswaForNote(siswa)}
+                                className="px-3 py-1.5 rounded-xl bg-[#FEFAF3] hover:bg-[#F6E2E9]/60 text-[#60795e] text-xs font-bold border border-[#B8CFB3] transition flex items-center gap-1.5 shadow-sm active:translate-y-0.5"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                <span>Catatan</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>
@@ -1303,47 +1359,59 @@ export const GuruDashboard: React.FC = () => {
               </p>
 
               <div className="space-y-2.5">
-                {kodeUndanganList.map((k) => (
-                  <div
-                    key={k.id}
-                    className="p-3.5 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] flex items-center justify-between gap-3 text-xs transition shadow-sm"
-                  >
-                    <div>
-                      <span className="font-mono font-bold text-slate-800 tracking-wider text-sm block">
-                        {k.kode}
-                      </span>
-                      <span className="text-[11px] text-slate-500">
-                        {k.targetTingkat} • Berlaku: {k.expiredAt}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-[#60795e] bg-white border border-[#B8CFB3] px-2.5 py-0.5 rounded-full">
-                        {k.status}
-                      </span>
-                      <button
-                        onClick={() => handleCopyKode(k.kode)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border shadow-sm ${
-                          copiedCode === k.kode
-                            ? "bg-emerald-600 text-white border-emerald-500"
-                            : "bg-white hover:bg-[#FEFAF3] text-slate-700 border-[#B8CFB3]"
-                        }`}
-                      >
-                        {copiedCode === k.kode ? (
-                          <>
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Tersalin</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Salin</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
+                {kodeUndanganList.length === 0 ? (
+                  <div className="p-6 text-center rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-2">
+                    <Ticket className="w-8 h-8 text-[#84A282] mx-auto" />
+                    <p className="text-xs text-slate-700 font-semibold">
+                      Belum ada kode tiket aktif
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      Klik tombol <strong>+ Buat Kode</strong> di atas untuk membuat kode tiket bimbingan pertama Anda.
+                    </p>
                   </div>
-                ))}
+                ) : (
+                  kodeUndanganList.map((k) => (
+                    <div
+                      key={k.id}
+                      className="p-3.5 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] hover:border-[#84A282] flex items-center justify-between gap-3 text-xs transition shadow-sm"
+                    >
+                      <div>
+                        <span className="font-mono font-bold text-slate-800 tracking-wider text-sm block">
+                          {k.kode}
+                        </span>
+                        <span className="text-[11px] text-slate-500">
+                          {k.targetTingkat} • Berlaku: {k.expiredAt}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-[#60795e] bg-white border border-[#B8CFB3] px-2.5 py-0.5 rounded-full">
+                          {k.status}
+                        </span>
+                        <button
+                          onClick={() => handleCopyKode(k.kode)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border shadow-sm ${
+                            copiedCode === k.kode
+                              ? "bg-emerald-600 text-white border-emerald-500"
+                              : "bg-white hover:bg-[#FEFAF3] text-slate-700 border-[#B8CFB3]"
+                          }`}
+                        >
+                          {copiedCode === k.kode ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Tersalin</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>Salin</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

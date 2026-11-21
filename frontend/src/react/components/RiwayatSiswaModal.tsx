@@ -84,7 +84,7 @@ export const RiwayatSiswaModal: React.FC<RiwayatSiswaModalProps> = ({
                 <span>•</span>
                 <span className="flex items-center gap-1 font-mono text-slate-700">
                   <KeyRound className="w-3.5 h-3.5 text-[#84A282]" />
-                  <span>Kode: {siswa.kodeUndanganTerhubung || "GURU-SD-2026"}</span>
+                  <span>Kode: {siswa.kodeUndanganTerhubung || "Terhubung Mandiri"}</span>
                 </span>
                 <span>•</span>
                 <span>Aktif: {siswa.terakhirAktif}</span>
