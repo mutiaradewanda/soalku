@@ -111,8 +111,7 @@ export const QuizPage: React.FC = () => {
           setIsAutoSubmitting(true);
           setTimeout(() => {
             const finished = finishSession(true, next);
-            const studentName =
-              user?.name || (finished.tingkat === "SD" ? "Adit Pratama" : "Arya Pratama");
+            const studentName = user?.name || "Siswa";
             catatAktivitasSiswa(studentName, {
               idSesi: finished.idSesi,
               tingkat: finished.tingkat,
@@ -257,8 +256,7 @@ export const QuizPage: React.FC = () => {
 
   const handleFinish = () => {
     const finished = finishSession(false, violationsCount);
-    const studentName =
-      user?.name || (finished.tingkat === "SD" ? "Adit Pratama" : "Arya Pratama");
+    const studentName = user?.name || "Siswa";
     catatAktivitasSiswa(studentName, {
       idSesi: finished.idSesi,
       tingkat: finished.tingkat,

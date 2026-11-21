@@ -69,279 +69,10 @@ const STORAGE_KEY_SISWA = "soalku_siswa_binaan";
 const STORAGE_KEY_KODE = "soalku_kode_undangan";
 const STORAGE_KEY_TOPIK = "soalku_mentor_topik_evaluasi";
 
-const INITIAL_SOAL_LIST: SoalReview[] = [
-  {
-    id: 12,
-    pertanyaan:
-      "Enzim renin berfungsi menggumpalkan protein susu (kasein). Pada bayi mamalia dan manusia, sekresi enzim renin berlangsung sangat aktif karena...",
-    tingkat: "SMP",
-    mataPelajaran: "IPA Biologi",
-    topik: "Enzim Lambung & Organ Pencernaan Manusia",
-    modulAsal: "Modul 4.1 - Biologi Sistem Pencernaan",
-    tingkatKesulitan: "SEDANG",
-    opsi: [
-      { label: "A", teks: "Bayi belum memiliki gigi geligi untuk mengunyah", isBenar: false },
-      { label: "B", teks: "Sumber asupan nutrisi utama bayi adalah ASI / susu", isBenar: true },
-      { label: "C", teks: "Dinding lambung bayi belum mampu memproduksi cairan asam klorida (HCl)", isBenar: false },
-      { label: "D", teks: "Usus halus bayi belum berkembang secara sempurna", isBenar: false },
-    ],
-    pembahasan:
-      "Enzim renin disekresikan secara optimal oleh lambung bayi untuk mengendapkan kasein susu agar dapat dicerna lebih lanjut oleh pepsin sebelum masuk ke duodenum.",
-    tipsAdaptif: "Rumus Cepat: Renin = R-e-n-i-n (Reaksi Endapan Nutrisi ASI/Susu).",
-    aiConfidence: 96,
-    statusReview: "MENUNGGU",
-    tanggalDibuat: "2026-10-24 10:15",
-  },
-  {
-    id: 13,
-    pertanyaan:
-      "Tekanan darah sistolik pada manusia dicatat saat ruang bilik jantung (ventrikel) sedang mengalami...",
-    tingkat: "SMP",
-    mataPelajaran: "IPA Fisika & Biologi",
-    topik: "Fungsi Bilik Jantung & Katup Aorta",
-    modulAsal: "Modul 4.2 - Sistem Peredaran Darah Manusia",
-    tingkatKesulitan: "SEDANG",
-    opsi: [
-      { label: "A", teks: "Kontraksi maksimal untuk memompa darah keluar ke pembuluh arteri", isBenar: true },
-      { label: "B", teks: "Relaksasi dan menerima aliran darah balik dari atrium", isBenar: false },
-      { label: "C", teks: "Penutupan katup bikuspidalis secara pasif saat pengisian", isBenar: false },
-      { label: "D", teks: "Pembekuan trombosit di dalam arteri pulmonalis", isBenar: false },
-    ],
-    pembahasan:
-      "Tekanan sistolik dihasilkan akibat kontraksi otot ventrikel (bilik) jantung yang mendesak darah keluar melalui katup semilunaris aorta.",
-    tipsAdaptif: "Sistol = Sempit/Sembur (Kontraksi). Diastol = Diam/Datar (Relaksasi).",
-    aiConfidence: 94,
-    statusReview: "MENUNGGU",
-    tanggalDibuat: "2026-10-24 10:45",
-  },
-  {
-    id: 14,
-    pertanyaan:
-      "Pada proses fotosintesis tumbuhan hijau, zat yang dihasilkan dan dilepaskan ke udara bebas untuk pernapasan makhluk hidup adalah...",
-    tingkat: "SD",
-    mataPelajaran: "Ilmu Pengetahuan Alam",
-    topik: "Tumbuhan Hijau & Fotosintesis",
-    modulAsal: "Modul Bab 2 - Tumbuhan Sahabat Kita",
-    tingkatKesulitan: "MUDAH",
-    opsi: [
-      { label: "A", teks: "Gas Karbondioksida (CO2)", isBenar: false },
-      { label: "B", teks: "Gas Oksigen (O2)", isBenar: true },
-      { label: "C", teks: "Gas Nitrogen Bebas", isBenar: false },
-    ],
-    pembahasan:
-      "Fotosintesis menyerap karbon dioksida dan air dengan bantuan cahaya matahari dan klorofil, menghasilkan glukosa dan melepaskan gas oksigen (O2).",
-    tipsAdaptif: "Fotosintesis: Menghirup Racun (CO2), Menghembuskan Berkah Hidup (Oksigen O2).",
-    aiConfidence: 98,
-    statusReview: "MENUNGGU",
-    tanggalDibuat: "2026-10-24 11:20",
-  },
-  {
-    id: 15,
-    pertanyaan:
-      "Enzim ptialin (amilase mulut) yang bekerja pada suasana pH netral di rongga mulut bertugas menguraikan amilum menjadi senyawa...",
-    tingkat: "SMP",
-    mataPelajaran: "IPA Terpadu",
-    topik: "Enzim Lambung & Organ Pencernaan Manusia",
-    modulAsal: "Modul 4.1 - Biologi Sistem Pencernaan",
-    tingkatKesulitan: "MUDAH",
-    opsi: [
-      { label: "A", teks: "Maltosa (Disakarida)", isBenar: true },
-      { label: "B", teks: "Asam Lemak dan Gliserol", isBenar: false },
-      { label: "C", teks: "Asam Amino Polipeptida", isBenar: false },
-      { label: "D", teks: "Asam Klorida (HCl)", isBenar: false },
-    ],
-    pembahasan:
-      "Ptialin menguraikan karbohidrat kompleks (polisakarida/amilum) menjadi disakarida sederhana seperti maltosa sebelum ditelan menuju lambung.",
-    tipsAdaptif: "Mulut = M-P-M (Mulut - Ptialin - Maltosa)",
-    aiConfidence: 95,
-    statusReview: "MENUNGGU",
-    tanggalDibuat: "2026-10-24 11:40",
-  },
-  {
-    id: 7,
-    pertanyaan:
-      "Perhatikan gambar organ pencernaan berikut! Enzim pepsin dan asam klorida (HCl) yang berfungsi mengaktifkan pepsinogen serta membunuh kuman penyakit dihasilkan pada bagian organ yang ditunjukkan oleh nomor...",
-    tingkat: "SMP",
-    mataPelajaran: "IPA Biologi",
-    topik: "Enzim Lambung & Organ Pencernaan Manusia",
-    modulAsal: "Modul 4.1 - Biologi Sistem Pencernaan",
-    tingkatKesulitan: "SEDANG",
-    opsi: [
-      { label: "A", teks: "Mulut — Organ nomor (1)", isBenar: false },
-      { label: "B", teks: "Lambung — Organ nomor (2)", isBenar: true },
-      { label: "C", teks: "Hati — Organ nomor (3)", isBenar: false },
-      { label: "D", teks: "Usus Halus — Organ nomor (4)", isBenar: false },
-    ],
-    pembahasan:
-      "Organ nomor (2) adalah Lambung (Ventrikulus). Dinding mukosa lambung memiliki kelenjar lambung yang menghasilkan getah lambung berisi HCl, pepsinogen, dan renin.",
-    tipsAdaptif: "Ingat singkatan [R-P-L]: Renin, Pepsin, Lambung (HCl)",
-    aiConfidence: 99,
-    statusReview: "DISETUJUI",
-    tanggalDibuat: "2026-10-23 09:00",
-    reviewer: "Bu Ratna Kumalasari, S.Pd.",
-  },
-  {
-    id: 9,
-    pertanyaan:
-      "Mengapa dinding otot bilik kiri (ventrikel sinister) jantung berukuran jauh lebih tebal dan elastis dibandingkan dinding bilik kanan?",
-    tingkat: "SMP",
-    mataPelajaran: "IPA Biologi",
-    topik: "Fungsi Bilik Jantung & Katup Aorta",
-    modulAsal: "Modul 4.2 - Sistem Peredaran Darah Manusia",
-    tingkatKesulitan: "SULIT",
-    opsi: [
-      { label: "A", teks: "Karena hanya bertugas memompa darah dekat menuju organ paru-paru", isBenar: false },
-      { label: "B", teks: "Karena memerlukan gaya dorong bertekanan tinggi untuk mengalirkan darah ke seluruh organ tubuh", isBenar: true },
-      { label: "C", teks: "Karena menerima darah kotor dengan kandungan gas CO2 yang pekat", isBenar: false },
-      { label: "D", teks: "Karena katup trikuspidalis bekerja lebih lambat", isBenar: false },
-    ],
-    pembahasan:
-      "Bilik kiri memompa darah bersih kaya O2 ke seluruh peredaran sistemik (seluruh tubuh), sehingga membutuhkan miokardium yang jauh lebih tebal dibanding bilik kanan yang hanya memompa ke paru-paru.",
-    tipsAdaptif: "Bilik Kiri = Keliling Tubuh (Beban Besar -> Otot Tebal)",
-    aiConfidence: 97,
-    statusReview: "DISETUJUI",
-    tanggalDibuat: "2026-10-23 09:30",
-    reviewer: "Bu Ratna Kumalasari, S.Pd.",
-  },
-  {
-    id: 16,
-    pertanyaan:
-      "Tentukan rumus kimia asam lambung dalam skala molalitas standar tanpa melibatkan reaksi pengikatan enzim!",
-    tingkat: "SMP",
-    mataPelajaran: "IPA Terpadu",
-    topik: "Enzim Lambung & Organ Pencernaan Manusia",
-    modulAsal: "Modul 4.1 - Biologi Sistem Pencernaan",
-    tingkatKesulitan: "SULIT",
-    opsi: [
-      { label: "A", teks: "H2SO4 pekat 2 Molar", isBenar: false },
-      { label: "B", teks: "HCl 0.1 N pekat", isBenar: false },
-      { label: "C", teks: "CH3COOH 5%", isBenar: false },
-      { label: "D", teks: "HNO3 pekat", isBenar: false },
-    ],
-    pembahasan: "Pertanyaan ditolak karena materi berada di luar cakupan Kurikulum IPA SMP Bab 4.",
-    aiConfidence: 54,
-    statusReview: "DITOLAK",
-    catatanReviewer: "Materi stoikiometri molalitas asam terlalu rumit untuk siswa SMP kelas 8. Tidak relevan dengan indikator KD Biologi.",
-    tanggalDibuat: "2026-10-23 14:00",
-    reviewer: "Bu Ratna Kumalasari, S.Pd.",
-  },
-  {
-    id: 17,
-    pertanyaan:
-      "Faktorkan bentuk aljabar selisih dua kuadrat berikut secara tepat: 9x² - 16y² = ...",
-    tingkat: "SMP",
-    mataPelajaran: "Matematika",
-    topik: "Faktorisasi Aljabar Bentuk Kuadrat",
-    modulAsal: "Modul 3.2 - Aljabar & Faktorisasi",
-    tingkatKesulitan: "SEDANG",
-    opsi: [
-      { label: "A", teks: "(3x - 4y)(3x + 4y)", isBenar: true },
-      { label: "B", teks: "(3x - 4y)(3x - 4y)", isBenar: false },
-      { label: "C", teks: "(9x - 16y)(x + y)", isBenar: false },
-      { label: "D", teks: "(3x + 16y)(3x - y)", isBenar: false },
-    ],
-    pembahasan:
-      "Bentuk a² - b² dapat difaktorkan menjadi (a - b)(a + b). Di sini a = 3x dan b = 4y, sehingga faktornya adalah (3x - 4y)(3x + 4y).",
-    tipsAdaptif: "Rumus Cepat: a² - b² = (a - b)(a + b).",
-    aiConfidence: 97,
-    statusReview: "MENUNGGU",
-    tanggalDibuat: "2026-10-25 08:30",
-  },
-  {
-    id: 18,
-    pertanyaan:
-      "Sudut pandang pengarang yang menggunakan kata ganti orang pertama seperti 'aku' atau 'saya' sebagai pelaku utama dalam cerpen disebut sudut pandang...",
-    tingkat: "SMP",
-    mataPelajaran: "B. Indonesia",
-    topik: "Unsur Intrinsik Cerpen & Sudut Pandang",
-    modulAsal: "Modul Bab 5 - Teks Cerita Pendek",
-    tingkatKesulitan: "MUDAH",
-    opsi: [
-      { label: "A", teks: "Orang pertama tokoh utama", isBenar: true },
-      { label: "B", teks: "Orang ketiga serba tahu", isBenar: false },
-      { label: "C", teks: "Orang ketiga pengamat", isBenar: false },
-      { label: "D", teks: "Orang kedua jamak", isBenar: false },
-    ],
-    pembahasan:
-      "Penggunaan kata ganti 'aku' atau 'saya' di mana tokoh tersebut menjadi pusat penceritaan dan mengalami peristiwa utama disebut sudut pandang orang pertama tokoh utama.",
-    tipsAdaptif: "Kata kunci: 'Aku' / 'Saya' = Orang Pertama.",
-    aiConfidence: 98,
-    statusReview: "MENUNGGU",
-    tanggalDibuat: "2026-10-25 09:15",
-  },
-];
-
+const INITIAL_SOAL_LIST: SoalReview[] = [];
 const INITIAL_SISWA_LIST: SiswaBinaan[] = [];
-
 const INITIAL_KODE_UNDANGAN: KodeUndangan[] = [];
-
-const INITIAL_TOPIK_EVALUASI: TopikEvaluasi[] = [
-  {
-    id: 1,
-    bagianMateriId: 103,
-    namaTopik: "Fungsi Bilik Jantung & Katup Aorta",
-    mataPelajaran: "IPA Biologi",
-    tingkat: "SMP",
-    totalDikerjakan: 24,
-    totalBenar: 10,
-    persentaseAkurasi: 42,
-    statusPenguasaan: "Perlu Remedial",
-    rekomendasiAksi: "Pelajari kembali skema sirkulasi peredaran darah ganda dan fungsi katup semilunaris aorta.",
-    tipsPenguatan: "Bilik Kiri = Tekanan Besar ke Seluruh Tubuh (Otot Paling Tebal). Katup Aorta = Mencegah darah balik ke Bilik Kiri.",
-  },
-  {
-    id: 2,
-    bagianMateriId: 101,
-    namaTopik: "Enzim Lambung & Organ Pencernaan Manusia",
-    mataPelajaran: "IPA Biologi",
-    tingkat: "SMP",
-    totalDikerjakan: 36,
-    totalBenar: 20,
-    persentaseAkurasi: 56,
-    statusPenguasaan: "Perlu Remedial",
-    rekomendasiAksi: "Fokus pada pemisahan enzim getah lambung (pepsin, renin, HCl) vs enzim usus halus pankreas (tripsin, amilase, lipase).",
-    tipsPenguatan: "Gunakan rumus [R-P-L]: Renin endapkan kasein, Pepsin ubah protein ke pepton, Lambung asam (HCl).",
-  },
-  {
-    id: 3,
-    bagianMateriId: 104,
-    namaTopik: "Faktorisasi Aljabar Bentuk Kuadrat",
-    mataPelajaran: "Matematika",
-    tingkat: "SMP",
-    totalDikerjakan: 28,
-    totalBenar: 20,
-    persentaseAkurasi: 71,
-    statusPenguasaan: "Perlu Penguatan",
-    rekomendasiAksi: "Tingkatkan latihan faktorisasi bentuk selisih kuadrat a^2 - b^2 = (a-b)(a+b).",
-    tipsPenguatan: "Selisih dua kuadrat selalu memiliki akar faktor berlawanan tanda.",
-  },
-  {
-    id: 4,
-    bagianMateriId: 105,
-    namaTopik: "Unsur Intrinsik Cerpen & Sudut Pandang",
-    mataPelajaran: "B. Indonesia",
-    tingkat: "SMP",
-    totalDikerjakan: 22,
-    totalBenar: 19,
-    persentaseAkurasi: 86,
-    statusPenguasaan: "Tuntas & Sangat Baik",
-    rekomendasiAksi: "Penguasaan konsep sudah sangat prima. Siap untuk soal HOTS pembanding dua teks sastra.",
-    tipsPenguatan: "Sudut pandang orang pertama ditandai kata ganti 'Aku' / 'Saya' sebagai tokoh pelaku.",
-  },
-  {
-    id: 5,
-    bagianMateriId: 102,
-    namaTopik: "Proses Penyerapan Nutrisi di Usus Halus",
-    mataPelajaran: "IPA Biologi",
-    tingkat: "SMP",
-    totalDikerjakan: 18,
-    totalBenar: 16,
-    persentaseAkurasi: 89,
-    statusPenguasaan: "Tuntas & Sangat Baik",
-    rekomendasiAksi: "Pemahaman vili usus dan kapiler limfa sangat baik. Pertahankan konsistensi.",
-    tipsPenguatan: "Glukosa diserap kapiler darah, asam lemak diserap pembuluh kil / limfa.",
-  },
-];
+const INITIAL_TOPIK_EVALUASI: TopikEvaluasi[] = [];
 
 const MentorContext = createContext<MentorContextType | undefined>(undefined);
 
@@ -351,9 +82,8 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const saved = localStorage.getItem(STORAGE_KEY_SOAL);
       if (saved) {
         const parsed: SoalReview[] = JSON.parse(saved);
-        const existingIds = new Set(parsed.map((s) => s.id));
-        const missing = INITIAL_SOAL_LIST.filter((s) => !existingIds.has(s.id));
-        return [...parsed, ...missing];
+        // Hapus soal mock/dummy bawaan
+        return parsed.filter((s) => ![7, 9, 12, 13, 14, 15, 16, 17, 18].includes(s.id));
       }
       return INITIAL_SOAL_LIST;
     } catch {
@@ -366,10 +96,24 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const saved = localStorage.getItem(STORAGE_KEY_SISWA);
       if (saved) {
         const parsed: SiswaBinaan[] = JSON.parse(saved);
-        // Purge legacy mock dummy students
-        return parsed.filter(
-          (s) => !["sis-1", "sis-2", "sis-3", "sis-4", "sis-5", "sis-6"].includes(s.id)
-        );
+        const dummyNames = [
+          "arya pratama",
+          "mutiara dewanda",
+          "dzaky ahsanal",
+          "raffi azzaky",
+          "mohammad thoriq",
+          "adit pratama",
+        ];
+        return parsed.filter((s) => {
+          if (["sis-1", "sis-2", "sis-3", "sis-4", "sis-5", "sis-6"].includes(s.id)) return false;
+          if (
+            dummyNames.includes(s.nama.toLowerCase().trim()) &&
+            (!s.kodeUndanganTerhubung || s.kodeUndanganTerhubung === "GURU-SMP-2026" || s.kodeUndanganTerhubung === "GURU-SD-2026")
+          ) {
+            return false;
+          }
+          return true;
+        });
       }
       return INITIAL_SISWA_LIST;
     } catch {
@@ -396,7 +140,11 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [topikEvaluasiList, setTopikEvaluasiList] = useState<TopikEvaluasi[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_TOPIK);
-      return saved ? JSON.parse(saved) : INITIAL_TOPIK_EVALUASI;
+      if (saved) {
+        const parsed: TopikEvaluasi[] = JSON.parse(saved);
+        return parsed.filter((t) => ![1, 2, 3, 4, 5].includes(t.id));
+      }
+      return INITIAL_TOPIK_EVALUASI;
     } catch {
       return INITIAL_TOPIK_EVALUASI;
     }
@@ -837,7 +585,7 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     );
 
     // Hubungkan siswa ke profil guru
-    const targetName = studentNama || (studentTingkat === "SD" ? "Adit Pratama" : "Arya Pratama");
+    const targetName = studentNama || (studentTingkat === "SD" ? "Siswa SD" : "Siswa SMP");
     setSiswaList((prev) => {
       let foundStudent = false;
       const updated = prev.map((s) => {

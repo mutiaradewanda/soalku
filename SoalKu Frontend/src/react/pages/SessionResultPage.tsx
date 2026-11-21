@@ -38,8 +38,7 @@ export const SessionResultPage: React.FC = () => {
 
   useEffect(() => {
     if (currentSession && !hasRecordedRemedial) {
-      const studentName =
-        user?.name || (currentSession.tingkat === "SD" ? "Adit Pratama" : "Arya Pratama");
+      const studentName = user?.name || "Siswa";
       const topic =
         currentSession.daftarSoal[0]?.topik || currentSession.subjek || "Modul Belajar";
       catatHasilRemedial(studentName, topic, currentSession.skor);

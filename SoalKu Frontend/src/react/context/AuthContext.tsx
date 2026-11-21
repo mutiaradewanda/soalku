@@ -112,31 +112,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ...base,
       };
     } else if (payload.role === "sd") {
+      const derivedName = payload.identifier.includes("@")
+        ? payload.identifier.split("@")[0]
+        : `Siswa SD (${payload.identifier})`;
       loggedInUser = {
         ...base,
         role: "sd",
-        name: "Adit Pratama",
+        name: derivedName,
         nisn: payload.identifier,
         grade: "Kelas 4 SD",
-        parentName: "Bpk. Bambang Pamungkas",
+        parentName: "-",
       };
     } else if (payload.role === "smp") {
+      const derivedName = payload.identifier.includes("@")
+        ? payload.identifier.split("@")[0]
+        : `Siswa SMP (${payload.identifier})`;
       loggedInUser = {
         ...base,
         role: "smp",
-        name: "Arya Pratama",
+        name: derivedName,
         nisn: payload.identifier,
         grade: "Kelas 8 SMP",
         contact: payload.identifier,
       };
     } else {
+      const derivedName = payload.identifier.includes("@")
+        ? payload.identifier.split("@")[0]
+        : `Guru (${payload.identifier})`;
       loggedInUser = {
         ...base,
         role: "guru",
-        name: "Bu Ratna Kumalasari, S.Pd.",
+        name: derivedName,
         nuptkOrNip: payload.identifier,
-        subject: "IPA Terpadu & Biologi",
-        email: payload.identifier.includes("@") ? payload.identifier : "ratna@sekolah.sch.id",
+        subject: "Guru Pembimbing",
+        email: payload.identifier.includes("@") ? payload.identifier : `${payload.identifier}@sekolah.sch.id`,
       };
     }
 

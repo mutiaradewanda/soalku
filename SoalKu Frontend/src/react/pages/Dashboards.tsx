@@ -1054,9 +1054,8 @@ export const GuruDashboard: React.FC = () => {
     const isLinkedToTeacher = Boolean(
       s.kodeUndanganTerhubung &&
       (
-        kodeUndanganList.length === 0 ||
         kodeUndanganList.some((k) => k.kode.toUpperCase() === s.kodeUndanganTerhubung?.toUpperCase()) ||
-        (user?.name && s.guruPembimbing?.toLowerCase().trim() === user.name.toLowerCase().trim())
+        (user?.name && s.guruPembimbing && s.guruPembimbing.toLowerCase().trim() === user.name.toLowerCase().trim())
       )
     );
     return hasWorked && isLinkedToTeacher;

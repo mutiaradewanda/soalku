@@ -20,6 +20,16 @@ interface MateriContextType {
 // Awal login siswa bersih tanpa modul bawaan/dummy
 const SEED_MATERI_LIST: Materi[] = [];
 
+const DUMMY_TITLES = [
+  "biologi sistem pencernaan",
+  "aljabar dasar & faktorisasi",
+  "aljabar dasar dan faktorisasi",
+  "sistem peredaran darah manusia",
+  "mengenal bagian tumbuhan & fotosintesis",
+  "mengenal bagian tumbuhan dan fotosintesis",
+  "tumbuhan sahabat kita",
+];
+
 const MateriContext = createContext<MateriContextType | undefined>(undefined);
 
 export const MateriProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -28,8 +38,12 @@ export const MateriProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const saved = localStorage.getItem("soalku_materi_list");
       if (saved) {
         const parsed: Materi[] = JSON.parse(saved);
-        // Bersihkan modul mock/dummy bawaan (ids: 1, 2, 3, 4)
-        return parsed.filter((m) => ![1, 2, 3, 4].includes(m.id));
+        // Bersihkan modul mock/dummy bawaan (ids: 1, 2, 3, 4 atau judul dummy)
+        return parsed.filter(
+          (m) =>
+            ![1, 2, 3, 4].includes(m.id) &&
+            !DUMMY_TITLES.includes(m.judul.toLowerCase().trim())
+        );
       }
       return SEED_MATERI_LIST;
     } catch {
