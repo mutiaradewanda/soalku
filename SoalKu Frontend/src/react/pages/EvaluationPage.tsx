@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ShieldAlert,
   MessageSquare,
+  ChevronDown,
 } from "lucide-react";
 import { useMentor } from "../context/MentorContext";
 import { useQuiz } from "../context/QuizContext";
@@ -50,7 +51,14 @@ export const EvaluationPage: React.FC = () => {
     siswaList.find((s) => (user?.role === "sd" ? s.nama.toLowerCase().includes("adit") : s.nama.toLowerCase().includes("arya"))) ||
     siswaList[0];
 
-  const mapelOptions = Array.from(new Set(topikEvaluasiList.map((t) => t.mataPelajaran)));
+  const defaultStandardMapel =
+    filterTingkat === "SD"
+      ? ["IPAS", "Matematika", "Bahasa Indonesia", "Bahasa Inggris", "Pendidikan Pancasila"]
+      : ["IPA Terpadu", "Matematika", "Bahasa Inggris", "Bahasa Indonesia", "IPS Terpadu", "Informatika"];
+
+  const mapelOptions = Array.from(
+    new Set([...defaultStandardMapel, ...topikEvaluasiList.map((t) => t.mataPelajaran).filter(Boolean)])
+  );
 
   const filteredTopik = topikEvaluasiList
     .filter((t) => {
@@ -168,13 +176,17 @@ export const EvaluationPage: React.FC = () => {
         )}
 
         {/* 3. Filter Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 bg-white border border-[#B8CFB3] p-3 rounded-2xl shadow-sm">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-600 font-semibold px-1">Mata Pelajaran:</span>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white border border-[#B8CFB3] p-4 rounded-2xl shadow-sm">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-[#84A282]" />
+            <span className="text-xs font-bold text-slate-800">Kategori Mata Pelajaran:</span>
+          </div>
+
+          <div className="relative min-w-[220px]">
             <select
               value={filterMapel}
               onChange={(e) => setFilterMapel(e.target.value)}
-              className="bg-[#FEFAF3] border border-[#B8CFB3] rounded-xl px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-[#84A282]"
+              className="w-full bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 border border-[#B8CFB3] text-slate-800 text-xs font-bold rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-[#84A282]/30 focus:border-[#84A282] transition appearance-none cursor-pointer shadow-sm"
             >
               <option value="SEMUA">Semua Mata Pelajaran</option>
               {mapelOptions.map((m) => (
@@ -183,6 +195,7 @@ export const EvaluationPage: React.FC = () => {
                 </option>
               ))}
             </select>
+            <ChevronDown className="w-4 h-4 text-[#739071] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
 

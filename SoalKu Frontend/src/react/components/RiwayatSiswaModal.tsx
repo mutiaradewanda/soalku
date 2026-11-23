@@ -12,6 +12,7 @@ import {
   Layers,
   KeyRound,
   Send,
+  ChevronDown,
 } from "lucide-react";
 
 interface RiwayatSiswaModalProps {
@@ -29,11 +30,13 @@ export const RiwayatSiswaModal: React.FC<RiwayatSiswaModalProps> = ({
 }) => {
   const [catatanInput, setCatatanInput] = useState("");
   const [catatanSaved, setCatatanSaved] = useState(false);
+  const [filterMapelModal, setFilterMapelModal] = useState<string>("SEMUA");
 
   React.useEffect(() => {
     if (siswa) {
       setCatatanInput(siswa.catatanGuru || "");
       setCatatanSaved(false);
+      setFilterMapelModal("SEMUA");
     }
   }, [siswa]);
 
@@ -44,6 +47,22 @@ export const RiwayatSiswaModal: React.FC<RiwayatSiswaModalProps> = ({
   const isTuntas = siswa.statusRemedial === "Tuntas";
 
   const riwayatList = siswa.riwayatPengerjaan || [];
+
+  const cleanTopicDisplay = (topik: string) => {
+    if (!topik) return "Belum ada riwayat";
+    return topik.replace(/[A-Za-z0-9_-]{16,}/g, "Modul Adaptif");
+  };
+
+  const modalMapelOptions = Array.from(
+    new Set(riwayatList.map((r) => r.mapel).filter(Boolean))
+  );
+
+  const filteredRiwayat = riwayatList.filter((r) => {
+    if (filterMapelModal === "SEMUA") return true;
+    const target = filterMapelModal.toLowerCase().trim();
+    const m = (r.mapel || "").toLowerCase().trim();
+    return m === target || m.includes(target) || target.includes(m);
+  });
 
   const handleSaveNote = () => {
     onSaveCatatan(siswa.id, catatanInput.trim());
@@ -144,19 +163,38 @@ export const RiwayatSiswaModal: React.FC<RiwayatSiswaModalProps> = ({
 
           {/* Monitoring Riwayat Pengerjaan Modul */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                 <Activity className="w-4 h-4 text-[#84A282]" />
-                <span>Riwayat Pengerjaan Modul Siswa ({riwayatList.length})</span>
+                <span>Riwayat Pengerjaan Modul Siswa ({filteredRiwayat.length})</span>
               </h4>
-              <span className="text-[11px] text-slate-500">Nilai otomatis masuk saat siswa submit</span>
+
+              {modalMapelOptions.length > 0 && (
+                <div className="relative">
+                  <select
+                    value={filterMapelModal}
+                    onChange={(e) => setFilterMapelModal(e.target.value)}
+                    className="bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 border border-[#B8CFB3] text-slate-800 text-[11px] font-bold rounded-xl pl-2.5 pr-7 py-1.5 focus:outline-none focus:border-[#84A282] transition appearance-none cursor-pointer shadow-sm"
+                  >
+                    <option value="SEMUA">Semua Pelajaran ({riwayatList.length})</option>
+                    {modalMapelOptions.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 text-[#739071] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              )}
             </div>
 
-            {riwayatList.length === 0 ? (
+            {filteredRiwayat.length === 0 ? (
               <div className="p-6 text-center rounded-2xl bg-[#FEFAF3] border border-dashed border-[#B8CFB3] space-y-2">
                 <BookOpen className="w-8 h-8 text-slate-400 mx-auto" />
                 <p className="text-xs text-slate-700 font-semibold">
-                  Belum ada modul yang diselesaikan
+                  {filterMapelModal === "SEMUA"
+                    ? "Belum ada modul yang diselesaikan"
+                    : `Belum ada modul yang diselesaikan untuk mata pelajaran "${filterMapelModal}"`}
                 </p>
                 <p className="text-[11px] text-slate-500">
                   Saat siswa mengerjakan modul latihan CBT di dasbornya, nilai dan detail soal akan muncul di sini secara otomatis.
@@ -164,7 +202,7 @@ export const RiwayatSiswaModal: React.FC<RiwayatSiswaModalProps> = ({
               </div>
             ) : (
               <div className="space-y-2.5">
-                {riwayatList.map((riwayat) => {
+                {filteredRiwayat.map((riwayat) => {
                   const isLulusRiwayat = riwayat.status === "Lulus";
                   return (
                     <div
@@ -179,7 +217,7 @@ export const RiwayatSiswaModal: React.FC<RiwayatSiswaModalProps> = ({
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-600 font-medium">
-                          Topik: <span className="font-semibold text-slate-800">{riwayat.topik}</span>
+                          Topik: <span className="font-semibold text-slate-800">{cleanTopicDisplay(riwayat.topik)}</span>
                         </p>
                         <p className="text-[10px] text-slate-500 flex items-center gap-2">
                           <span>{riwayat.tanggal}</span>

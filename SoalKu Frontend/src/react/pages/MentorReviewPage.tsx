@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   RotateCcw,
   BookOpen,
+  ChevronDown,
 } from "lucide-react";
 import { useMentor } from "../context/MentorContext";
 import { useAuth } from "../context/AuthContext";
@@ -244,72 +245,45 @@ export const MentorReviewPage: React.FC = () => {
           />
         </div>
 
-        {/* 4. Kategori Mata Pelajaran Bar (Pemisah Mata Pelajaran) */}
-        <div className="bg-white border border-[#B8CFB3] rounded-2xl p-4 shadow-sm space-y-2.5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-            <span className="text-xs font-bold text-slate-800 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-[#84A282]" />
-              <span>Kategori Mata Pelajaran:</span>
-            </span>
+        {/* 4. Kategori Mata Pelajaran Bar (Dropdown Kategori) */}
+        <div className="bg-white border border-[#B8CFB3] rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-[#84A282]" />
+            <span className="text-xs font-bold text-slate-800">Kategori Mata Pelajaran:</span>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <select
+                value={filterMapel}
+                onChange={(e) => setFilterMapel(e.target.value)}
+                className="w-full bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 border border-[#B8CFB3] text-slate-800 text-xs font-bold rounded-xl pl-3 pr-8 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#84A282]/30 focus:border-[#84A282] transition appearance-none cursor-pointer shadow-sm"
+              >
+                <option value="SEMUA">
+                  Semua Mata Pelajaran ({soalList.filter((s) => s.statusReview === activeTab).length})
+                </option>
+                {availableMapelList.map((mapel) => {
+                  const countInTab = soalList.filter(
+                    (s) => s.mataPelajaran === mapel && s.statusReview === activeTab
+                  ).length;
+                  return (
+                    <option key={mapel} value={mapel}>
+                      {mapel} ({countInTab})
+                    </option>
+                  );
+                })}
+              </select>
+              <ChevronDown className="w-4 h-4 text-[#739071] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
             {filterMapel !== "SEMUA" && (
               <button
                 onClick={() => setFilterMapel("SEMUA")}
-                className="text-xs font-bold text-[#84A282] hover:underline self-start sm:self-auto"
+                className="px-3 py-2 text-xs font-bold text-[#84A282] hover:text-[#739071] hover:underline whitespace-nowrap"
               >
-                Tampilkan Semua Mata Pelajaran
+                Reset
               </button>
             )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 pt-0.5">
-            <button
-              onClick={() => setFilterMapel("SEMUA")}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border flex items-center gap-2 ${
-                filterMapel === "SEMUA"
-                  ? "bg-[#84A282] text-white border-[#739071] shadow-sm"
-                  : "bg-[#FEFAF3] text-slate-700 border-[#B8CFB3] hover:bg-[#F6E2E9]/60"
-              }`}
-            >
-              <span>Semua Pelajaran</span>
-              <span
-                className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${
-                  filterMapel === "SEMUA"
-                    ? "bg-white/25 text-white"
-                    : "bg-[#B8CFB3]/40 text-[#60795e]"
-                }`}
-              >
-                {soalList.filter((s) => s.statusReview === activeTab).length}
-              </span>
-            </button>
-
-            {availableMapelList.map((mapel) => {
-              const countInTab = soalList.filter(
-                (s) => s.mataPelajaran === mapel && s.statusReview === activeTab
-              ).length;
-              return (
-                <button
-                  key={mapel}
-                  onClick={() => setFilterMapel(mapel)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border flex items-center gap-2 ${
-                    filterMapel === mapel
-                      ? "bg-[#84A282] text-white border-[#739071] shadow-sm"
-                      : "bg-[#FEFAF3] text-slate-700 border-[#B8CFB3] hover:bg-[#F6E2E9]/60"
-                  }`}
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>{mapel}</span>
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${
-                      filterMapel === mapel
-                        ? "bg-white/25 text-white"
-                        : "bg-[#B8CFB3]/40 text-[#60795e]"
-                    }`}
-                  >
-                    {countInTab}
-                  </span>
-                </button>
-              );
-            })}
           </div>
         </div>
 

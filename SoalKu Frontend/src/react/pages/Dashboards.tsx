@@ -1081,6 +1081,86 @@ export const GuruDashboard: React.FC = () => {
     });
   }, [siswaList, guruJenjang, myKodeList, user]);
 
+  const [filterMapelSiswa, setFilterMapelSiswa] = useState<string>("SEMUA");
+
+  // Standar kurikulum per jenjang
+  const standardMapelList = useMemo(() => {
+    if (guruJenjang === "SD") {
+      return [
+        "IPAS",
+        "Matematika",
+        "Bahasa Indonesia",
+        "Bahasa Inggris",
+        "Pendidikan Pancasila",
+      ];
+    }
+    return [
+      "IPA Terpadu",
+      "Matematika",
+      "Bahasa Inggris",
+      "Bahasa Indonesia",
+      "IPS Terpadu",
+      "Informatika",
+    ];
+  }, [guruJenjang]);
+
+  // Kumpulkan semua mapel untuk siswa binaan
+  const availableSiswaMapel = useMemo(() => {
+    const list = new Set<string>();
+    standardMapelList.forEach((m) => list.add(m));
+    activeStudents.forEach((s) => {
+      s.riwayatPengerjaan?.forEach((rw) => {
+        if (rw.mapel) list.add(rw.mapel);
+      });
+    });
+    return Array.from(list);
+  }, [activeStudents, standardMapelList]);
+
+  // Helper untuk membersihkan raw hash atau ID panjang pada judul topik kelemahan
+  const cleanTopicDisplay = (topik: string) => {
+    if (!topik) return "Belum ada riwayat";
+    return topik.replace(/[A-Za-z0-9_-]{16,}/g, "Modul Adaptif");
+  };
+
+  // Filter siswa binaan berdasarkan dropdown kategori mapel
+  const displayStudents = useMemo(() => {
+    if (filterMapelSiswa === "SEMUA") return activeStudents;
+
+    const target = filterMapelSiswa.toLowerCase().trim();
+
+    return activeStudents
+      .map((siswa) => {
+        const historyForMapel = (siswa.riwayatPengerjaan || []).filter((r) => {
+          const m = (r.mapel || "").toLowerCase();
+          return m === target || m.includes(target) || target.includes(m);
+        });
+
+        if (historyForMapel.length === 0) return null;
+
+        const totalSoal = historyForMapel.reduce((sum, h) => sum + (h.totalSoal || 0), 0);
+        const totalBenar = historyForMapel.reduce((sum, h) => sum + (h.totalBenar || 0), 0);
+        const akurasiMapel = totalSoal > 0 ? Math.round((totalBenar / totalSoal) * 100) : 0;
+
+        const worstSession = [...historyForMapel].sort((a, b) => a.skor - b.skor)[0];
+        const rawTopik = worstSession.topik || worstSession.mapel;
+        const cleanTopik = cleanTopicDisplay(rawTopik);
+        const topikKelemahanMapel =
+          worstSession.skor < 70 ? `${cleanTopik} (${worstSession.skor}%)` : "Tidak ada (Tuntas)";
+        const statusRemedialMapel: "Perlu Remedial" | "Bimbingan" | "Tuntas" =
+          akurasiMapel >= 70 ? "Tuntas" : "Perlu Remedial";
+
+        return {
+          ...siswa,
+          totalLatihan: historyForMapel.length,
+          akurasiRataRata: akurasiMapel,
+          topikKelemahan: topikKelemahanMapel,
+          statusRemedial: statusRemedialMapel,
+          riwayatPengerjaan: historyForMapel,
+        };
+      })
+      .filter(Boolean) as SiswaBinaan[];
+  }, [activeStudents, filterMapelSiswa]);
+
   const avgAkurasi =
     activeStudents.length > 0
       ? (activeStudents.reduce((acc, s) => acc + (s.akurasiRataRata || 0), 0) / activeStudents.length).toFixed(1) + "%"
@@ -1091,13 +1171,21 @@ export const GuruDashboard: React.FC = () => {
   );
   const pendingCount = pendingQuestions.length;
 
-  const availablePendingMapel = Array.from(
-    new Set(pendingQuestions.map((s) => s.mataPelajaran))
-  ).filter(Boolean);
+  const availablePendingMapel = useMemo(() => {
+    const list = new Set<string>();
+    standardMapelList.forEach((m) => list.add(m));
+    pendingQuestions.forEach((s) => {
+      if (s.mataPelajaran) list.add(s.mataPelajaran);
+    });
+    return Array.from(list);
+  }, [pendingQuestions, standardMapelList]);
 
-  const filteredPendingQuestions = pendingQuestions.filter(
-    (s) => dashboardFilterMapel === "SEMUA" || s.mataPelajaran === dashboardFilterMapel
-  );
+  const filteredPendingQuestions = pendingQuestions.filter((s) => {
+    if (dashboardFilterMapel === "SEMUA") return true;
+    const target = dashboardFilterMapel.toLowerCase().trim();
+    const mapel = (s.mataPelajaran || "").toLowerCase().trim();
+    return mapel === target || mapel.includes(target) || target.includes(mapel);
+  });
 
   const handleCopyKode = (kode: string) => {
     salinKodeUndangan(kode);
@@ -1343,7 +1431,7 @@ export const GuruDashboard: React.FC = () => {
           {/* LEFT COLUMN: Ringkasan Progres Seluruh Siswa Binaan (Use Case 7) */}
           <div className="lg:col-span-7 space-y-4">
             <div className="bg-white border border-[#B8CFB3] rounded-3xl p-6 shadow-sm space-y-4">
-                <div className="flex items-center justify-between border-b border-[#B8CFB3]/60 pb-3.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#B8CFB3]/60 pb-3.5">
                   <div>
                     <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                       <Users className="w-5 h-5 text-[#60795e]" />
@@ -1352,6 +1440,23 @@ export const GuruDashboard: React.FC = () => {
                     <p className="text-xs text-slate-500 mt-0.5">
                       Hasil latihan dicatat per bagian materi untuk memetakan titik kelemahan tiap anak
                     </p>
+                  </div>
+
+                  {/* Dropdown Kategori Mata Pelajaran Siswa */}
+                  <div className="relative min-w-[210px]">
+                    <select
+                      value={filterMapelSiswa}
+                      onChange={(e) => setFilterMapelSiswa(e.target.value)}
+                      className="w-full bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 border border-[#B8CFB3] text-slate-800 text-xs font-bold rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-[#84A282]/30 focus:border-[#84A282] transition appearance-none cursor-pointer shadow-sm"
+                    >
+                      <option value="SEMUA">Semua Mata Pelajaran ({activeStudents.length} Siswa)</option>
+                      {availableSiswaMapel.map((mapel) => (
+                        <option key={mapel} value={mapel}>
+                          {mapel}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-[#739071] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
                 </div>
 
@@ -1390,8 +1495,23 @@ export const GuruDashboard: React.FC = () => {
                         )}
                       </div>
                     </div>
+                  ) : displayStudents.length === 0 ? (
+                    <div className="p-8 text-center rounded-2xl bg-[#FEFAF3] border border-dashed border-[#B8CFB3] space-y-3">
+                      <p className="text-sm font-bold text-slate-800">
+                        Belum Ada Siswa yang Mengerjakan Mata Pelajaran "{filterMapelSiswa}"
+                      </p>
+                      <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                        Siswa binaan Anda belum memiliki riwayat latihan pada mata pelajaran ini.
+                      </p>
+                      <button
+                        onClick={() => setFilterMapelSiswa("SEMUA")}
+                        className="px-4 py-2 rounded-xl bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold transition shadow-sm"
+                      >
+                        Tampilkan Semua Mata Pelajaran
+                      </button>
+                    </div>
                   ) : (
-                    activeStudents.map((siswa) => {
+                    displayStudents.map((siswa) => {
                       const isRemedial = siswa.statusRemedial === "Perlu Remedial";
                       const isBimbingan = siswa.statusRemedial === "Bimbingan";
                       const isTuntas = siswa.statusRemedial === "Tuntas";
@@ -1442,7 +1562,7 @@ export const GuruDashboard: React.FC = () => {
                           <div className="space-y-1.5">
                             <div className="flex items-center justify-between text-xs">
                               <span className="text-slate-500">
-                                Fokus Kelemahan: <b className="text-slate-800">{siswa.topikKelemahan}</b>
+                                Fokus Kelemahan: <b className="text-slate-800">{cleanTopicDisplay(siswa.topikKelemahan)}</b>
                               </span>
                               <span
                                 className={`font-black ${
@@ -1521,30 +1641,28 @@ export const GuruDashboard: React.FC = () => {
               </div>
 
               {/* Subject Category Dropdown Filter */}
-              {availablePendingMapel.length > 1 && (
-                <div className="flex items-center gap-2 pb-1">
-                  <div className="relative flex-1">
-                    <select
-                      value={dashboardFilterMapel}
-                      onChange={(e) => setDashboardFilterMapel(e.target.value)}
-                      className="w-full bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 border border-[#B8CFB3] text-slate-800 text-xs font-semibold rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-[#84A282]/30 focus:border-[#84A282] transition appearance-none cursor-pointer shadow-sm"
-                    >
-                      <option value="SEMUA">
-                        Semua Mata Pelajaran ({pendingQuestions.length})
-                      </option>
-                      {availablePendingMapel.map((mapel) => {
-                        const count = pendingQuestions.filter((s) => s.mataPelajaran === mapel).length;
-                        return (
-                          <option key={mapel} value={mapel}>
-                            {mapel} ({count})
-                          </option>
-                        );
-                      })}
-                    </select>
-                    <ChevronDown className="w-4 h-4 text-[#739071] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  </div>
+              <div className="flex items-center gap-2 pb-1">
+                <div className="relative flex-1">
+                  <select
+                    value={dashboardFilterMapel}
+                    onChange={(e) => setDashboardFilterMapel(e.target.value)}
+                    className="w-full bg-[#FEFAF3] hover:bg-[#F6E2E9]/40 border border-[#B8CFB3] text-slate-800 text-xs font-semibold rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-[#84A282]/30 focus:border-[#84A282] transition appearance-none cursor-pointer shadow-sm"
+                  >
+                    <option value="SEMUA">
+                      Semua Mata Pelajaran ({pendingQuestions.length})
+                    </option>
+                    {availablePendingMapel.map((mapel) => {
+                      const count = pendingQuestions.filter((s) => s.mataPelajaran === mapel).length;
+                      return (
+                        <option key={mapel} value={mapel}>
+                          {mapel} ({count})
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-[#739071] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
-              )}
+              </div>
 
               {filteredPendingQuestions.length === 0 ? (
                 <div className="p-6 text-center rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-2">
