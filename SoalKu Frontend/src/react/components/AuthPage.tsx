@@ -251,36 +251,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
             {mode === "login" ? (
               /* LOGIN */
               <>
-                {role === "guru" && (
-                  <div>
-                    <label className="block text-xs font-medium text-slate-700 mb-1">Jenjang Guru</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setForm((prev) => ({ ...prev, guruJenjang: "SD" }))}
-                        className={`py-2 px-3 text-xs font-bold rounded-xl border transition ${
-                          form.guruJenjang === "SD"
-                            ? "bg-[#84A282] text-white border-[#739071] shadow-sm"
-                            : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-                        }`}
-                      >
-                        Guru SD (Kelas 1-6)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setForm((prev) => ({ ...prev, guruJenjang: "SMP" }))}
-                        className={`py-2 px-3 text-xs font-bold rounded-xl border transition ${
-                          form.guruJenjang === "SMP"
-                            ? "bg-[#84A282] text-white border-[#739071] shadow-sm"
-                            : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-                        }`}
-                      >
-                        Guru SMP (Kelas 7-9)
-                      </button>
-                    </div>
-                  </div>
-                )}
-
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">
                     {role === "sd"

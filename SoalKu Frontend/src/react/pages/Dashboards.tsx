@@ -24,7 +24,6 @@ import {
   Flame,
   Trophy,
   Target,
-  Sparkles,
   ArrowRight,
   Clock,
   Shuffle,
@@ -1017,20 +1016,11 @@ export const GuruDashboard: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const [guruJenjang, setGuruJenjang] = useState<"SD" | "SMP">(() => {
+  const [guruJenjang] = useState<"SD" | "SMP">(() => {
     const userJenjang = (user as any)?.jenjang;
     if (userJenjang === "SD" || userJenjang === "SMP") return userJenjang;
     return "SD";
   });
-
-  const handleSwitchJenjang = (target: "SD" | "SMP") => {
-    setGuruJenjang(target);
-    if (user) {
-      const updated = { ...user, jenjang: target };
-      localStorage.setItem("soalku_auth_user", JSON.stringify(updated));
-    }
-    showToast(`Beralih ke Panel Guru ${target}`);
-  };
 
   const handleCreateNewCode = () => {
     const creator = user?.name || "Guru Pembimbing";
@@ -1150,32 +1140,6 @@ export const GuruDashboard: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2.5">
-              {/* Jenjang Switcher SD / SMP */}
-              <div className="flex items-center bg-[#FEFAF3] p-1 rounded-xl border border-[#B8CFB3] shadow-inner">
-                <button
-                  type="button"
-                  onClick={() => handleSwitchJenjang("SD")}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-                    guruJenjang === "SD"
-                      ? "bg-[#84A282] text-white shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Guru SD
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSwitchJenjang("SMP")}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-                    guruJenjang === "SMP"
-                      ? "bg-[#84A282] text-white shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Guru SMP
-                </button>
-              </div>
-
               <button
                 onClick={logout}
                 className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 border-b-2 border-b-rose-300 rounded-xl text-xs font-semibold transition shadow-sm active:translate-y-0.5"
@@ -1194,7 +1158,7 @@ export const GuruDashboard: React.FC = () => {
                   <Ticket className="w-6 h-6 text-[#84A282]" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">Pembuatan Kode Tiket Bimbingan ({guruJenjang})</h3>
+                  <h3 className="text-lg font-bold text-slate-900">Pembuatan Kode Tiket Bimbingan</h3>
                   <p className="text-xs text-slate-500 mt-0.5">
                     Buat kode tiket kelas jenjang {guruJenjang} untuk dibagikan kepada murid Anda
                   </p>
@@ -1206,26 +1170,15 @@ export const GuruDashboard: React.FC = () => {
                 className="px-4 py-2.5 bg-[#84A282] hover:bg-[#739071] text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-[#84A282]/20 active:translate-y-0.5"
               >
                 <Plus className="w-4 h-4" />
-                <span>Buat Kode Tiket Baru ({guruJenjang})</span>
+                <span>Buat Kode Tiket Baru</span>
               </button>
-            </div>
-
-            {/* Informative Banner */}
-            <div className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-2">
-              <div className="flex items-center gap-2 text-[#60795e] font-bold text-xs">
-                <Sparkles className="w-4 h-4 text-[#84A282]" />
-                <span>Alur Kerja Bimbingan Siswa {guruJenjang}:</span>
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Saat ini belum ada murid {guruJenjang} yang terhubung atau mengerjakan soal. Silakan terbitkan kode tiket jenjang {guruJenjang} di bawah ini dan bagikan ke murid Anda. Setelah murid menautkan kode tiket tersebut di akun mereka dan mulai mengerjakan latihan soal atau kuis, data nilai, capaian materi, serta riwayat lengkap pengerjaannya akan <strong>otomatis langsung muncul di dashboard guru ini</strong>.
-              </p>
             </div>
 
             {/* List of Created Ticket Codes */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                  Daftar Kode Tiket Aktif Guru {guruJenjang} ({myKodeList.length})
+                  Daftar Kode Tiket Aktif ({myKodeList.length})
                 </h4>
               </div>
 
@@ -1329,32 +1282,6 @@ export const GuruDashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2.5">
-            {/* Jenjang Switcher SD / SMP */}
-            <div className="flex items-center bg-[#FEFAF3] p-1 rounded-xl border border-[#B8CFB3] shadow-inner">
-              <button
-                type="button"
-                onClick={() => handleSwitchJenjang("SD")}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-                  guruJenjang === "SD"
-                    ? "bg-[#84A282] text-white shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Guru SD
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSwitchJenjang("SMP")}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-                  guruJenjang === "SMP"
-                    ? "bg-[#84A282] text-white shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Guru SMP
-              </button>
-            </div>
-
             <Link
               to="/mentor/review"
               className="relative px-3.5 py-2 rounded-xl bg-[#F6E2E9] border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-[#739071] hover:bg-[#F6E2E9]/80 text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:translate-y-0.5"
