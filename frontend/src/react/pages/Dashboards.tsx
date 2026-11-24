@@ -1016,18 +1016,39 @@ export const GuruDashboard: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const [guruJenjang] = useState<"SD" | "SMP">(() => {
+  const [guruJenjang, setGuruJenjang] = useState<"SD" | "SMP">(() => {
     const userJenjang = (user as any)?.jenjang;
     if (userJenjang === "SD" || userJenjang === "SMP") return userJenjang;
     return "SD";
   });
 
+  // Tipe Tampilan Peran Guru: Wali Kelas vs Guru Mata Pelajaran
+  const [roleMode, setRoleMode] = useState<"WALI_KELAS" | "GURU_MAPEL">("WALI_KELAS");
+
+  // State untuk form pembuatan tiket baru
+  const [ticketType, setTicketType] = useState<"WALI_KELAS" | "GURU_MAPEL">("WALI_KELAS");
+  const [selectedMapelTiket, setSelectedMapelTiket] = useState<string>("Matematika");
+  const [kelasTiketInput, setKelasTiketInput] = useState<string>("Kelas 4");
+
   const handleCreateNewCode = () => {
     const creator = user?.name || "Guru Pembimbing";
     const userEmail = (user as any)?.email;
     const userId = user?.id;
-    const newCode = createKodeUndangan(guruJenjang, "GURU", creator, userEmail, userId);
-    showToast(`Kode Undangan ${newCode.kode} (${guruJenjang}) berhasil diterbitkan!`);
+    const prefix = ticketType === "WALI_KELAS" ? "WALI" : "MAPEL";
+    const mapel = ticketType === "GURU_MAPEL" ? selectedMapelTiket : undefined;
+    const kelas = ticketType === "WALI_KELAS" ? kelasTiketInput : undefined;
+
+    const newCode = createKodeUndangan(
+      guruJenjang,
+      prefix,
+      creator,
+      userEmail,
+      userId,
+      ticketType,
+      mapel,
+      kelas
+    );
+    showToast(`Kode Tiket ${newCode.kode} (${ticketType === "WALI_KELAS" ? "Wali Kelas" : `Mapel ${mapel}`}) berhasil diterbitkan!`);
   };
 
   const handleQuickApprove = (soalId: number) => {
@@ -1122,11 +1143,19 @@ export const GuruDashboard: React.FC = () => {
     return topik.replace(/[A-Za-z0-9_-]{16,}/g, "Modul Adaptif");
   };
 
-  // Filter siswa binaan berdasarkan dropdown kategori mapel
+  // Filter siswa binaan berdasarkan peran (Wali Kelas vs Guru Mapel) dan dropdown kategori mapel
   const displayStudents = useMemo(() => {
-    if (filterMapelSiswa === "SEMUA") return activeStudents;
+    // Jika dalam mode Guru Mata Pelajaran, hanya saring pengerjaan mapel yang diampu
+    const activeMapelTarget =
+      roleMode === "GURU_MAPEL"
+        ? (user as any)?.mapelAjar || "Matematika"
+        : filterMapelSiswa;
 
-    const target = filterMapelSiswa.toLowerCase().trim();
+    if (activeMapelTarget === "SEMUA" && roleMode === "WALI_KELAS") {
+      return activeStudents;
+    }
+
+    const target = activeMapelTarget.toLowerCase().trim();
 
     return activeStudents
       .map((siswa) => {
@@ -1159,7 +1188,7 @@ export const GuruDashboard: React.FC = () => {
         };
       })
       .filter(Boolean) as SiswaBinaan[];
-  }, [activeStudents, filterMapelSiswa]);
+  }, [activeStudents, filterMapelSiswa, roleMode, user]);
 
   const avgAkurasi =
     activeStudents.length > 0
@@ -1262,6 +1291,81 @@ export const GuruDashboard: React.FC = () => {
               </button>
             </div>
 
+            {/* Form Pilihan Tipe Tiket: Wali Kelas vs Guru Mapel */}
+            <div className="p-4 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-3">
+              <span className="text-xs font-bold text-slate-700 block">Tipe Kode Tiket yang Diterbitkan:</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setTicketType("WALI_KELAS")}
+                  className={`p-3 rounded-xl border text-left transition ${
+                    ticketType === "WALI_KELAS"
+                      ? "bg-white border-[#84A282] shadow-sm ring-2 ring-[#84A282]/30"
+                      : "bg-[#FEFAF3]/60 border-slate-200 text-slate-600 hover:bg-white"
+                  }`}
+                >
+                  <p className="text-xs font-bold text-slate-900">Tiket Wali Kelas</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Menghubungkan siswa untuk seluruh mata pelajaran di kelas Anda.
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTicketType("GURU_MAPEL")}
+                  className={`p-3 rounded-xl border text-left transition ${
+                    ticketType === "GURU_MAPEL"
+                      ? "bg-white border-[#84A282] shadow-sm ring-2 ring-[#84A282]/30"
+                      : "bg-[#FEFAF3]/60 border-slate-200 text-slate-600 hover:bg-white"
+                  }`}
+                >
+                  <p className="text-xs font-bold text-slate-900">Tiket Guru Mata Pelajaran</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Khusus untuk mata pelajaran spesifik yang Anda ajar.
+                  </p>
+                </button>
+              </div>
+
+              {ticketType === "GURU_MAPEL" ? (
+                <div className="pt-2 flex items-center gap-3">
+                  <label className="text-xs font-semibold text-slate-700">Mata Pelajaran:</label>
+                  <select
+                    value={selectedMapelTiket}
+                    onChange={(e) => setSelectedMapelTiket(e.target.value)}
+                    className="bg-white border border-[#B8CFB3] text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#84A282]/40"
+                  >
+                    {standardMapelList.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className="pt-2 flex items-center gap-3">
+                  <label className="text-xs font-semibold text-slate-700">Kelas Binaan:</label>
+                  <select
+                    value={kelasTiketInput}
+                    onChange={(e) => setKelasTiketInput(e.target.value)}
+                    className="bg-white border border-[#B8CFB3] text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#84A282]/40"
+                  >
+                    {guruJenjang === "SD" ? (
+                      <>
+                        <option value="Kelas 4">Kelas 4 SD</option>
+                        <option value="Kelas 5">Kelas 5 SD</option>
+                        <option value="Kelas 6">Kelas 6 SD</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Kelas 7">Kelas 7 SMP</option>
+                        <option value="Kelas 8">Kelas 8 SMP</option>
+                        <option value="Kelas 9">Kelas 9 SMP</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+              )}
+            </div>
+
             {/* List of Created Ticket Codes */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -1351,7 +1455,7 @@ export const GuruDashboard: React.FC = () => {
 
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Top Navbar */}
-        <div className="flex items-center justify-between bg-white border border-[#B8CFB3] border-b-4 border-b-[#84A282]/50 rounded-2xl p-4 shadow-lg shadow-black/8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-[#B8CFB3] border-b-4 border-b-[#84A282]/50 rounded-2xl p-4 shadow-lg shadow-black/8">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-[#B8CFB3]/40 text-[#60795e] rounded-xl border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] shadow-sm">
               <Users className="w-5 h-5" />
@@ -1364,12 +1468,46 @@ export const GuruDashboard: React.FC = () => {
                 </span>
               </div>
               <p className="text-[11px] text-slate-500">
-                Panel Guru {guruJenjang} • {(user as any)?.subject || (guruJenjang === "SD" ? "Guru Kelas SD" : "Guru Mata Pelajaran SMP")}
+                {roleMode === "WALI_KELAS"
+                  ? `Mode Wali Kelas (Kelas ${(user as any)?.kelasWali || "4 SD"}) • Memantau Seluruh Mata Pelajaran`
+                  : `Mode Guru Mapel • Fokus Mata Pelajaran ${(user as any)?.mapelAjar || "Matematika"}`}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Toggle Switcher Mode: Wali Kelas vs Guru Mata Pelajaran */}
+            <div className="flex items-center bg-[#FEFAF3] p-1 rounded-xl border border-[#B8CFB3] shadow-inner">
+              <button
+                type="button"
+                onClick={() => {
+                  setRoleMode("WALI_KELAS");
+                  showToast("Beralih ke Pandangan Wali Kelas (Semua Mapel)");
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                  roleMode === "WALI_KELAS"
+                    ? "bg-[#84A282] text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <span>Wali Kelas</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRoleMode("GURU_MAPEL");
+                  showToast(`Beralih ke Pandangan Guru ${(user as any)?.mapelAjar || "Matematika"}`);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                  roleMode === "GURU_MAPEL"
+                    ? "bg-[#84A282] text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <span>Guru Mapel ({(user as any)?.mapelAjar || "Matematika"})</span>
+              </button>
+            </div>
+
             <Link
               to="/mentor/review"
               className="relative px-3.5 py-2 rounded-xl bg-[#F6E2E9] border border-[#B8CFB3] border-b-2 border-b-[#B8CFB3] text-[#739071] hover:bg-[#F6E2E9]/80 text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:translate-y-0.5"

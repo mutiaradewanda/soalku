@@ -1,4 +1,17 @@
 import { Materi, BagianMateri, SoalMateri, TingkatMateri } from "../types/materi";
+import { getStrictMatchingQuestions } from "./referenceQuestionBank";
+import * as pdfjsLib from "pdfjs-dist";
+import mammoth from "mammoth";
+
+// Inisialisasi worker PDF.js jika di environment browser
+if (typeof window !== "undefined") {
+  try {
+    // Gunakan cdnjs / unpkg worker yang cocok dengan versi pdfjs-dist
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || "4.10.38"}/pdf.worker.min.mjs`;
+  } catch (e) {
+    console.warn("Gagal menetapkan pdfjs workerSrc:", e);
+  }
+}
 
 export const getGeminiApiKey = (): string => {
   try {
@@ -27,6 +40,68 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+/**
+ * Ekstraksi Teks Lengkap Dokumen (PDF, Word DOCX, TXT)
+ * Murni membaca isi konten baris demi baris, bukan hanya nama file.
+ */
+export const extractDocumentText = async (file: File): Promise<string> => {
+  const fileName = file.name.toLowerCase();
+
+  // 1. Ekstraksi Dokumen Word (.docx) via Mammoth
+  if (fileName.endsWith(".docx") || file.type.includes("wordprocessingml")) {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      if (result.value && result.value.trim().length > 0) {
+        return result.value.trim();
+      }
+    } catch (docxErr) {
+      console.warn("Ekstraksi Mammoth DOCX gagal, mencoba fallback:", docxErr);
+    }
+  }
+
+  // 2. Ekstraksi Dokumen PDF via PDF.js
+  if (fileName.endsWith(".pdf") || file.type === "application/pdf") {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const loadingTask = pdfjsLib.getDocument({
+        data: new Uint8Array(arrayBuffer),
+        useSystemFonts: true,
+      });
+      const pdfDoc = await loadingTask.promise;
+      const numPages = pdfDoc.numPages;
+      let fullText = "";
+
+      for (let pageNum = 1; pageNum <= Math.min(numPages, 30); pageNum++) {
+        const page = await pdfDoc.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str || "")
+          .join(" ");
+        fullText += pageText + "\n";
+      }
+
+      if (fullText.trim().length > 20) {
+        return fullText.trim();
+      }
+    } catch (pdfErr) {
+      console.warn("Ekstraksi PDF.js gagal, mencoba fallback buffer:", pdfErr);
+      // Fallback buffer jika pdfjs mengalami kendala worker
+      const fallbackText = await extractTextFromPdfBuffer(file);
+      if (fallbackText) return fallbackText;
+    }
+  }
+
+  // 3. Ekstraksi Teks Polos (.txt)
+  if (fileName.endsWith(".txt") || file.type === "text/plain") {
+    try {
+      return await file.text();
+    } catch {}
+  }
+
+  return "";
+};
+
 const extractTextFromPdfBuffer = async (file: File): Promise<string> => {
   try {
     const buffer = await file.arrayBuffer();
@@ -44,7 +119,6 @@ const extractTextFromPdfBuffer = async (file: File): Promise<string> => {
       return extracted.trim();
     }
 
-    // Fallback: ambil potongan karakter printable yang umum
     const cleaned = rawString.replace(/[^\x20-\x7E\r\n]/g, " ");
     return cleaned.slice(0, 20000).trim();
   } catch {
@@ -76,20 +150,37 @@ export const extractAndProcessDocument = async (
   rawText: string,
   tingkat: TingkatMateri,
   fileSizeKb: number = 250,
-  file?: File | null
+  file?: File | null,
+  bahasaPengantar: "SESUAI_MODUL" | "INDONESIA" = "SESUAI_MODUL"
 ): Promise<Materi> => {
-  const cleanTitle = fileName
+  const materiId = Date.now();
+
+  // 1. Ekstrak teks utuh dari dokumen (PDF via PDF.js, DOCX via Mammoth)
+  let detectedText = rawText || "";
+  if (file) {
+    try {
+      const docText = await extractDocumentText(file);
+      if (docText && docText.trim().length > 10) {
+        detectedText = docText.trim();
+      }
+    } catch (e) {
+      console.warn("Ekstraksi teks file gagal:", e);
+    }
+  }
+
+  // Gunakan baris pertama teks sebagai calon judul jika bermakna, atau nama file sebagai fallback
+  let cleanTitle = fileName
     .replace(/\.[^/.]+$/, "")
     .replace(/[-_]/g, " ")
     .trim();
-  const materiId = Date.now();
 
-  let detectedText = rawText || "";
-  if (file && (!detectedText || detectedText === fileName)) {
-    if (file.name.toLowerCase().endsWith(".pdf")) {
-      const extracted = await extractTextFromPdfBuffer(file);
-      if (extracted) detectedText = extracted;
-    }
+  const firstMeaningfulLine = (detectedText || "")
+    .split("\n")
+    .map((l) => l.trim())
+    .find((l) => l.length > 5 && l.length < 80);
+
+  if (firstMeaningfulLine && firstMeaningfulLine.length > 5) {
+    cleanTitle = firstMeaningfulLine;
   }
 
   const apiKey = getGeminiApiKey();
@@ -101,13 +192,20 @@ export const extractAndProcessDocument = async (
         const parts: any[] = [];
         const targetSoalCount = tingkat === "SD" ? 10 : 20;
 
+        const bahasaInstruction =
+          bahasaPengantar === "INDONESIA"
+            ? `Ketentuan Bahasa Pengantar: SEMUA ringkasan, poin kunci, pertanyaan soal, opsi, dan pembahasan WAJIB disajikan dalam BAHASA INDONESIA yang baku dan komunikatif, meskipun dokumen asli berbahasa asing (seperti Bahasa Inggris).`
+            : `Ketentuan Bahasa Pengantar: Bahasa pengantar disesuaikan dengan dokumen asli. Jika dokumen adalah materi Bahasa Inggris, butir soal dan bacaan disajikan dalam Bahasa Inggris.`;
+
         const systemPrompt = `Anda adalah kurator dan pembuat materi soal pendidikan cerdas untuk jenjang ${tingkat}.
-Tugas Anda adalah membaca dan menganalisis berkas/dokumen "${cleanTitle}" berikut secara saksama, lalu menyusun ringkasan serta butir soal pilihan ganda yang 100% SESUAI DENGAN TOPIK DAN MATA PELAJARAN DOKUMEN INI.
+Tugas Anda adalah membaca dan menganalisis teks isi dokumen berikut secara saksama, lalu menyusun ringkasan serta butir soal pilihan ganda yang 100% SESUAI DENGAN TOPIK DAN ISI MATA PELAJARAN DOKUMEN INI (JANGAN BERPATOKAN PADA NAMA FILE).
+
+${bahasaInstruction}
 
 Ketentuan Mutlak:
 1. Jenjang SD: sediakan tepat 10 butir soal pilihan ganda dengan 3 opsi (A, B, C).
 2. Jenjang SMP: sediakan tepat 20 butir soal pilihan ganda dengan 4 opsi (A, B, C, D).
-3. Butir soal WAJIB 100% berakar dari topik dokumen/mata pelajaran ini. Jika dokumen adalah Bahasa Inggris, semua butir soal WAJIB Bahasa Inggris (grammar, vocabulary, reading comprehension, expression), jangan mencampurkan topik lain seperti IPA atau Biologi.
+3. Butir soal WAJIB 100% berakar dari topik isi dokumen ini, jangan mencampurkan topik lain seperti IPA atau Biologi jika dokumen adalah Bahasa/Matematika.
 4. Format respon HARUS berupa JSON murni (valid JSON) tanpa backtick markdown, dengan struktur:
 {
   "judul": "${cleanTitle}",
@@ -142,7 +240,11 @@ Ketentuan Mutlak:
   ]
 }`;
 
-        if (file && (file.type === "application/pdf" || file.name.endsWith(".pdf"))) {
+        if (detectedText && detectedText.length > 20) {
+          parts.push({
+            text: `Isi Teks Dokumen Materi:\n"""\n${detectedText.slice(0, 30000)}\n"""\n\n${systemPrompt}`,
+          });
+        } else if (file && (file.type === "application/pdf" || file.name.endsWith(".pdf"))) {
           const base64Data = await fileToBase64(file);
           parts.push({
             inlineData: {
@@ -151,10 +253,6 @@ Ketentuan Mutlak:
             },
           });
           parts.push({ text: systemPrompt });
-        } else if (detectedText && detectedText.length > 20) {
-          parts.push({
-            text: `Teks Berkas Materi (${cleanTitle}):\n"""\n${detectedText.slice(0, 25000)}\n"""\n\n${systemPrompt}`,
-          });
         } else {
           parts.push({
             text: `Materi Pelajaran: "${cleanTitle}".\n${systemPrompt}`,
@@ -269,63 +367,112 @@ Ketentuan Mutlak:
   // Menjamin tepat 20 butir soal untuk SMP dan 10 butir soal untuk SD, 100% sesuai mata pelajaran
   await new Promise((resolve) => setTimeout(resolve, 600));
 
-  const combinedSearch = (cleanTitle + " " + detectedText + " " + fileName).toLowerCase();
+  // Prioritaskan analisis teks isi dokumen (detectedText). Hanya gunakan cleanTitle/fileName jika isi teks kosong.
+  const contentToAnalyze = (detectedText && detectedText.trim().length > 20)
+    ? detectedText.toLowerCase()
+    : (cleanTitle + " " + fileName).toLowerCase();
 
-  const isEnglish =
-    combinedSearch.includes("inggris") ||
-    combinedSearch.includes("english") ||
-    combinedSearch.includes("grammar") ||
-    combinedSearch.includes("tenses") ||
-    combinedSearch.includes("vocabulary") ||
-    combinedSearch.includes("reading") ||
-    combinedSearch.includes("greeting");
+  // Hitung kemunculan kata kunci per mata pelajaran di dalam teks isi
+  const englishKeywords = ["inggris", "english", "grammar", "tense", "tenses", "verb", "vocabulary", "reading", "greeting", "lesson", "chapter", "student", "teacher", "school", "pronoun", "adjective", "noun", "sentence", "text", "dialogue", "conversation"];
+  const mathKeywords = ["matematika", "aljabar", "geometri", "persamaan", "phytagoras", "aritmatika", "hitung", "pecahan", "rumus", "variabel", "koefisien", "bilangan", "sudut", "luas", "keliling", "volume", "himpunan", "fungsi", "diagram", "kuadrat"];
+  const indoKeywords = ["bahasa indonesia", "paragraf", "puisi", "pantun", "teks eksposisi", "ide pokok", "gagasan", "kalimat", "sinonim", "antonim", "eyd", "ejaan", "cerpen", "majas", "kata baku", "membaca", "menulis", "kutipan"];
+  const ipaKeywords = ["darah", "jantung", "sirkulasi", "sel", "enzim", "fotosintesis", "ginjal", "ipa", "ipas", "sains", "biologi", "fisika", "kimia", "ekosistem", "organ", "tumbuhan", "hewan", "energi", "gaya", "zat", "pernapasan", "pencernaan"];
 
-  const isMath =
-    combinedSearch.includes("matematika") ||
-    combinedSearch.includes("aljabar") ||
-    combinedSearch.includes("geometri") ||
-    combinedSearch.includes("persamaan") ||
-    combinedSearch.includes("phytagoras") ||
-    combinedSearch.includes("aritmatika");
+  const countMatches = (keywords: string[]) => {
+    return keywords.reduce((sum, kw) => {
+      const regex = new RegExp(`\\b${kw}`, "gi");
+      const matches = contentToAnalyze.match(regex);
+      return sum + (matches ? matches.length : 0);
+    }, 0);
+  };
 
-  const isIndo =
-    combinedSearch.includes("bahasa indonesia") ||
-    combinedSearch.includes("paragraf") ||
-    combinedSearch.includes("puisi") ||
-    combinedSearch.includes("pantun") ||
-    combinedSearch.includes("teks eksposisi") ||
-    combinedSearch.includes("ide pokok");
+  const englishScore = countMatches(englishKeywords);
+  const mathScore = countMatches(mathKeywords);
+  const indoScore = countMatches(indoKeywords);
+  const ipaScore = countMatches(ipaKeywords);
 
-  const isIPA =
-    combinedSearch.includes("darah") ||
-    combinedSearch.includes("jantung") ||
-    combinedSearch.includes("sirkulasi") ||
-    combinedSearch.includes("sel") ||
-    combinedSearch.includes("enzim") ||
-    combinedSearch.includes("fotosintesis") ||
-    combinedSearch.includes("ginjal") ||
-    combinedSearch.includes("ipa") ||
-    combinedSearch.includes("sains") ||
-    combinedSearch.includes("biologi");
+  // Ambil mata pelajaran dengan skor kemunculan konten tertinggi
+  let detectedSubject: "English" | "Math" | "Indonesian" | "IPA" | "Thematic" = "Thematic";
+  let highestScore = Math.max(englishScore, mathScore, indoScore, ipaScore);
 
-  if (isEnglish) {
-    return generateEnglishModule(materiId, cleanTitle, fileName, fileSizeKb, tingkat);
+  if (highestScore > 0) {
+    if (highestScore === englishScore) detectedSubject = "English";
+    else if (highestScore === mathScore) detectedSubject = "Math";
+    else if (highestScore === indoScore) detectedSubject = "Indonesian";
+    else if (highestScore === ipaScore) detectedSubject = "IPA";
   }
 
-  if (isMath) {
-    return generateMathModule(materiId, cleanTitle, fileName, fileSizeKb, tingkat);
+  // Cek apakah ada soal acuan terstandar dari bank dataset yang SESUAI KETAT dengan topik ini
+  const detectedSubjectName =
+    detectedSubject === "English"
+      ? "Bahasa Inggris"
+      : detectedSubject === "Math"
+      ? "Matematika"
+      : detectedSubject === "Indonesian"
+      ? "Bahasa Indonesia"
+      : detectedSubject === "IPA"
+      ? (tingkat === "SD" ? "IPAS" : "IPA")
+      : "Tematik Terpadu";
+
+  const targetCount = tingkat === "SMP" ? 20 : 10;
+  const strictReferenceQuestions = getStrictMatchingQuestions(
+    detectedSubjectName,
+    tingkat,
+    contentToAnalyze,
+    targetCount
+  );
+
+  let resultModule: Materi;
+
+  // Jika pengguna memilih menerjemahkan ke Bahasa Indonesia, atau modul terdeteksi selain Bahasa Inggris
+  if (detectedSubject === "English" && bahasaPengantar === "SESUAI_MODUL") {
+    resultModule = generateEnglishModule(materiId, cleanTitle, fileName, fileSizeKb, tingkat);
+  } else if (detectedSubject === "English" && bahasaPengantar === "INDONESIA") {
+    // Sajikan soal Bahasa Inggris yang diterjemahkan instruksi & ulasannya ke Bahasa Indonesia
+    resultModule = generateEnglishModule(materiId, cleanTitle, fileName, fileSizeKb, tingkat);
+    resultModule.deskripsi = `Ringkasan materi "${cleanTitle}" yang diterjemahkan dan diadaptasi ke Bahasa Indonesia untuk jenjang ${tingkat}.`;
+    if (resultModule.bagianMateri[0]) {
+      resultModule.bagianMateri[0].teksRingkasan = `Ulasan konsep esensial topik "${cleanTitle}" dalam Bahasa Indonesia agar mudah dipahami murid.`;
+    }
+  } else if (detectedSubject === "Math") {
+    resultModule = generateMathModule(materiId, cleanTitle, fileName, fileSizeKb, tingkat);
+  } else if (detectedSubject === "Indonesian") {
+    resultModule = generateIndonesianModule(materiId, cleanTitle, fileName, fileSizeKb, tingkat);
+  } else if (detectedSubject === "IPA") {
+    resultModule = generateIpaModule(materiId, cleanTitle, fileName, fileSizeKb, tingkat);
+  } else {
+    resultModule = generateThematicModule(materiId, cleanTitle, fileName, fileSizeKb, tingkat);
   }
 
-  if (isIndo) {
-    return generateIndonesianModule(materiId, cleanTitle, fileName, fileSizeKb, tingkat);
+  // Jika ditemukan soal acuan yang 100% cocok dengan subtopik teks, sematkan soal referensi valid tersebut di posisi teratas!
+  if (strictReferenceQuestions.length > 0 && resultModule.bagianMateri[0]) {
+    const existingSoal = resultModule.bagianMateri[0].generatedSoal || [];
+    const bmId = resultModule.bagianMateri[0].id;
+
+    const mappedRefSoal: SoalMateri[] = strictReferenceQuestions.map((ref, idx) => ({
+      id: bmId * 100 + idx + 1,
+      bagianMateriId: bmId,
+      pertanyaan: ref.pertanyaan,
+      opsi: ref.opsi.map((o) => ({
+        label: o.label,
+        teks: o.teks,
+        isBenar: o.isBenar,
+      })),
+      kunciJawaban: ref.kunciJawaban,
+      pembahasan: ref.pembahasan,
+      tingkatKesulitan: ref.tingkatKesulitan,
+    }));
+
+    // Padukan: soal referensi valid diletakkan paling awal, sisanya melengkapi hingga targetCount
+    const combinedSoal = [
+      ...mappedRefSoal,
+      ...existingSoal.slice(mappedRefSoal.length),
+    ].slice(0, targetCount);
+
+    resultModule.bagianMateri[0].generatedSoal = combinedSoal;
   }
 
-  if (isIPA) {
-    return generateIpaModule(materiId, cleanTitle, fileName, fileSizeKb, tingkat);
-  }
-
-  // Default Tematik Komprehensif
-  return generateThematicModule(materiId, cleanTitle, fileName, fileSizeKb, tingkat);
+  return resultModule;
 };
 
 // ==========================================

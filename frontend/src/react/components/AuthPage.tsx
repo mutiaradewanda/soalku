@@ -70,9 +70,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
     // Guru
     guruNameWithTitle: "",
     guruNip: "",
-    guruSubject: "",
+    guruSubject: "Matematika",
     guruEmail: "",
-    guruJenjang: "SMP" as "SD" | "SMP",
+    guruJenjang: "SD" as "SD" | "SMP",
+    isWaliKelas: true,
+    kelasWali: "Kelas 4",
+    isGuruMapel: true,
+    mapelAjar: "Matematika",
   });
 
   const handleInputChange = (
@@ -178,6 +182,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
             subject: form.guruSubject,
             email: form.guruEmail,
             jenjang: form.guruJenjang,
+            isWaliKelas: form.isWaliKelas,
+            kelasWali: form.kelasWali,
+            isGuruMapel: form.isGuruMapel,
+            mapelAjar: form.mapelAjar,
             password: form.password,
           });
           navigate(getDashboardRoute(newUser.role));
@@ -448,15 +456,69 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode }) => {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">Mata Pelajaran</label>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">Mata Pelajaran Diampu</label>
                         <input
                           type="text"
                           name="guruSubject"
                           value={form.guruSubject}
-                          onChange={handleInputChange}
-                          placeholder={form.guruJenjang === "SD" ? "Contoh: Guru Kelas / IPAS" : "Contoh: IPA Terpadu"}
+                          onChange={(e) => {
+                            handleInputChange(e);
+                            setForm((prev) => ({ ...prev, mapelAjar: e.target.value }));
+                          }}
+                          placeholder={form.guruJenjang === "SD" ? "Contoh: Matematika / IPAS" : "Contoh: Matematika"}
                           className={`w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 ${themeConfig.focusRing}`}
                         />
+                      </div>
+                    </div>
+
+                    {/* Spesifikasi Wali Kelas & Guru Mapel */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+                      <span className="text-xs font-bold text-slate-800 block">Peran Guru di Sekolah:</span>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={form.isWaliKelas}
+                            onChange={(e) => setForm((prev) => ({ ...prev, isWaliKelas: e.target.checked }))}
+                            className="rounded border-slate-300 text-[#84A282] focus:ring-[#84A282]"
+                          />
+                          <span>Merangkap sebagai <strong>Wali Kelas</strong> (semua mata pelajaran)</span>
+                        </label>
+                        {form.isWaliKelas && (
+                          <div className="pl-6 pt-1 flex items-center gap-2">
+                            <span className="text-xs text-slate-500">Kelas Wali:</span>
+                            <select
+                              name="kelasWali"
+                              value={form.kelasWali}
+                              onChange={handleInputChange}
+                              className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#84A282]"
+                            >
+                              {form.guruJenjang === "SD" ? (
+                                <>
+                                  <option value="Kelas 4">Kelas 4 SD</option>
+                                  <option value="Kelas 5">Kelas 5 SD</option>
+                                  <option value="Kelas 6">Kelas 6 SD</option>
+                                </>
+                              ) : (
+                                <>
+                                  <option value="Kelas 7">Kelas 7 SMP</option>
+                                  <option value="Kelas 8">Kelas 8 SMP</option>
+                                  <option value="Kelas 9">Kelas 9 SMP</option>
+                                </>
+                              )}
+                            </select>
+                          </div>
+                        )}
+
+                        <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700 pt-1 border-t border-slate-200/60">
+                          <input
+                            type="checkbox"
+                            checked={form.isGuruMapel}
+                            onChange={(e) => setForm((prev) => ({ ...prev, isGuruMapel: e.target.checked }))}
+                            className="rounded border-slate-300 text-[#84A282] focus:ring-[#84A282]"
+                          />
+                          <span>Sebagai <strong>Guru Mata Pelajaran</strong> ({form.guruSubject || "Matematika"})</span>
+                        </label>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">

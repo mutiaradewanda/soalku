@@ -10,7 +10,8 @@ interface MateriContextType {
     file: File | null,
     manualText: string,
     tingkat: TingkatMateri,
-    customTitle?: string
+    customTitle?: string,
+    bahasaPengantar?: "SESUAI_MODUL" | "INDONESIA"
   ) => Promise<Materi>;
   deleteMateri: (id: number) => void;
   regenerateBagianMateri: (materiId: number, bagianId: number) => Promise<void>;
@@ -67,7 +68,8 @@ export const MateriProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     file: File | null,
     manualText: string,
     tingkat: TingkatMateri,
-    customTitle?: string
+    customTitle?: string,
+    bahasaPengantar: "SESUAI_MODUL" | "INDONESIA" = "SESUAI_MODUL"
   ): Promise<Materi> => {
     let fileName = customTitle || "Materi Mandiri Siswa.pdf";
     let fileSizeKb = 150;
@@ -91,7 +93,8 @@ export const MateriProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       contentToProcess || fileName,
       tingkat,
       fileSizeKb,
-      file
+      file,
+      bahasaPengantar
     );
 
     setMateriList((prev) => {

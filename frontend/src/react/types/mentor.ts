@@ -67,6 +67,9 @@ export interface KodeUndangan {
   guruEmail?: string;
   guruId?: string;
   targetTingkat: "SD" | "SMP" | "SEMUA";
+  tipeTiket?: "WALI_KELAS" | "GURU_MAPEL";
+  mapelTiket?: string;
+  kelasTiket?: string;
   totalDipakai: number;
 }
 

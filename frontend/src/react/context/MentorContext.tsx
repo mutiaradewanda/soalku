@@ -51,7 +51,10 @@ interface MentorContextType {
     customPrefix?: string,
     dibuatOleh?: string,
     guruEmail?: string,
-    guruId?: string
+    guruId?: string,
+    tipeTiket?: "WALI_KELAS" | "GURU_MAPEL",
+    mapelTiket?: string,
+    kelasTiket?: string
   ) => KodeUndangan;
   salinKodeUndangan: (kode: string) => void;
   redeemKodeUndangan: (
@@ -567,18 +570,25 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     customPrefix: string = "GURU",
     dibuatOleh: string = "Guru Pembimbing",
     guruEmail?: string,
-    guruId?: string
+    guruId?: string,
+    tipeTiket: "WALI_KELAS" | "GURU_MAPEL" = "WALI_KELAS",
+    mapelTiket?: string,
+    kelasTiket?: string
   ): KodeUndangan => {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const prefix = tipeTiket === "GURU_MAPEL" ? (mapelTiket ? mapelTiket.substring(0, 3).toUpperCase() : "MAPEL") : customPrefix;
     const newKode: KodeUndangan = {
       id: `kod-${Date.now()}`,
-      kode: `${customPrefix}-${targetTingkat}-${randomSuffix}`,
+      kode: `${prefix}-${targetTingkat}-${randomSuffix}`,
       status: "AKTIF",
       expiredAt: "7 Hari (Sekali Pakai)",
       dibuatOleh,
       guruEmail,
       guruId,
       targetTingkat,
+      tipeTiket,
+      mapelTiket,
+      kelasTiket,
       totalDipakai: 0,
     };
 

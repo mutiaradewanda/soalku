@@ -27,7 +27,11 @@ export interface GuruUser extends BaseUser {
   nuptkOrNip: string;
   subject: string;
   email: string;
-  jenjang: "SD" | "SMP";
+  jenjang: "SD" | "SMP" | "SEMUA";
+  isWaliKelas?: boolean;
+  kelasWali?: string; // e.g. "Kelas 4", "Kelas 5", "Kelas 6", "Kelas 7-A"
+  isGuruMapel?: boolean;
+  mapelAjar?: string; // e.g. "Matematika", "Bahasa Inggris", "IPAS"
 }
 
 export type AuthUser = SdUser | SmpUser | GuruUser;
@@ -56,7 +60,11 @@ export interface RegisterGuruPayload {
   nipOrNuptk: string;
   subject: string;
   email: string;
-  jenjang: "SD" | "SMP";
+  jenjang: "SD" | "SMP" | "SEMUA";
+  isWaliKelas?: boolean;
+  kelasWali?: string;
+  isGuruMapel?: boolean;
+  mapelAjar?: string;
   password: string;
 }
 
@@ -66,5 +74,5 @@ export interface LoginPayload {
   role: UserRole;
   identifier: string;
   password: string;
-  jenjang?: "SD" | "SMP";
+  jenjang?: "SD" | "SMP" | "SEMUA";
 }

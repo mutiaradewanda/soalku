@@ -38,6 +38,7 @@ export const UploadMateriModal: React.FC<UploadMateriModalProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [progressStep, setProgressStep] = useState<string>("");
   const [progressPercent, setProgressPercent] = useState<number>(0);
+  const [bahasaPengantar, setBahasaPengantar] = useState<"SESUAI_MODUL" | "INDONESIA">("SESUAI_MODUL");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -121,7 +122,7 @@ export const UploadMateriModal: React.FC<UploadMateriModalProps> = ({
       setProgressPercent(85);
       setProgressStep("Menyusun ringkasan sederhana & butir soal berjenjang...");
 
-      await uploadMateri(selectedFile, manualText, tingkat);
+      await uploadMateri(selectedFile, manualText, tingkat, undefined, bahasaPengantar);
 
       setProgressPercent(100);
       setProgressStep("Selesai! Materi berhasil diekstraksi ke modul belajar.");
@@ -322,6 +323,60 @@ export const UploadMateriModal: React.FC<UploadMateriModalProps> = ({
               placeholder="Ketik atau tempelkan ringkasan materi pelajaran di sini jika tidak menggunakan berkas..."
               className="w-full p-3 rounded-xl border border-[#B8CFB3] bg-white text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#84A282]"
             />
+          </div>
+
+          {/* Opsi Pilihan Bahasa Pengantar Soal & Ringkasan */}
+          <div className="p-3.5 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-2">
+            <span className="text-xs font-bold text-slate-800 block">
+              Bahasa yang digunakan untuk ringkasan & soal:
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <label
+                className={`p-2.5 rounded-xl border flex items-center gap-2.5 cursor-pointer transition ${
+                  bahasaPengantar === "SESUAI_MODUL"
+                    ? "bg-white border-[#84A282] ring-2 ring-[#84A282]/30 shadow-sm"
+                    : "bg-white/60 border-slate-200 hover:bg-white"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="bahasaPengantar"
+                  value="SESUAI_MODUL"
+                  checked={bahasaPengantar === "SESUAI_MODUL"}
+                  onChange={() => setBahasaPengantar("SESUAI_MODUL")}
+                  className="text-[#84A282] focus:ring-[#84A282]"
+                />
+                <div className="text-left">
+                  <span className="text-xs font-bold text-slate-900 block">Sesuai Dokumen Modul</span>
+                  <span className="text-[10px] text-slate-500">
+                    Contoh: Jika teks modul Bahasa Inggris, soal & ringkasan otomatis Bahasa Inggris.
+                  </span>
+                </div>
+              </label>
+
+              <label
+                className={`p-2.5 rounded-xl border flex items-center gap-2.5 cursor-pointer transition ${
+                  bahasaPengantar === "INDONESIA"
+                    ? "bg-white border-[#84A282] ring-2 ring-[#84A282]/30 shadow-sm"
+                    : "bg-white/60 border-slate-200 hover:bg-white"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="bahasaPengantar"
+                  value="INDONESIA"
+                  checked={bahasaPengantar === "INDONESIA"}
+                  onChange={() => setBahasaPengantar("INDONESIA")}
+                  className="text-[#84A282] focus:ring-[#84A282]"
+                />
+                <div className="text-left">
+                  <span className="text-xs font-bold text-slate-900 block">Terjemahkan ke Bahasa Indonesia</span>
+                  <span className="text-[10px] text-slate-500">
+                    Soal, opsi, dan ulasan penjelasan diterjemahkan ke Bahasa Indonesia yang ramah.
+                  </span>
+                </div>
+              </label>
+            </div>
           </div>
 
           {/* Error Message */}
