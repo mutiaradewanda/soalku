@@ -1,17 +1,5 @@
 import { Materi, BagianMateri, SoalMateri, TingkatMateri } from "../types/materi";
 import { getStrictMatchingQuestions } from "./referenceQuestionBank";
-import * as pdfjsLib from "pdfjs-dist";
-import mammoth from "mammoth";
-
-// Inisialisasi worker PDF.js jika di environment browser
-if (typeof window !== "undefined") {
-  try {
-    // Gunakan cdnjs / unpkg worker yang cocok dengan versi pdfjs-dist
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || "4.10.38"}/pdf.worker.min.mjs`;
-  } catch (e) {
-    console.warn("Gagal menetapkan pdfjs workerSrc:", e);
-  }
-}
 
 export const getGeminiApiKey = (): string => {
   try {
@@ -42,14 +30,17 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 /**
  * Ekstraksi Teks Lengkap Dokumen (PDF, Word DOCX, TXT)
- * Murni membaca isi konten baris demi baris, bukan hanya nama file.
+ * Murni membaca isi konten baris demi baris menggunakan dynamic import
+ * agar library berat (pdfjs-dist & mammoth) tidak membebani initial bundle aplikasi.
  */
 export const extractDocumentText = async (file: File): Promise<string> => {
   const fileName = file.name.toLowerCase();
 
-  // 1. Ekstraksi Dokumen Word (.docx) via Mammoth
+  // 1. Ekstraksi Dokumen Word (.docx) via Mammoth (Lazy Loaded)
   if (fileName.endsWith(".docx") || file.type.includes("wordprocessingml")) {
     try {
+      const mammothModule = await import("mammoth");
+      const mammoth = (mammothModule as any).default || mammothModule;
       const arrayBuffer = await file.arrayBuffer();
       const result = await mammoth.extractRawText({ arrayBuffer });
       if (result.value && result.value.trim().length > 0) {
@@ -60,9 +51,14 @@ export const extractDocumentText = async (file: File): Promise<string> => {
     }
   }
 
-  // 2. Ekstraksi Dokumen PDF via PDF.js
+  // 2. Ekstraksi Dokumen PDF via PDF.js (Lazy Loaded)
   if (fileName.endsWith(".pdf") || file.type === "application/pdf") {
     try {
+      const pdfjsLib = await import("pdfjs-dist");
+      if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || "4.10.38"}/pdf.worker.min.mjs`;
+      }
+
       const arrayBuffer = await file.arrayBuffer();
       const loadingTask = pdfjsLib.getDocument({
         data: new Uint8Array(arrayBuffer),
@@ -86,7 +82,6 @@ export const extractDocumentText = async (file: File): Promise<string> => {
       }
     } catch (pdfErr) {
       console.warn("Ekstraksi PDF.js gagal, mencoba fallback buffer:", pdfErr);
-      // Fallback buffer jika pdfjs mengalami kendala worker
       const fallbackText = await extractTextFromPdfBuffer(file);
       if (fallbackText) return fallbackText;
     }

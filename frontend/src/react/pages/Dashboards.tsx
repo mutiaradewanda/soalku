@@ -998,6 +998,7 @@ export const GuruDashboard: React.FC = () => {
     rejectSoal,
     editSoal,
     createKodeUndangan,
+    deleteKodeUndangan,
     salinKodeUndangan,
     getPendingCount,
     updateCatatanSiswa,
@@ -1025,9 +1026,11 @@ export const GuruDashboard: React.FC = () => {
   // Tipe Tampilan Peran Guru: Wali Kelas vs Guru Mata Pelajaran
   const [roleMode, setRoleMode] = useState<"WALI_KELAS" | "GURU_MAPEL">("WALI_KELAS");
 
+  // Mapel tetap milik guru dari profil register
+  const teacherSubject = (user as any)?.mapelAjar || (user as any)?.subject || "Matematika";
+
   // State untuk form pembuatan tiket baru
   const [ticketType, setTicketType] = useState<"WALI_KELAS" | "GURU_MAPEL">("WALI_KELAS");
-  const [selectedMapelTiket, setSelectedMapelTiket] = useState<string>("Matematika");
   const [kelasTiketInput, setKelasTiketInput] = useState<string>("Kelas 4");
 
   const handleCreateNewCode = () => {
@@ -1035,7 +1038,7 @@ export const GuruDashboard: React.FC = () => {
     const userEmail = (user as any)?.email;
     const userId = user?.id;
     const prefix = ticketType === "WALI_KELAS" ? "WALI" : "MAPEL";
-    const mapel = ticketType === "GURU_MAPEL" ? selectedMapelTiket : undefined;
+    const mapel = ticketType === "GURU_MAPEL" ? teacherSubject : undefined;
     const kelas = ticketType === "WALI_KELAS" ? kelasTiketInput : undefined;
 
     const newCode = createKodeUndangan(
@@ -1049,6 +1052,13 @@ export const GuruDashboard: React.FC = () => {
       kelas
     );
     showToast(`Kode Tiket ${newCode.kode} (${ticketType === "WALI_KELAS" ? "Wali Kelas" : `Mapel ${mapel}`}) berhasil diterbitkan!`);
+  };
+
+  const handleDeleteCode = (idOrKode: string) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus kode tiket ini?")) {
+      deleteKodeUndangan(idOrKode);
+      showToast("Kode tiket berhasil dihapus.");
+    }
   };
 
   const handleQuickApprove = (soalId: number) => {
@@ -1327,18 +1337,13 @@ export const GuruDashboard: React.FC = () => {
 
               {ticketType === "GURU_MAPEL" ? (
                 <div className="pt-2 flex items-center gap-3">
-                  <label className="text-xs font-semibold text-slate-700">Mata Pelajaran:</label>
-                  <select
-                    value={selectedMapelTiket}
-                    onChange={(e) => setSelectedMapelTiket(e.target.value)}
-                    className="bg-white border border-[#B8CFB3] text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#84A282]/40"
-                  >
-                    {standardMapelList.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
+                  <span className="text-xs font-semibold text-slate-700">Mata Pelajaran:</span>
+                  <div className="px-3.5 py-1.5 bg-[#FEFAF3] border border-[#B8CFB3] rounded-xl text-xs font-bold text-[#60795e]">
+                    {teacherSubject}
+                  </div>
+                  <span className="text-[11px] text-slate-500">
+                    (Sesuai mata pelajaran yang Anda daftarkan saat registrasi)
+                  </span>
                 </div>
               ) : (
                 <div className="pt-2 flex items-center gap-3">
@@ -1412,26 +1417,36 @@ export const GuruDashboard: React.FC = () => {
                         <span>Berlaku: {k.expiredAt}</span>
                       </div>
 
-                      <button
-                        onClick={() => handleCopyKode(k.kode)}
-                        className={`w-full py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border shadow-sm ${
-                          copiedCode === k.kode
-                            ? "bg-emerald-600 text-white border-emerald-500"
-                            : "bg-white hover:bg-[#FEFAF3] text-slate-700 border-[#B8CFB3]"
-                        }`}
-                      >
-                        {copiedCode === k.kode ? (
-                          <>
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Kode Berhasil Disalin!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Salin Kode Tiket</span>
-                          </>
-                        )}
-                      </button>
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          onClick={() => handleCopyKode(k.kode)}
+                          className={`flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border shadow-sm ${
+                            copiedCode === k.kode
+                              ? "bg-emerald-600 text-white border-emerald-500"
+                              : "bg-white hover:bg-[#FEFAF3] text-slate-700 border-[#B8CFB3]"
+                          }`}
+                        >
+                          {copiedCode === k.kode ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Tersalin!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>Salin Kode</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCode(k.id)}
+                          title="Hapus Kode Tiket"
+                          className="p-2 rounded-xl text-rose-500 hover:text-white bg-white hover:bg-rose-500 border border-rose-200 hover:border-rose-500 transition shadow-sm"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1937,6 +1952,14 @@ export const GuruDashboard: React.FC = () => {
                               <span>Salin</span>
                             </>
                           )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCode(k.id)}
+                          title="Hapus Kode Tiket"
+                          className="p-1.5 rounded-xl text-rose-500 hover:text-white bg-white hover:bg-rose-500 border border-rose-200 hover:border-rose-500 transition shadow-sm"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>

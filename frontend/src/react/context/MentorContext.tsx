@@ -56,6 +56,7 @@ interface MentorContextType {
     mapelTiket?: string,
     kelasTiket?: string
   ) => KodeUndangan;
+  deleteKodeUndangan: (idOrKode: string) => void;
   salinKodeUndangan: (kode: string) => void;
   redeemKodeUndangan: (
     kode: string,
@@ -596,6 +597,12 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return newKode;
   };
 
+  const deleteKodeUndangan = (idOrKode: string) => {
+    setKodeUndanganList((prev) =>
+      prev.filter((k) => k.id !== idOrKode && k.kode !== idOrKode)
+    );
+  };
+
   const salinKodeUndangan = (kode: string) => {
     navigator.clipboard?.writeText(kode);
   };
@@ -734,6 +741,7 @@ export const MentorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         catatAktivitasSiswa,
         getSiswaByNama,
         createKodeUndangan,
+        deleteKodeUndangan,
         salinKodeUndangan,
         redeemKodeUndangan,
         getPendingCount,
