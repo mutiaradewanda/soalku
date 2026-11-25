@@ -1900,8 +1900,67 @@ export const GuruDashboard: React.FC = () => {
               </div>
 
               <p className="text-[11px] text-slate-500 leading-relaxed">
-                Sesuai PRD Asumsi A3: Kode sekali pakai berlaku 7 hari untuk mengundang siswa ke bimbingan atau rekan pengawas baru.
+                Sesuai PRD Asumsi A3: Kode sekali pakai berlaku 7 hari untuk mengundang siswa ke bimbingan.
               </p>
+
+              {/* Pilihan Tipe Tiket (Wali Kelas vs Guru Mapel) */}
+              <div className="p-3 rounded-2xl bg-[#FEFAF3] border border-[#B8CFB3] space-y-2.5">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTicketType("WALI_KELAS")}
+                    className={`px-3 py-2 rounded-xl border text-left text-xs font-bold transition ${
+                      ticketType === "WALI_KELAS"
+                        ? "bg-white border-[#84A282] text-slate-900 shadow-sm ring-1 ring-[#84A282]/40"
+                        : "bg-transparent border-slate-200 text-slate-500 hover:bg-white"
+                    }`}
+                  >
+                    Tiket Wali Kelas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTicketType("GURU_MAPEL")}
+                    className={`px-3 py-2 rounded-xl border text-left text-xs font-bold transition ${
+                      ticketType === "GURU_MAPEL"
+                        ? "bg-white border-[#84A282] text-slate-900 shadow-sm ring-1 ring-[#84A282]/40"
+                        : "bg-transparent border-slate-200 text-slate-500 hover:bg-white"
+                    }`}
+                  >
+                    Tiket Guru Mapel
+                  </button>
+                </div>
+                {ticketType === "GURU_MAPEL" ? (
+                  <div className="flex items-center gap-2 text-[11px]">
+                    <span className="text-slate-600 font-medium">Mapel:</span>
+                    <span className="px-2.5 py-0.5 bg-white border border-[#B8CFB3] rounded-lg font-bold text-[#60795e]">
+                      {teacherSubject}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-[11px]">
+                    <span className="text-slate-600 font-medium">Kelas:</span>
+                    <select
+                      value={kelasTiketInput}
+                      onChange={(e) => setKelasTiketInput(e.target.value)}
+                      className="bg-white border border-[#B8CFB3] text-xs font-bold rounded-lg px-2 py-1 focus:outline-none"
+                    >
+                      {guruJenjang === "SD" ? (
+                        <>
+                          <option value="Kelas 4">Kelas 4 SD</option>
+                          <option value="Kelas 5">Kelas 5 SD</option>
+                          <option value="Kelas 6">Kelas 6 SD</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="Kelas 7">Kelas 7 SMP</option>
+                          <option value="Kelas 8">Kelas 8 SMP</option>
+                          <option value="Kelas 9">Kelas 9 SMP</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                )}
+              </div>
 
               <div className="space-y-2.5">
                 {myKodeList.length === 0 ? (

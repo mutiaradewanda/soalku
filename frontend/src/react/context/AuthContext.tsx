@@ -105,6 +105,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const savedProfile =
       getRegisteredProfile(payload.identifier) || getRegisteredProfile(email);
 
+    if (savedProfile && savedProfile.role !== payload.role) {
+      const roleLabel =
+        savedProfile.role === "guru"
+          ? "Guru"
+          : `Siswa ${savedProfile.role.toUpperCase()}`;
+      throw new Error(
+        `Akun ini terdaftar sebagai ${roleLabel}. Silakan masuk melalui portal ${roleLabel}.`
+      );
+    }
+
+    if (token) {
+      try {
+        const me = await authApi.me();
+        const isBackendMentor = me.role === "MENTOR";
+        if (isBackendMentor && payload.role !== "guru") {
+          clearToken();
+          throw new Error("Akun ini terdaftar sebagai Guru. Silakan masuk melalui portal Guru.");
+        }
+        if (!isBackendMentor && payload.role === "guru") {
+          clearToken();
+          throw new Error("Akun ini terdaftar sebagai Siswa. Silakan masuk melalui portal Siswa.");
+        }
+      } catch (meErr: any) {
+        if (meErr?.message?.includes("terdaftar sebagai")) {
+          throw meErr;
+        }
+      }
+    }
+
     let loggedInUser: AuthUser;
     if (savedProfile) {
       loggedInUser = {
