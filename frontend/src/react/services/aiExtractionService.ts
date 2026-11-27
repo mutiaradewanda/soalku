@@ -1,5 +1,5 @@
 import { Materi, BagianMateri, SoalMateri, TingkatMateri } from "../types/materi";
-import { getStrictMatchingQuestions } from "./referenceQuestionBank";
+import { ensureRemoteDatasetLoaded, getStrictMatchingQuestions } from "./referenceQuestionBank";
 
 export const getGeminiApiKey = (): string => {
   try {
@@ -9,11 +9,14 @@ export const getGeminiApiKey = (): string => {
   return (import.meta as any).env?.VITE_GEMINI_API_KEY || "";
 };
 
-const GEMINI_MODELS = [
-  (import.meta as any).env?.VITE_GEMINI_MODEL || "gemini-1.5-flash",
-  "gemini-1.5-flash",
-  "gemini-2.0-flash",
-];
+const GEMINI_MODELS = Array.from(
+  new Set([
+    (import.meta as any).env?.VITE_GEMINI_MODEL || "gemini-3.1-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
+    "gemini-4-hydrogen",
+  ])
+);
 
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -56,7 +59,10 @@ export const extractDocumentText = async (file: File): Promise<string> => {
     try {
       const pdfjsLib = await import("pdfjs-dist");
       if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || "4.10.38"}/pdf.worker.min.mjs`;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+          "pdfjs-dist/build/pdf.worker.min.mjs",
+          import.meta.url
+        ).toString();
       }
 
       const arrayBuffer = await file.arrayBuffer();
@@ -180,6 +186,9 @@ export const extractAndProcessDocument = async (
 
   const apiKey = getGeminiApiKey();
 
+  // Muat dataset referensi remote dari Supabase (non-blocking cache)
+  await ensureRemoteDatasetLoaded();
+
   // 1. Coba Generate Nyata via Google Gemini API
   if (apiKey) {
     for (const modelName of GEMINI_MODELS) {
@@ -256,12 +265,10 @@ Ketentuan Mutlak:
 
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
+          "X-goog-api-key": apiKey,
         };
-        if (apiKey.startsWith("AQ.")) {
-          headers["Authorization"] = `Bearer ${apiKey}`;
-        }
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
         const response = await fetch(url, {
           method: "POST",
           headers,
@@ -320,16 +327,56 @@ Ketentuan Mutlak:
                 };
               });
 
+              const resolvedMapel =
+                parsed.mataPelajaran ||
+                (cleanTitle.toLowerCase().includes("inggris") || cleanTitle.toLowerCase().includes("english")
+                  ? "Bahasa Inggris"
+                  : "Tematik Terpadu");
+
+              // Cek apakah jumlah soal dari Gemini masih kurang dari batas minimal (10 SD / 20 SMP)
+              const totalGenerated = mappedBagian.reduce(
+                (sum, b) => sum + (b.generatedSoal?.length || 0),
+                0
+              );
+              if (totalGenerated < targetSoalCount && mappedBagian.length > 0) {
+                const deficit = targetSoalCount - totalGenerated;
+                const refExtras = getStrictMatchingQuestions(
+                  resolvedMapel,
+                  tingkat,
+                  detectedText || cleanTitle,
+                  deficit
+                );
+                if (refExtras.length > 0) {
+                  const targetSection = mappedBagian[0];
+                  const targetSoal = targetSection.generatedSoal ?? (targetSection.generatedSoal = []);
+                  const existingPertanyaan = new Set(
+                    mappedBagian.flatMap((b) =>
+                      (b.generatedSoal || []).map((s) => s.pertanyaan.toLowerCase().trim())
+                    )
+                  );
+                  let extraIdx = targetSoal.length + 1;
+                  refExtras.forEach((ref) => {
+                    if (!existingPertanyaan.has(ref.pertanyaan.toLowerCase().trim())) {
+                      targetSoal.push({
+                        id: targetSection.id * 100 + extraIdx++,
+                        bagianMateriId: targetSection.id,
+                        pertanyaan: ref.pertanyaan,
+                        opsi: ref.opsi,
+                        kunciJawaban: ref.kunciJawaban,
+                        pembahasan: ref.pembahasan,
+                        tingkatKesulitan: ref.tingkatKesulitan,
+                      });
+                    }
+                  });
+                }
+              }
+
               return {
                 id: materiId,
                 judul: parsed.judul || cleanTitle,
                 tingkat,
                 bab: parsed.bab || "Bab 1",
-                mataPelajaran:
-                  parsed.mataPelajaran ||
-                  (cleanTitle.toLowerCase().includes("inggris") || cleanTitle.toLowerCase().includes("english")
-                    ? "Bahasa Inggris"
-                    : "Tematik Terpadu"),
+                mataPelajaran: resolvedMapel,
                 deskripsi: parsed.deskripsi || `Hasil ekstraksi cerdas Gemini AI untuk materi ${cleanTitle}.`,
                 akurasi: 0,
                 status: "DIGENERATE",

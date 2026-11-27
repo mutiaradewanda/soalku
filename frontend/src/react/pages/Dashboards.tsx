@@ -1031,7 +1031,9 @@ export const GuruDashboard: React.FC = () => {
 
   // State untuk form pembuatan tiket baru
   const [ticketType, setTicketType] = useState<"WALI_KELAS" | "GURU_MAPEL">("WALI_KELAS");
-  const [kelasTiketInput, setKelasTiketInput] = useState<string>("Kelas 4");
+  const [kelasTiketInput, setKelasTiketInput] = useState<string>(
+    guruJenjang === "SD" ? "Kelas 4" : "Kelas 7"
+  );
 
   const handleCreateNewCode = () => {
     const creator = user?.name || "Guru Pembimbing";
@@ -1123,6 +1125,7 @@ export const GuruDashboard: React.FC = () => {
         "Bahasa Indonesia",
         "Bahasa Inggris",
         "Pendidikan Pancasila",
+        "PAI",
       ];
     }
     return [
@@ -1132,6 +1135,7 @@ export const GuruDashboard: React.FC = () => {
       "Bahasa Indonesia",
       "IPS Terpadu",
       "Informatika",
+      "PAI",
     ];
   }, [guruJenjang]);
 
@@ -1946,6 +1950,9 @@ export const GuruDashboard: React.FC = () => {
                     >
                       {guruJenjang === "SD" ? (
                         <>
+                          <option value="Kelas 1">Kelas 1 SD</option>
+                          <option value="Kelas 2">Kelas 2 SD</option>
+                          <option value="Kelas 3">Kelas 3 SD</option>
                           <option value="Kelas 4">Kelas 4 SD</option>
                           <option value="Kelas 5">Kelas 5 SD</option>
                           <option value="Kelas 6">Kelas 6 SD</option>

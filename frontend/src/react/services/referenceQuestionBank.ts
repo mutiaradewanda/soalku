@@ -1,6 +1,6 @@
 export interface ReferenceQuestion {
   id: string;
-  mataPelajaran: "Matematika" | "Bahasa Inggris" | "Bahasa Indonesia" | "IPA" | "IPAS" | "PPKn" | "Informatika" | "IPS";
+  mataPelajaran: "Matematika" | "Bahasa Inggris" | "Bahasa Indonesia" | "IPA" | "IPAS" | "PPKn" | "Informatika" | "IPS" | "PAI";
   jenjang: "SD" | "SMP" | "SEMUA";
   kelas?: number[];
   topikUtama: string;
@@ -304,6 +304,130 @@ export const REFERENCE_QUESTION_BANK: ReferenceQuestion[] = [
   },
 ];
 
+const REMOTE_DATASET_URL =
+  (import.meta as any).env?.VITE_DATASET_URL ||
+  "https://txfrreunsslmkhahtdun.supabase.co/storage/v1/object/public/Soalku-project/bank_soal_master.json";
+const DATASET_CACHE_KEY = "soalku_remote_dataset_cache_v1";
+const DATASET_CACHE_TTL_MS = 1000 * 60 * 30; // 30 menit
+
+let remoteQuestionsCache: ReferenceQuestion[] = [];
+let remoteLoadPromise: Promise<void> | null = null;
+
+function mapRemoteDifficulty(diff?: string): "MUDAH" | "SEDANG" | "SULIT" {
+  const norm = (diff || "").toLowerCase();
+  if (norm.includes("mudah") || norm.includes("easy")) return "MUDAH";
+  if (norm.includes("sulit") || norm.includes("hard")) return "SULIT";
+  return "SEDANG";
+}
+
+function mapRemoteSubject(subj?: string): ReferenceQuestion["mataPelajaran"] {
+  const norm = (subj || "").toLowerCase();
+  if (norm.includes("matematika")) return "Matematika";
+  if (norm.includes("inggris")) return "Bahasa Inggris";
+  if (norm.includes("indonesia")) return "Bahasa Indonesia";
+  if (norm.includes("ipas")) return "IPAS";
+  if (norm.includes("ipa")) return "IPA";
+  if (norm.includes("ips")) return "IPS";
+  if (norm.includes("pai") || norm.includes("islam") || norm.includes("agama")) return "PAI";
+  if (norm.includes("ppkn") || norm.includes("pancasila")) return "PPKn";
+  if (norm.includes("informatika")) return "Informatika";
+  return "IPA";
+}
+
+function convertRemoteQuestion(raw: any, index: number): ReferenceQuestion | null {
+  if (!raw || !raw.question || !raw.options) return null;
+
+  const gradeNum = Number(raw.grade) || 7;
+  const jenjang: "SD" | "SMP" = gradeNum >= 1 && gradeNum <= 6 ? "SD" : "SMP";
+  const correctKey = String(raw.correct_answer || "A").trim().toUpperCase().charAt(0) as "A" | "B" | "C" | "D";
+
+  const optionLabels: ("A" | "B" | "C" | "D")[] = jenjang === "SD" && !raw.options.D ? ["A", "B", "C"] : ["A", "B", "C", "D"];
+  const opsi = optionLabels
+    .filter((lbl) => raw.options[lbl] !== undefined && raw.options[lbl] !== null && String(raw.options[lbl]).trim() !== "")
+    .map((lbl) => ({
+      label: lbl,
+      teks: String(raw.options[lbl]),
+      isBenar: lbl === correctKey,
+    }));
+
+  if (opsi.length < 2) return null;
+  if (!opsi.some((o) => o.isBenar)) opsi[0].isBenar = true;
+
+  const chapterText = String(raw.chapter || raw.subject || "Materi Umum").trim();
+  const keywords = chapterText
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length >= 3);
+
+  return {
+    id: String(raw.id || `REM-${index + 1}`),
+    mataPelajaran: mapRemoteSubject(raw.subject),
+    jenjang,
+    kelas: [gradeNum],
+    topikUtama: chapterText,
+    subTopik: [chapterText],
+    kataKunci: Array.from(new Set(keywords)),
+    pertanyaan: String(raw.question),
+    opsi,
+    kunciJawaban: opsi.find((o) => o.isBenar)?.label || "A",
+    pembahasan: String(raw.explanation || "Pembahasan mengacu pada materi pembelajaran terkait."),
+    tingkatKesulitan: mapRemoteDifficulty(raw.difficulty),
+  };
+}
+
+/**
+ * Memuat dataset soal dari Supabase Storage (dengan cache lokal agar cepat & hemat bandwidth).
+ */
+export async function ensureRemoteDatasetLoaded(): Promise<void> {
+  if (remoteQuestionsCache.length > 0) return;
+
+  try {
+    const cachedRaw = localStorage.getItem(DATASET_CACHE_KEY);
+    if (cachedRaw) {
+      const parsedCache = JSON.parse(cachedRaw);
+      if (
+        parsedCache &&
+        Array.isArray(parsedCache.items) &&
+        Date.now() - (parsedCache.savedAt || 0) < DATASET_CACHE_TTL_MS
+      ) {
+        remoteQuestionsCache = parsedCache.items;
+        return;
+      }
+    }
+  } catch {}
+
+  if (!remoteLoadPromise) {
+    remoteLoadPromise = (async () => {
+      try {
+        const res = await fetch(REMOTE_DATASET_URL);
+        if (!res.ok) return;
+        const data = await res.json();
+        const rawList = Array.isArray(data?.questions) ? data.questions : Array.isArray(data) ? data : [];
+        const converted = rawList
+          .map((item: any, idx: number) => convertRemoteQuestion(item, idx))
+          .filter((q: ReferenceQuestion | null): q is ReferenceQuestion => q !== null);
+
+        if (converted.length > 0) {
+          remoteQuestionsCache = converted;
+          try {
+            localStorage.setItem(
+              DATASET_CACHE_KEY,
+              JSON.stringify({ savedAt: Date.now(), items: converted })
+            );
+          } catch {}
+        }
+      } catch (err) {
+        console.warn("Gagal memuat dataset remote Supabase, menggunakan bank soal lokal:", err);
+      } finally {
+        remoteLoadPromise = null;
+      }
+    })();
+  }
+
+  await remoteLoadPromise;
+}
+
 /**
  * Filter soal acuan terstandar secara KETAT berdasarkan:
  * 1. Mata Pelajaran (harus sama)
@@ -319,8 +443,11 @@ export function getStrictMatchingQuestions(
   const normMapel = mataPelajaran.toLowerCase().trim();
   const normText = extractedContentText.toLowerCase();
 
+  // Gabungkan dataset lokal bawaan dengan dataset remote dari Supabase
+  const combinedBank = [...remoteQuestionsCache, ...REFERENCE_QUESTION_BANK];
+
   // 1. Saring berdasarkan mata pelajaran & jenjang
-  const candidates = REFERENCE_QUESTION_BANK.filter((item) => {
+  const candidates = combinedBank.filter((item) => {
     const itemMapel = item.mataPelajaran.toLowerCase();
     const mapelMatches =
       itemMapel === normMapel ||
